@@ -1,0 +1,39 @@
+meta {
+  name: 6. Add Bank Account
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/bank-accounts/verify
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "accountNumber": "{{bankAccountNumber}}",
+    "ifscCode": "{{bankIfscCode}}"
+  }
+}
+
+docs {
+  Adds and verifies a bank account in one call. Beneficiary name is taken from the driver's own
+  profile, not the request — there's no beneficiaryName field to fill in.
+
+  On a name mismatch against the verification provider, the account comes back with
+  status AWAITING_ID_PROOF instead of VERIFIED. Resolving that (PUT
+  /api/bank-accounts/{id}/id-proof) is a separate, less-common path — see the reference
+  collection, not part of this happy-path flow.
+
+  Either this step or step 7 (UPI) is enough to satisfy "at least one payout method" — both
+  are shown here so you can see both paths, not because both are required.
+}

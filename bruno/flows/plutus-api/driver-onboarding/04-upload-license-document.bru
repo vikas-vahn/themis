@@ -1,0 +1,33 @@
+meta {
+  name: 4. Upload License Document (manual fallback)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/drivers/{{driverId}}/license-document
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:multipart-form {
+  front: @file(/absolute/path/to/dl_front.jpg)
+  back: @file(/absolute/path/to/dl_back.jpg)
+}
+
+docs {
+  CONDITIONAL — only run this if step 3 returned 409 DL_ATTEMPTS_EXHAUSTED. Skip straight to
+  step 5 if step 3 already came back VERIFIED.
+
+  Replace both file paths above with real images before sending — Bruno cannot resolve the
+  placeholder paths. `back` is optional but recommended; `front` is required.
+
+  On success, onboardingStatus moves to DL_IMAGES_ADDED and the driver enters the admin
+  manual-review queue (GET /api/drivers/unverified in the reference collection). There is no
+  further automated step here — a VAHN admin must approve or reject before the driver can
+  continue to step 5.
+}

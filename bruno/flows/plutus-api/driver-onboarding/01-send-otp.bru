@@ -1,0 +1,26 @@
+meta {
+  name: 1. Send OTP
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/send-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{driverPhone}}"
+  }
+}
+
+docs {
+  Sends an OTP to the driver's phone number. In staging/dev (shared DB), the OTP is a fixed
+  667766 for every user — see the `driverOtp` environment variable used in the next request.
+}

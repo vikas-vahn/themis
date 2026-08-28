@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+
+# Bruno local-only env overrides / secrets
+bruno/**/*.env.local
+bruno/**/environments/*.local.bru
+
+# Maestro run artifacts
+maestro/.maestro/
+maestro/**/*.log

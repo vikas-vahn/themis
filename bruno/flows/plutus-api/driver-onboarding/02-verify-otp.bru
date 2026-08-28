@@ -1,0 +1,35 @@
+meta {
+  name: 2. Verify OTP
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{driverPhone}}",
+    "otp": "{{driverOtp}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("accessToken", res.body.data.accessToken);
+}
+
+docs {
+  Exchanges the OTP for a bearer token. Every request after this one uses {{accessToken}},
+  which this request sets automatically on success.
+
+  If this phone number has never logged in before, `data.role` in the response will be
+  NEW_USER — that's expected. The next request (self-register) is what creates the driver
+  record and promotes the role.
+}

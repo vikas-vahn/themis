@@ -1,0 +1,47 @@
+meta {
+  name: 3. Register Driver (Self-Onboard)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/driver-app/license
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "{{driverName}}",
+    "licenseNumber": "{{driverLicenseNumber}}",
+    "dateOfBirth": "{{driverDob}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("driverId", res.body.data.id);
+  bru.setEnvVar("dlVerificationOutcome", res.body.data.dlVerificationOutcome);
+}
+
+docs {
+  Creates the driver record on first call, then runs one synchronous DL auto-verification
+  attempt. `phone` is not sent — it's resolved from the authenticated user.
+
+  `dlVerificationOutcome` in the response:
+  - VERIFIED  — DL matched, onboardingStatus becomes DL_VERIFIED. Skip to step 5.
+  - RETRY     — wrong DL/DOB; counts against a 3-attempt cap. Re-run this request with
+                corrected values (attempt count is tracked server-side by phone number).
+  - SERVICE_ERROR — verification provider unavailable; does NOT count against the cap,
+                just retry.
+
+  After 3 RETRY outcomes, this returns 409 DL_ATTEMPTS_EXHAUSTED — switch to step 4
+  (manual upload) instead of retrying again.
+}

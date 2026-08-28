@@ -1,0 +1,23 @@
+meta {
+  name: driver-onboarding
+}
+
+docs {
+  # Driver Self-Onboarding Flow
+
+  Full happy path for a new driver registering independently (not added by any truck owner
+  first): OTP login → self-register + DL auto-verify → (manual DL upload if auto-verify is
+  exhausted) → get driver code → add a payout method.
+
+  Run requests 1–7 in order (use the "staging" environment, top-right). Each request sets the
+  environment variables the next one needs — `accessToken`, `driverId`, `dlVerificationOutcome`,
+  `driverCode` — so as long as you run them in sequence you shouldn't need to copy anything by
+  hand.
+
+  Step 4 is conditional — see its own docs. Steps 6 and 7 are alternatives to each other, not
+  a required pair.
+
+  For any single endpoint outside this specific journey (admin approve/reject, set-default
+  payout method, driver-torg linking, etc.), see the `plutus-api` reference collection under
+  `bruno/collections/` instead of this flow.
+}

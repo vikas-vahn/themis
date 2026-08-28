@@ -1,0 +1,29 @@
+meta {
+  name: 5. Get Driver Code
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/driver-code
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:post-response {
+  bru.setEnvVar("driverCode", res.body.data.driverCode);
+}
+
+docs {
+  Requires the driver to already be DL-verified (step 3 returned VERIFIED, or a VAHN admin
+  approved the manual upload from step 4) — otherwise this still works but the driver won't be
+  linkable by a truck owner yet.
+
+  Generates a code on first call if the driver doesn't have one yet; returns the same code on
+  later calls. This is the code a driver shares with a truck owner so the owner can link them
+  to a fleet — see "Link Driver by Code" in the plutus-api reference collection (fleet-side,
+  not part of this driver-facing flow).
+}
