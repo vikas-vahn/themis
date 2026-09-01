@@ -1,0 +1,26 @@
+meta {
+  name: torg-driver-mapping
+}
+
+docs {
+  # Torg ↔ Driver Mapping Flow
+
+  How a truck owner attaches an existing self-onboarded, DL-verified driver to their fleet (US-06 /
+  US-14), and how to release one. This flow authenticates as the TRUCK OWNER, not the driver — it's
+  the other side of `driver-onboarding`.
+
+  **Run `driver-onboarding` first** (at least through step 3 for `driverId`, and step 5 for
+  `driverCode`) — this flow reuses `driverId`, `driverPhone`, and `driverCode` from that flow's run,
+  since all flows in this collection share one environment. Logging in here as the torg admin
+  overwrites `accessToken` with the admin's token — that's expected, not a bug — but do it after,
+  not before, the driver-onboarding steps that need the driver's own token.
+
+  Steps 3 and 4 (link by code / link by phone) are two ways to do the *same* thing — run whichever
+  matches what you're testing, not both back to back (the driver will already have an owner after
+  the first one succeeds, so the second will 400 with "Driver already belongs to a fleet").
+
+  Step 5 (unlink) is the inverse, mainly useful to reset state so you can re-run steps 3/4.
+
+  Before running: set `torgAdminPhone` in the "staging" environment to a real TORG_ADMIN's phone
+  number for the torg you want to link the driver into.
+}

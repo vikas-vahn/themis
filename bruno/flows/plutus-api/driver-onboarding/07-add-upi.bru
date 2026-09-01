@@ -10,12 +10,12 @@ post {
   auth: bearer
 }
 
-auth:bearer {
-  token: {{accessToken}}
-}
-
 headers {
   Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
 }
 
 body:json {
@@ -24,10 +24,14 @@ body:json {
   }
 }
 
+vars:pre-request {
+  driverVpa: 9999996079@ybl
+}
+
 docs {
   Adds and verifies a UPI ID in one call. Name is taken from the driver's own profile, same as
   the bank account step — there's no name field to fill in here either.
-
+  
   This is an alternative to step 6, not a required follow-up — a driver only needs one verified
   payout method (bank account or UPI).
 }

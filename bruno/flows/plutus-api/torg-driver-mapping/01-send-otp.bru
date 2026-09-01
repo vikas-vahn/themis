@@ -1,0 +1,27 @@
+meta {
+  name: 1. Send OTP (Torg Admin)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/send-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{torgAdminPhone}}"
+  }
+}
+
+docs {
+  Same login endpoint as the driver-onboarding flow, but authenticating as the truck owner
+  (TORG_ADMIN) instead of a driver — set `torgAdminPhone` in the environment to a real
+  TORG_ADMIN's phone number first.
+}

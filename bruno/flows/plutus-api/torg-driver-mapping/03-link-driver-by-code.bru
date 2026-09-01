@@ -1,0 +1,35 @@
+meta {
+  name: 3. Link Driver by Code
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/drivers/link-by-code
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "driverCode": "{{driverCode}}"
+  }
+}
+
+docs {
+  ALTERNATIVE to step 4 — run this one or that one, not both. Attaches the driver identified by
+  {{driverCode}} (captured by driver-onboarding step 5) to the calling torg admin's own torg.
+
+  400 — "Driver already belongs to a fleet" (already linked somewhere), or "Driver's licence is
+  not yet verified" (driver-onboarding step 3 hasn't returned VERIFIED yet, and step 4 of that
+  flow hasn't been approved by an admin either).
+  404 — no driver found with that code.
+}

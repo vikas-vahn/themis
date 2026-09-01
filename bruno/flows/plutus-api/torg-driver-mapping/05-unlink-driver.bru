@@ -1,0 +1,27 @@
+meta {
+  name: 5. Unlink Driver from Torg
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/drivers/{{driverId}}/owner
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Inverse of steps 3/4 — releases the driver from their current torg. Restricted server-side to
+  VAHN_ADMIN or the driver's currently-owning torg (a different torg admin gets 400, not just a
+  coarse role rejection).
+
+  Compensation details are reset, but the driver keeps their DRIVER role and DL verification —
+  they can be re-linked (step 3 or 4) again afterwards without re-onboarding. Useful for
+  resetting state between test runs.
+
+  400 — "Driver is not linked to any torg", or "Not authorized to modify this driver" if the
+  caller's torg doesn't own this driver. 404 — driver id doesn't exist.
+}

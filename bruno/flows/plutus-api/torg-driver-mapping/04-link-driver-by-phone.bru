@@ -1,0 +1,32 @@
+meta {
+  name: 4. Link Driver by Phone
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/drivers/link-by-phone
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{driverPhone}}"
+  }
+}
+
+docs {
+  ALTERNATIVE to step 3 — same outcome, keyed by phone number instead of a code (this is US-14's
+  "auto-fill verified profile" trigger, exposed as a direct linking action).
+
+  Same 400/404 conditions as step 3.
+}
