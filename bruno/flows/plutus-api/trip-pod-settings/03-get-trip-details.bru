@@ -1,0 +1,23 @@
+meta {
+  name: 3. Get Trip Details
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/trips/{{podSettingsTripId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Full trip details for the driver's own trip. As of PR #932 (open against develop, not yet
+  merged/promoted to staging as of 2026-09-10), `data.podSettings` carries the owner torg's POD
+  settings plus what they resolve to for this trip — see the "Get Trip By ID" reference request
+  under `bruno/collections/plutus-api/trips/` for the exact shape and an illustrative example.
+
+  Until PR #932 reaches staging, this response will not contain a `podSettings` key at all.
+}

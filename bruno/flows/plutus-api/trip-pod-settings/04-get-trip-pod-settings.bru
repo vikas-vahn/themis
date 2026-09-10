@@ -1,0 +1,36 @@
+meta {
+  name: 4. Get Trip POD Settings (dedicated endpoint)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/trips/{{podSettingsTripId}}/v1/settings/epod
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  The pre-existing dedicated per-trip POD-settings endpoint (predates PR #932, already live on
+  staging). Verified live on 2026-09-10 for this driver/trip:
+
+  {
+    "data": {
+      "driverUploadEnabled": true,
+      "completionRadiusEnabled": false,
+      "completionRadiusMeters": null,
+      "remainingDistance": 211.77
+    },
+    "message": "Success",
+    "statusCode": 200,
+    "success": true
+  }
+
+  Once PR #932 reaches staging, this same response also gains
+  `completionRadiusRemainingDistanceMeters` (null here since completionRadiusEnabled is false for
+  this trip's torg) — see the "Get Trip POD Settings" reference request under
+  `bruno/collections/plutus-api/trips/` for what a nonzero value looks like.
+}

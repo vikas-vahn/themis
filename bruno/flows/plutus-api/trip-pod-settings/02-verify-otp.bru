@@ -1,0 +1,31 @@
+meta {
+  name: 2. Verify OTP
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{podSettingsDriverPhone}}",
+    "otp": "{{podSettingsDriverOtp}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("accessToken", res.body.data.accessToken);
+}
+
+docs {
+  Exchanges the OTP for a bearer token. Steps 3–4 use {{accessToken}}, which this request sets
+  automatically on success.
+}

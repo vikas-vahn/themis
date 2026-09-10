@@ -1,0 +1,47 @@
+meta {
+  name: Get Trip By ID
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/trips/{{tripId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Full trip details. Accessible to VAHN_ADMIN, TORG_ADMIN/TRUCK_MANAGER/FUND_MANAGER/OPERATOR/
+  ACCOUNTANT of the owning torg, an ATORG counterpart on a MARKET trip, or the trip's own driver.
+
+  As of PR #932 (github.com/Vahn-Engineering/plutus-java/pull/932 — open against develop, not yet
+  merged or promoted to the staging branch as of 2026-09-10; verify against a live response once
+  it's deployed), the response includes `data.podSettings` — the POD (Proof of Delivery) settings
+  applicable to the trip's owner torg, plus what they resolve to for this specific trip.
+  Illustrative shape (not a captured live response — combines a real torg's saved POD settings
+  with a real trip's remaining distance to show the math):
+
+  {
+    "driverUploadEnabled": true,
+    "completionRadiusEnabled": true,
+    "completionRadiusMeters": 40000.0,
+    "remainingDistance": 211.77,
+    "completionRadiusRemainingDistanceMeters": 171770.0
+  }
+
+  `completionRadiusRemainingDistanceMeters` is how much farther (in meters) the truck must still
+  travel before it's within the completion radius, i.e. before the driver is allowed to mark the
+  trip completed via POD — `max(0, remainingDistance_meters - completionRadiusMeters)`. It's only
+  populated when `completionRadiusEnabled` is true and `completionRadiusMeters` is set; otherwise
+  (and if the trip's remaining distance isn't known yet) it's omitted/null.
+
+  `podSettings` itself is `null` if the torg has never saved POD settings — see "Get Trip POD
+  Settings" for the dedicated per-trip endpoint, and the (currently empty) `torg-settings`
+  reference folder for the settings CRUD.
+
+  There is also a `GET /api/trips/v1/{tripId}` variant of this same endpoint that additionally
+  populates the full truckManagers/fundManagers lists for multi-manager trucks.
+}

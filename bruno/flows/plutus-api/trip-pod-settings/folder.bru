@@ -1,0 +1,24 @@
+meta {
+  name: trip-pod-settings
+}
+
+docs {
+  # Trip POD Settings Journey
+
+  A driver logs in, then reads the POD (Proof of Delivery) settings that apply to one of their
+  own trips — both via the trip-details response (`podSettings`, added in PR #932) and via the
+  dedicated per-trip settings endpoint that predates it (`/v1/settings/epod`).
+
+  Run requests 1–4 in order (use the "staging" environment, top-right). Step 2 captures
+  `accessToken` for steps 3–4.
+
+  This flow uses its own `podSettingsDriverPhone`/`podSettingsDriverOtp`/`podSettingsTripId`
+  variables rather than the `driverPhone`/`driverOtp` used by the driver-onboarding and
+  torg-driver-mapping flows in this same environment file — this journey needs a specific
+  driver+trip whose owning torg already has POD settings saved (torg 315: driverUploadEnabled
+  true, completionRadiusEnabled false), which won't generally be true of whichever driver another
+  flow happens to be using.
+
+  For any single endpoint outside this journey, see the `plutus-api` reference collection under
+  `bruno/collections/` — specifically its `trips/` folder.
+}

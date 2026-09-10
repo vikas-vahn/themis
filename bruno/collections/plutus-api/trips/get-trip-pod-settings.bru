@@ -1,0 +1,45 @@
+meta {
+  name: Get Trip POD Settings
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/trips/{{tripId}}/v1/settings/epod
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  POD settings of the torg that owns the given trip, plus what they resolve to for that trip.
+  Access is limited to VAHN_ADMIN, TORG_ADMIN/FLEET_OWNER/TRUCK_MANAGER of the owning torg, or the
+  trip's actually-assigned driver (a DRIVER-role caller who isn't assigned to this specific trip
+  is rejected with 403, not just anyone with the DRIVER role).
+
+  Verified live on staging (2026-09-10) against trip 1325 (torg 315, POD settings saved but
+  completion radius disabled), driver-authenticated:
+
+  {
+    "data": {
+      "driverUploadEnabled": true,
+      "completionRadiusEnabled": false,
+      "completionRadiusMeters": null,
+      "remainingDistance": 211.77
+    },
+    "message": "Success",
+    "statusCode": 200,
+    "success": true
+  }
+
+  As of PR #932 (open against develop, not yet merged/promoted to staging as of 2026-09-10), the
+  response also gains `completionRadiusRemainingDistanceMeters` — see "Get Trip By ID" in this
+  same folder for what it means and an illustrative value. It wasn't present in the response above
+  because completionRadiusEnabled is false for this trip's torg, not because it's unmerged — but
+  it genuinely is also unmerged, so re-verify once staging has PR #932.
+
+  400 if the trip doesn't exist or has no owning torg; 403 if the caller isn't authorized for this
+  trip specifically.
+}
