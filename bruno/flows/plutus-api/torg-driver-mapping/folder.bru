@@ -21,6 +21,10 @@ docs {
 
   Step 5 (unlink) is the inverse, mainly useful to reset state so you can re-run steps 3/4.
 
+  Step 6 is a negative case, not part of the happy path: run it right after step 2, using the
+  torg admin's own token to attempt driver self-registration. Asserts UserRoleValidator now
+  rejects it with 400 instead of silently linking a Driver record to the torg admin's account.
+
   Before running: set `torgAdminPhone` in the "staging" environment to a real TORG_ADMIN's phone
   number for the torg you want to link the driver into.
 }

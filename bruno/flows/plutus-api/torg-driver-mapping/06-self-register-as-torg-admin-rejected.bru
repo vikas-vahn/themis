@@ -1,0 +1,45 @@
+meta {
+  name: 6. Self-Register as Driver While TORG_ADMIN (Rejected)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/driver-app/license
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "{{driverName}}",
+    "licenseNumber": "{{driverLicenseNumber}}",
+    "dateOfBirth": "{{driverDob}}"
+  }
+}
+
+docs {
+  Negative case for UserRoleValidator: the same "Register Driver (Self-Onboard)" call as
+  driver-onboarding step 3 (POST /api/driver-app/license, DriverService.createDriverSelf), but
+  made with the TORG_ADMIN's own token instead of a driver's.
+
+  Run this right after step 2 in THIS flow (Verify OTP as Torg Admin) — it needs {{accessToken}}
+  to be the torg admin's, not a driver's. Steps 3/4/5 don't touch {{accessToken}}, so running
+  this after them is also fine as long as driver-onboarding's own verify-otp hasn't re-run since.
+
+  Before the role-transition fix, this silently created a Driver record linked to the torg
+  admin's own User row (their role was left untouched, but the Driver→User link still happened) —
+  the exact bug this flow now guards against.
+
+  Expected: 400, "User with role TORG_ADMIN cannot be assigned role DRIVER". No Driver record
+  should be created for the torg admin's phone — confirm via GET /api/drivers/user/{userId} (see
+  the plutus-api collection) if you want to double-check no row appeared.
+}
