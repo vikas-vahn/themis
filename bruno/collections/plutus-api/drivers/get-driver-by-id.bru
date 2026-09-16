@@ -1,0 +1,29 @@
+meta {
+  name: Get Driver By ID
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/{{driverId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Driver details by ID. Accessible to VAHN_ADMIN, and to TORG_ADMIN/TRUCK_MANAGER/FUND_MANAGER/
+  OPERATOR/ACCOUNTANT/DRIVER of the owning torg — a non-admin caller whose torg doesn't own this
+  driver gets 403 (`DriverResource.getDriverById`, `common/controller/DriverResource.java:109`).
+
+  Response is a DriverDTO, enriched with Aadhaar verification info via
+  `driverService.enrichWithAadhaar(dto)`.
+
+  {{driverId}} isn't set by default in this collection's environment — populate it from a prior
+  "Get Trip By ID"/"Get Trip POD Settings" response, or from the driver-onboarding flow, which
+  sets `driverId` after self-registration.
+
+  404 if the driver doesn't exist.
+}

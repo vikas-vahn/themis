@@ -1,0 +1,26 @@
+meta {
+  name: Get Torg By ID
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{torgId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Torg (Transportation Organization) details by ID. Accessible to VAHN_ADMIN, and to
+  TORG_ADMIN/TRUCK_MANAGER/FUND_MANAGER/OPERATOR/ACCOUNTANT of that torg.
+
+  Response is a TorgDTO (`TorgResource.getTorgById`, `common/controller/TorgResource.java:113`),
+  including a live-computed `verifiedTrucksCount`. `directorAadhaarId` is derived at read time
+  from the linked Aadhaar record if it wasn't set directly on the torg row, so it reflects
+  DigiLocker/OTP-verified Aadhaar even without a DB backfill.
+
+  404 if the torg doesn't exist.
+}

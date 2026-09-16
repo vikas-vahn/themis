@@ -1,0 +1,29 @@
+meta {
+  name: Send OTP
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/send-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{driverPhone}}"
+  }
+}
+
+docs {
+  Sends a login OTP to the given phone number. Works for both new and existing users — there's
+  no separate "does this number exist" check.
+
+  In staging/dev (shared DB), the OTP is a fixed 667766 for every user — see "Verify OTP" for
+  redeeming it.
+}
