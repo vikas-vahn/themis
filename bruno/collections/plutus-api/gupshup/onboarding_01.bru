@@ -1,0 +1,35 @@
+meta {
+  name: onboarding_01
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://mediaapi.smsgupshup.com/GatewayAPI/rest
+  body: formUrlEncoded
+  auth: inherit
+}
+
+headers {
+  ~Content-Type: application/json
+}
+
+body:form-urlencoded {
+  method: SendMessage
+  userid: ***
+  password: ***
+  auth_scheme: plain
+  v: 1.1
+  send_to: 917760666905
+  msg: Hi Sreekanth, thanks for reaching out to VAHN 🚛 We're the app that runs your fleet — auto trip sheets, driver payments, FASTag fuel in one place, from ₹169/truck/month. Want a 2-min demo or a free trial?
+  msg_type: HSM
+  isHSM: true
+  isTemplate: true
+  format: json
+  msg_id: 1cb92d27-8ebd-4220-a186-26bfc0d7eecb
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}
