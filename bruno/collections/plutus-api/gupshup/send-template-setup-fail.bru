@@ -1,0 +1,34 @@
+meta {
+  name: send-template-setup-fail
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://api.gupshup.io/wa/api/v1/template/msg
+  body: formUrlEncoded
+  auth: none
+}
+
+headers {
+  apikey: {{process.env.GUPSHUP_API_KEY}}
+}
+
+body:form-urlencoded {
+  channel: whatsapp
+  source: 918008479933
+  destination: 919121032575
+  src.name: RItbOWWfbnTX1vRqkSBYpbPq
+  template: {"id":"6b98092c-9360-4312-876a-3bbb5c534135","params":["Rakesh"]}
+}
+
+docs {
+  Template int_setup_fail_01 (gsTemplateId 6b98092c-...). Static header and static URL buttons need no params.
+  params = body placeholders in order: {{1}} = name.
+  Response: 202 {"status":"submitted","messageId":"..."}.
+}
+
+settings {
+  encodeUrl: false
+  timeout: 0
+}

@@ -3,6 +3,7 @@ node_modules/
 
 # Bruno local-only env overrides / secrets
 bruno/**/*.env.local
+bruno/**/.env
 bruno/**/environments/*.local.bru
 
 # Maestro run artifacts

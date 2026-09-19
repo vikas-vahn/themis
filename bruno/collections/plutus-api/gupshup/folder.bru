@@ -1,0 +1,38 @@
+meta {
+  name: gupshup
+}
+
+docs {
+  # Gupshup WhatsApp template messages
+
+  Direct calls to Gupshup (not plutus-api) for working out the request shape before building
+  the client in the application.
+
+  ## Use: self-serve API (`send-template-*`)
+
+  `POST https://api.gupshup.io/wa/api/v1/template/msg`, form-urlencoded, `apikey` header.
+  Verified delivered on 2026-09-19 for both templates below.
+
+  - `channel` = `whatsapp`
+  - `source` = our WhatsApp business number (`918008479933`)
+  - `destination` = recipient, country code, no `+`
+  - `src.name` = the Gupshup app name (`RItbOWWfbnTX1vRqkSBYpbPq`, app id `085f514d-...`)
+  - `template` = `{"id":"<gsTemplateId>","params":[...]}`
+    - `id` is the template's `gsTemplateId` (UUID), not the Meta `channelTemplateId`.
+    - `params` = body placeholders in order, then any dynamic button URL suffix.
+      Static headers and static button URLs take no params.
+
+  Response is `202 {"status":"submitted","messageId":"..."}`. Delivery status arrives on the
+  callback URL configured on the Gupshup app (JSON `message-event`, `payload.id` = `messageId`),
+  not on plutus `webhooks/gupshup`.
+
+  The API key is read from `GUPSHUP_API_KEY` in `bruno/collections/plutus-api/.env`
+  (gitignored). Create that file locally: `GUPSHUP_API_KEY=<key>`.
+
+  ## Don't use: Enterprise API (`onboarding_01`)
+
+  `https://mediaapi.smsgupshup.com/GatewayAPI/rest` with `whatsAppTemplateId` accepts the request
+  but these templates fail asynchronously (webhook `039 UNKNOWN_ERROR_HAS_OCCURED`; `040
+  INTERACTIVE_BUTTON_TEMPLATE_MISMATCH` if `buttonUrlParam` is sent for a static-URL button).
+  The templates live on the self-serve app, not the Enterprise account.
+}
