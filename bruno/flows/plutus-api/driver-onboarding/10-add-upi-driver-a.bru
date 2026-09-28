@@ -1,0 +1,53 @@
+meta {
+  name: 10. Add UPI for Driver A (corrected endpoint)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/vpas
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "vpa": "{{driverVpa}}",
+    "driverId": "{{driverId}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("driverAVpaId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.driverId: eq {{driverId}}
+}
+
+docs {
+  Ensures driver A actually holds {{driverVpa}} before steps 11–14 test what happens when a
+  second driver tries to claim it — see `folder.bru` for why this exists instead of relying on
+  step 7. Calls `VPAResource.createVPA` (`onboarding/controller/VPAResource.java:79`), which is
+  the endpoint the DRIVER role itself would use for this — here it's called with the admin token
+  from step 9, which `VPAResource` also allows (`RolesAllowed({VAHN_ADMIN, TORG_ADMIN,
+  FUND_MANAGER, TRUCK_MANAGER, DRIVER})`), and which doesn't check that the caller *is* driver A.
+
+  `res.status` is 200, not 201, even though the resource returns `Response.status(CREATED)` —
+  `ApiResponseFilter` rewrites every `api/*` 2xx response to a wire-level 200 with the real
+  outcome in the body (`success`, `statusCode`). See `folder.bru`.
+
+  If {{driverVpa}} already belongs to another driver from a previous partial run of this
+  section, this comes back `success: false` — deactivate or reassign that row first (or change
+  `driverVpa` in the environment) before re-running.
+}

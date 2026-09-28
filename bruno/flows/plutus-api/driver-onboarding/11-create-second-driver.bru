@@ -1,0 +1,46 @@
+meta {
+  name: 11. Create Second Driver (admin)
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "{{secondDriverName}}",
+    "phone": "{{secondDriverPhone}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("secondDriverId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Creates a second, unrelated driver directly as the admin (`DriverResource.createDriver`,
+  `common/controller/DriverResource.java:220`), rather than a second full OTP + self-onboarding
+  run — all step 12 needs is a driver ID that isn't driver A's.
+
+  {{secondDriverPhone}} must be unique across the whole staging DB. On a re-run, if a driver with
+  this phone already has an owner, `driverService.createDriver` throws "Driver already exists"
+  (still `success: false`, `res.status` 200 per `folder.bru`) — bump {{secondDriverPhone}} to a
+  fresh number in the environment before re-running this section.
+}

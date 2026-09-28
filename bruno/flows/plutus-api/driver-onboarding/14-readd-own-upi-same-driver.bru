@@ -1,0 +1,43 @@
+meta {
+  name: 14. Re-add Own UPI (Same Driver, unchanged)
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/vpas
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "vpa": "{{driverVpa}}",
+    "driverId": "{{driverId}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.id: eq {{driverAVpaId}}
+  res.body.data.driverId: eq {{driverId}}
+}
+
+docs {
+  The other half of the BUG-178 fix: driver A re-adding their *own* UPI is not the conflict from
+  step 12 — `createVPAForDriver`'s `isActiveForDriver` check returns the existing row unchanged
+  instead of force-re-verifying it (previously this call always reset verification and status,
+  even for the same driver).
+
+  Asserts the same VPA `id` as step 10 comes back, still linked to {{driverId}}, with
+  `success: true` — a genuine no-op, not a new row.
+}

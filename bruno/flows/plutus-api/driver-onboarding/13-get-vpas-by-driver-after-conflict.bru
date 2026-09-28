@@ -1,0 +1,43 @@
+meta {
+  name: 13. Get VPAs By Driver A (still owns the UPI)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/vpas/driver/{{driverId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("driver A's VPA list still contains driverVpa, unmoved", function () {
+    const vpas = res.getBody();
+    const driverVpa = bru.getEnvVar("driverVpa");
+    const driverAVpaId = Number(bru.getEnvVar("driverAVpaId"));
+
+    const match = vpas.find((v) => v.vpa === driverVpa);
+    expect(match, `expected ${driverVpa} in ${JSON.stringify(vpas)}`).to.exist;
+    expect(match.id).to.equal(driverAVpaId);
+    expect(match.driverId).to.equal(Number(bru.getEnvVar("driverId")));
+  });
+}
+
+docs {
+  Same endpoint as the `vpas` reference collection's "Get VPAs By Driver" — see that file for
+  the full response shape and role notes. Uses the admin token from step 9; there's no ownership
+  check on this endpoint (any allowed role can list any driver's VPAs), so it doesn't matter
+  that {{accessToken}} isn't driver A's own.
+
+  Confirms step 12's rejected attempt left driver A's VPA exactly where it was: same `id`
+  ({{driverAVpaId}} from step 10), still `driverId` {{driverId}}. Before the BUG-178 fix, this
+  would fail — {{driverVpa}} would either be missing from this list (moved to the second driver)
+  or present with a different `driverId`.
+}

@@ -1,0 +1,60 @@
+meta {
+  name: 12. Add Same UPI for Second Driver (BUG-178, expect rejected)
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/vpas
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "vpa": "{{driverVpa}}",
+    "driverId": "{{secondDriverId}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq false
+  res.body.statusCode: eq 400
+  res.body.message: eq This UPI is already linked to another driver. Please use a different UPI ID.
+}
+
+docs {
+  BUG-178 / MBT-178. Before the fix, `VPAService.createVPAForDriver` handed an existing,
+  unattached UPI to whichever driver asked for it next — driver A (step 10's owner) would
+  silently lose {{driverVpa}} (and their default payout method with it) the moment the second
+  driver added the same UPI, and the row was force-marked ACTIVE/VERIFIED for the new driver
+  without any verification or name match.
+
+  Fixed in plutus-java `VPAService.createVPAForDriver` /
+  `isClaimedByAnotherDriver` (branch `fix/BUG-178-vpa-driver-remapping`, commit f287ce55e — not
+  yet on staging as of 2026-09-28): a UPI already held by a *different*, non-DEACTIVATED driver
+  now throws `BadRequestException("This UPI is already linked to another driver. Please use a
+  different UPI ID.")`.
+
+  `POST /api/vpas` (`VPAResource.createVPA`) doesn't catch this exception itself, so it falls
+  through to `GenericExceptionMapper`, which turns it into `CommonResponse.error(message, 400)` —
+  then `ApiResponseFilter` rewrites the wire status from 400 to 200 (see `folder.bru`), which is
+  why `res.status: eq 200` is correct here even though this is the failure case.
+
+  Same fix (same exact message) also applies to `POST /api/vpas/without-verification`, the
+  verify/fetch lookup (`POST /api/vpas/verify/{vpaNumber}?driverId=`, which returns the message
+  as a bare string wrapped by `ApiResponseFilter` into `data` *and* `message` rather than through
+  the `CommonResponse` from `GenericExceptionMapper`), and `POST /api/vpas/attach/{id}?driverId=`
+  — not separately exercised here.
+
+  Step 13 checks driver A's list to confirm {{driverVpa}} wasn't actually moved.
+}

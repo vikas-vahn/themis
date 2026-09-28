@@ -20,4 +20,33 @@ docs {
   For any single endpoint outside this specific journey (admin approve/reject, set-default
   payout method, driver-torg linking, etc.), see the `plutus-api` reference collection under
   `bruno/collections/` instead of this flow.
+
+  ## Steps 8–14: BUG-178 regression — a UPI can't be silently re-mapped to another driver
+
+  These steps are a separate check appended to this journey rather than a required part of the
+  happy path: they log in as a TORG_ADMIN (`torgAdminPhone`/`torgAdminOtp`) and confirm
+  `VPAService` refuses to hand a driver's UPI to a second driver
+  (`VPAResource.java`/`VPAService.createVPAForDriver`, MBT-178/BUG-178). Run 1–5 first so
+  `{{driverId}}` is set; steps 6/7 are not required first.
+
+  Step 10 exists because step 7 posts to a URL (`POST /api/vpas/verify` with a `vpa` body field)
+  that doesn't match any route in the current `VPAResource` — the real single-call "add UPI"
+  endpoint is `POST /api/vpas` with `{vpa, driverId}` in the body, which is also the only VPA
+  write endpoint the DRIVER role itself is allowed to call. Step 10 uses that corrected shape
+  (via the admin token, which is also allowed on it) to reliably give driver A the UPI these
+  steps depend on, since step 7 does not.
+
+  Also worth knowing for every assertion here: `ApiResponseFilter` rewrites the wire-level HTTP
+  status of every `api/*` response to 200 — both success (200/201/204 all become 200) and a
+  `BadRequestException`/422 (also forced to 200). The real outcome lives in the JSON body:
+  `success`/`statusCode` always, plus `message` for an error. Only a handful of statuses (403,
+  404, 409, 5xx) are left alone. `res.status: eq 200` in these assertions is expected, not a
+  mistake.
+
+  As of this writing (2026-09-28), the fix is on plutus-java branch
+  `fix/BUG-178-vpa-driver-remapping` (commit f287ce55e) and has **not** been deployed to staging.
+  Steps 12 and 14 are written against the fixed behavior and will fail against current staging —
+  step 12 would come back `success: true` with the UPI silently reassigned to the second driver,
+  and step 13's list-check would then find it missing from driver A's list. Re-run once the fix
+  ships.
 }
