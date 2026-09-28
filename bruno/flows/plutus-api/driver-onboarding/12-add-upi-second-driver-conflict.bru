@@ -29,7 +29,7 @@ assert {
   res.status: eq 200
   res.body.success: eq false
   res.body.statusCode: eq 400
-  res.body.message: eq This UPI is already linked to another driver. Please use a different UPI ID.
+  res.body.message: eq This UPI is already linked to another driver. Contact support.
 }
 
 docs {
@@ -40,10 +40,10 @@ docs {
   without any verification or name match.
 
   Fixed in plutus-java `VPAService.createVPAForDriver` /
-  `isClaimedByAnotherDriver` (branch `fix/BUG-178-vpa-driver-remapping`, commit f287ce55e — not
+  `isClaimedByAnotherDriver` (branch `fix/BUG-178-vpa-driver-remapping`, not
   yet on staging as of 2026-09-28): a UPI already held by a *different*, non-DEACTIVATED driver
-  now throws `BadRequestException("This UPI is already linked to another driver. Please use a
-  different UPI ID.")`.
+  now throws `BadRequestException("This UPI is already linked to another driver. Contact
+  support.")`.
 
   `POST /api/vpas` (`VPAResource.createVPA`) doesn't catch this exception itself, so it falls
   through to `GenericExceptionMapper`, which turns it into `CommonResponse.error(message, 400)` —
