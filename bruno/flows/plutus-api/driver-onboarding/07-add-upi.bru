@@ -24,6 +24,12 @@ body:json {
   }
 }
 
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("vpaId", res.body.data.id);
+  }
+}
+
 vars:pre-request {
   driverVpa: 9999996079@ybl
 }

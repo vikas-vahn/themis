@@ -17,6 +17,9 @@ docs {
   Step 4 is conditional — see its own docs. Steps 6 and 7 are alternatives to each other, not
   a required pair.
 
+  Step 7b is conditional too: run it only when step 7 returns `verificationStatus: NAME_MISMATCH`.
+  It uploads the driver's ID proof the way the driver app does. Step 7 captures `vpaId` for it.
+
   For any single endpoint outside this specific journey (admin approve/reject, set-default
   payout method, driver-torg linking, etc.), see the `plutus-api` reference collection under
   `bruno/collections/` instead of this flow.
