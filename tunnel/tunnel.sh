@@ -4,7 +4,6 @@
 # machine. See tunnel/README.md.
 #
 #   tunnel/tunnel.sh up [port]          run your tunnel (sets it up on first use)
-#   tunnel/tunnel.sh quick [port]       throwaway *.trycloudflare.com URL, no login
 #   tunnel/tunnel.sh status             show your tunnel and hostname
 #   tunnel/tunnel.sh provision <sub>    (admin) create a tunnel for a colleague, print its token
 #   tunnel/tunnel.sh delete [sub]       delete a tunnel (the DNS record must be removed by hand)
@@ -140,15 +139,6 @@ cmd_up() {
   exec cloudflared tunnel --no-autoupdate --loglevel "$(log_level)" run --url "http://localhost:$port" "$(tunnel_name "$sub")"
 }
 
-cmd_quick() {
-  local port
-  port="$(port_arg "${1:-}")"
-  need_cloudflared
-  warn_if_nothing_listening "$port"
-  info "the random https://*.trycloudflare.com URL is printed below; it changes on every run"
-  exec cloudflared tunnel --no-autoupdate --loglevel "$(log_level)" --url "http://localhost:$port"
-}
-
 cmd_status() {
   local sub
   sub="$(subdomain "${1:-}")"
@@ -193,11 +183,10 @@ cmd_delete() {
   info "deleted. Remove the CNAME for $(hostname_for "$sub") in the Cloudflare dashboard (DNS) by hand; cloudflared can't"
 }
 
-usage() { sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; }
 
 case "${1:-}" in
   up)        shift; cmd_up "$@" ;;
-  quick)     shift; cmd_quick "$@" ;;
   status)    shift; cmd_status "$@" ;;
   provision) shift; cmd_provision "$@" ;;
   delete)    shift; cmd_delete "$@" ;;

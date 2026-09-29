@@ -31,7 +31,6 @@ Deploys from `main` via `.github/workflows/deploy-mock-server.yml`. The hostname
 **Tunnel** (Cloudflare Tunnel from `https://<sub>.<domain>` to a local port — see `tunnel/README.md`):
 ```bash
 tunnel/tunnel.sh up 8080             # first run: installs cloudflared, browser login, creates tunnel + DNS
-tunnel/tunnel.sh quick 8080          # throwaway trycloudflare.com URL, no login
 tunnel/tunnel.sh provision <sub>     # tunnel + token for a colleague without Cloudflare access
 ```
 The zone is read from `mock-server/wrangler.toml` unless `TUNNEL_DOMAIN` is set. Per-dev settings and tokens go in the gitignored `tunnel/.env`.

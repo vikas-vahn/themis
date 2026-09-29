@@ -46,8 +46,8 @@ npm run dev            # http://localhost:8787, storage persisted in .wrangler/ 
 npm run smoke          # end-to-end check against the local server
 ```
 
-To receive real webhooks locally, expose the dev server with `tunnel/tunnel.sh up 8787` (stable
-hostname) or `tunnel/tunnel.sh quick 8787` (see `tunnel/README.md`). For a local token, put `INSPECT_TOKEN=...` in
+To receive real webhooks locally, expose the dev server with `tunnel/tunnel.sh up 8787` (see
+`tunnel/README.md`). For a local token, put `INSPECT_TOKEN=...` in
 `mock-server/.dev.vars` (gitignored).
 
 ## Deploying

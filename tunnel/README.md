@@ -1,8 +1,9 @@
 # tunnel: expose your local server on our domain
 
-A Cloudflare Tunnel gives your machine a stable public URL, `https://<you>.<domain>`, that
-forwards to a local port. Use it to point a third-party webhook (Gupshup, Razorpay, ...) at code
-running on your laptop, with breakpoints and logs.
+A Cloudflare Tunnel on our own domain gives each of us a fixed public URL, `https://<you>.<domain>`,
+that forwards to a local port. Everyone uses the same domain, each on their own subdomain. Use it
+to point a third-party webhook (Gupshup, Razorpay, ...) at code running on your laptop, with
+breakpoints and logs.
 
 `<domain>` is the zone from `mock-server/wrangler.toml` (`routes`) unless you set
 `TUNNEL_DOMAIN`. Your hostname is `<TUNNEL_SUBDOMAIN>.<domain>`, and the subdomain defaults to
@@ -37,20 +38,11 @@ The colleague pastes those two lines (`TUNNEL_SUBDOMAIN`, `TUNNEL_TOKEN`) into `
 and runs `tunnel/tunnel.sh up 8080`. They need no login. **The token lets anyone run that
 tunnel.** Share it in a DM, never in a public channel, commit or notification.
 
-## No domain needed: throwaway URL
-
-```bash
-tunnel/tunnel.sh quick 8080       # random https://*.trycloudflare.com, changes every run
-```
-
-This needs no account. It's fine for a one-off test, but you have to update the provider's
-webhook URL every time.
-
 ## Settings: `tunnel/.env` (gitignored, optional)
 
 ```bash
 TUNNEL_SUBDOMAIN=vikas           # hostname label; one level only (a.b.<domain> fails TLS)
-TUNNEL_PORT=8080                 # default port for `up` / `quick`
+TUNNEL_PORT=8080                 # default port for `up`
 TUNNEL_DOMAIN=example.com        # override the zone read from mock-server/wrangler.toml
 TUNNEL_TOKEN=...                 # from `provision`; skips login entirely
 TUNNEL_VERBOSE=1                 # log each request's method, URL and headers
@@ -64,7 +56,6 @@ Variables set in your shell override the file.
 | Command | What it does |
 |---|---|
 | `up [port]` | Runs your tunnel, and sets it up the first time. |
-| `quick [port]` | Starts a throwaway trycloudflare.com tunnel. |
 | `status [sub]` | Shows the hostname, tunnel name, and whether you're logged in. |
 | `provision <sub>` | (Needs Cloudflare access.) Creates a tunnel for someone else and prints its token. |
 | `delete [sub]` | Deletes a tunnel. Remove its DNS record in the dashboard afterwards. |
