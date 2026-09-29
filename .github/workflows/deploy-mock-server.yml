@@ -1,0 +1,37 @@
+name: Deploy mock server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mock-server/**"
+      - ".github/workflows/deploy-mock-server.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-mock-server
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mock-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mock-server/package-lock.json
+      - run: npm ci
+      - run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Smoke test deployed server
+        run: npm run smoke -- "${{ vars.MOCK_SERVER_URL }}"
+        if: ${{ vars.MOCK_SERVER_URL != '' }}
+        env:
+          INSPECT_TOKEN: ${{ secrets.INSPECT_TOKEN }}

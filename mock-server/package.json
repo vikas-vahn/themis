@@ -1,0 +1,14 @@
+{
+  "name": "themis-mock-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "smoke": "node scripts/smoke.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.135.0"
+  }
+}

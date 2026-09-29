@@ -1,0 +1,38 @@
+# Webhook inspector: captures any request sent to /<bin>/... so third-party
+# webhook calls (headers, route, payload) can be inspected at /_inspect/<bin>.
+# See mock-server/README.md.
+
+name = "themis-mock-server"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+workers_dev = true
+
+# Public hostname. Change it here only; the code never references the domain.
+# The zone must be on the same Cloudflare account, and the hostname must not
+# already have a DNS record (Cloudflare creates it on deploy).
+routes = [
+  { pattern = "mommopommo.site", custom_domain = true }
+]
+
+[vars]
+# Newest N requests kept per bin; older ones are dropped on insert.
+MAX_REQUESTS_PER_BIN = "200"
+# Captured requests older than this are purged.
+RETENTION_HOURS = "72"
+# Request bodies larger than this are truncated before storage.
+MAX_BODY_BYTES = "262144"
+
+# Optional: require a token to view captured requests.
+#   npx wrangler secret put INSPECT_TOKEN
+# Locally, put INSPECT_TOKEN=... in mock-server/.dev.vars (gitignored).
+
+[[durable_objects.bindings]]
+name = "BINS"
+class_name = "Bin"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Bin"]
+
+[observability]
+enabled = true

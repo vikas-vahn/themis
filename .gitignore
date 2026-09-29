@@ -9,3 +9,10 @@ bruno/**/environments/*.local.bru
 # Maestro run artifacts
 maestro/.maestro/
 maestro/**/*.log
+
+# Mock server (Cloudflare Worker) local state and secrets
+mock-server/.wrangler/
+mock-server/.dev.vars
+
+# Tunnel per-developer settings (may hold a tunnel token)
+tunnel/.env
