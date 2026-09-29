@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Expose a local port on a stable https://<sub>.<domain> hostname through a
-# Cloudflare Tunnel, so third-party webhooks can reach code running on your
-# machine. See tunnel/README.md.
+# Receive webhooks on https://hook.<domain> on your laptop, through a
+# Cloudflare Tunnel on our own domain. See tunnel/README.md.
 #
-#   tunnel/tunnel.sh up [port]          run your tunnel (sets it up on first use)
-#   tunnel/tunnel.sh status             show your tunnel and hostname
-#   tunnel/tunnel.sh provision <sub>    (admin) create a tunnel for a colleague, print its token
-#   tunnel/tunnel.sh delete [sub]       delete a tunnel (the DNS record must be removed by hand)
+#   tunnel/tunnel.sh listen             print every request sent to https://hook.<domain>
+#   tunnel/tunnel.sh up [port]          forward https://hook.<domain> to your app on localhost:<port>
+#   tunnel/tunnel.sh status             show the hostname and who is connected
+#   tunnel/tunnel.sh token              (Cloudflare access) print the TUNNEL_TOKEN line for tunnel/.env
+#   tunnel/tunnel.sh delete             delete the tunnel (the DNS record must be removed by hand)
+#
+# TUNNEL_SUBDOMAIN=<name> switches any command to https://<name>.<domain>.
 
 set -euo pipefail
 
@@ -18,7 +20,9 @@ if [[ -f "$SCRIPT_DIR/.env" ]]; then
   while IFS='=' read -r key value || [[ -n "$key" ]]; do
     key="$(echo "$key" | tr -d '[:space:]')"
     if [[ -z "$key" || "$key" == \#* ]]; then continue; fi
-    value="${value%\"}"; value="${value#\"}"
+    # Drop an inline "  # comment", surrounding spaces and quotes; expand a leading ~.
+    value="$(echo "$value" | sed -E 's/[[:space:]]+#.*$//; s/^[[:space:]]+//; s/[[:space:]]+$//; s/^"(.*)"$/\1/')"
+    value="${value/#\~/$HOME}"
     if [[ -z "${!key:-}" ]]; then export "$key=$value"; fi
   done < "$SCRIPT_DIR/.env"
 fi
@@ -45,8 +49,13 @@ sanitize() {
 }
 
 subdomain() {
-  local s
-  s="$(sanitize "${1:-${TUNNEL_SUBDOMAIN:-$(whoami)}}")"
+  local s="${1:-${TUNNEL_SUBDOMAIN:-hook}}"
+  # Accept "hook", "hook.<domain>" or "https://hook.<domain>/".
+  s="${s#*://}"
+  s="${s%%/*}"
+  s="${s%".$(domain)"}"
+  [[ "$s" == *.* ]] && die "TUNNEL_SUBDOMAIN must be one label under $(domain), like 'hook' (got '$s')"
+  s="$(sanitize "$s")"
   [[ -n "$s" ]] || die "empty subdomain"
   echo "$s"
 }
@@ -72,7 +81,7 @@ need_login() {
   [[ -f "$cert" ]] && return
   info "no Cloudflare login found at $cert"
   info "a browser will open: sign in and pick the zone '$(domain)'"
-  cloudflared tunnel login
+  cloudflared tunnel login >&2
   [[ -f "$cert" ]] || die "login did not produce $cert"
 }
 
@@ -97,11 +106,46 @@ ensure_tunnel() {
   info "routing $host -> $name"
   if ! out="$(cloudflared tunnel route dns "$name" "$host" 2>&1)"; then
     echo "$out" >&2
-    die "could not route $host. If a DNS record with that name already exists and isn't yours, pick another TUNNEL_SUBDOMAIN"
+    die "could not route $host. If a DNS record with that name already exists and isn't this tunnel's, remove it in the Cloudflare dashboard or pick another TUNNEL_SUBDOMAIN"
   fi
   echo "$out" >&2
   if echo "$out" | grep -q "$host\.[a-z]"; then
     die "the record was created in a different zone than $(domain): your login cert is for another domain. Run 'cloudflared tunnel login' with TUNNEL_ORIGIN_CERT pointing at a new file"
+  fi
+}
+
+# The token lets cloudflared run the tunnel without a login or the credentials
+# file, which only exists on the laptop that created the tunnel.
+run_token() {
+  local sub="$1"
+  if [[ -n "${TUNNEL_TOKEN:-}" ]]; then
+    # A tunnel token is base64 JSON with the tunnel id ("t"). Catch the usual
+    # mix-up: a Cloudflare API token (cfut_...) doesn't work here.
+    if ! echo "$TUNNEL_TOKEN" | base64 -d 2>/dev/null | grep -q '"t"'; then
+      die "TUNNEL_TOKEN in tunnel/.env is not a tunnel token (a Cloudflare API token looks like cfut_...). Get one with 'tunnel/tunnel.sh token', or remove the line to log in with the browser instead"
+    fi
+    echo "$TUNNEL_TOKEN"
+    return
+  fi
+  ensure_tunnel "$sub"
+  cloudflared tunnel token "$(tunnel_name "$sub")"
+}
+
+# Only one person should be connected at a time: Cloudflare spreads requests
+# across every connected laptop, so each would see only some of them.
+check_nobody_listening() {
+  local host="$1" who
+  [[ "${TUNNEL_FORCE:-}" == "1" ]] && return
+  who="$(curl -s --max-time 5 "https://$host/__themis_receiver" 2>/dev/null || true)"
+  if echo "$who" | grep -q '"receiver":true'; then
+    die "someone is already listening on https://$host ($who). Requests would be split between you. Ask them to stop, use TUNNEL_SUBDOMAIN=<yours> for your own URL, or set TUNNEL_FORCE=1"
+  fi
+  # `up` forwards to an app, which can't answer the probe; a connected tunnel
+  # still answers with something other than Cloudflare's 530/1033 "no tunnel".
+  local code
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "https://$host/" 2>/dev/null || true)"
+  if [[ -n "$code" && "$code" != "000" && "$code" != "530" ]]; then
+    die "https://$host is already connected to someone's laptop (HTTP $code). Ask around, use TUNNEL_SUBDOMAIN=<yours>, or set TUNNEL_FORCE=1"
   fi
 }
 
@@ -124,55 +168,90 @@ cmd_up() {
   port="$(port_arg "${1:-}")"
   need_cloudflared
   warn_if_nothing_listening "$port"
-
-  # Colleagues without Cloudflare access run with a token from `provision`.
-  if [[ -n "${TUNNEL_TOKEN:-}" ]]; then
-    if [[ -n "${TUNNEL_SUBDOMAIN:-}" ]]; then info "public URL: https://$(hostname_for "$(subdomain)")"; fi
-    info "forwarding to http://localhost:$port (Ctrl-C to stop)"
-    exec cloudflared tunnel --no-autoupdate --loglevel "$(log_level)" run --url "http://localhost:$port"
-  fi
-
   sub="$(subdomain)"
   host="$(hostname_for "$sub")"
-  ensure_tunnel "$sub"
-  info "public URL: https://$host -> http://localhost:$port (Ctrl-C to stop)"
-  exec cloudflared tunnel --no-autoupdate --loglevel "$(log_level)" run --url "http://localhost:$port" "$(tunnel_name "$sub")"
+  TUNNEL_TOKEN="$(run_token "$sub")"
+  export TUNNEL_TOKEN # read by cloudflared; keeps the token out of `ps`
+  check_nobody_listening "$host"
+  info "https://$host -> http://localhost:$port (Ctrl-C to stop)"
+  exec cloudflared tunnel --no-autoupdate --loglevel "$(log_level)" run --url "http://localhost:$port"
+}
+
+cmd_listen() {
+  local sub host port log receiver_pid tunnel_pid
+  need_cloudflared
+  command -v node >/dev/null 2>&1 || die "node is required (brew install node)"
+  sub="$(subdomain)"
+  host="$(hostname_for "$sub")"
+  port="${TUNNEL_RECEIVER_PORT:-9876}"
+  if nc -z localhost "$port" >/dev/null 2>&1; then
+    die "localhost:$port is in use; set TUNNEL_RECEIVER_PORT to a free port"
+  fi
+  TUNNEL_TOKEN="$(run_token "$sub")"
+  export TUNNEL_TOKEN
+  check_nobody_listening "$host"
+
+  log="$(mktemp -t themis-tunnel)"
+  TUNNEL_PUBLIC_URL="https://$host" node "$SCRIPT_DIR/receiver.mjs" "$port" &
+  receiver_pid=$!
+  cloudflared tunnel --no-autoupdate --loglevel "$(log_level)" run --url "http://localhost:$port" >"$log" 2>&1 &
+  tunnel_pid=$!
+  trap 'kill "$receiver_pid" "$tunnel_pid" 2>/dev/null; rm -f "$log"' EXIT
+  trap 'exit 0' INT TERM
+
+  info "connecting to Cloudflare..."
+  for _ in $(seq 1 30); do
+    grep -q "Registered tunnel connection" "$log" && break
+    kill -0 "$tunnel_pid" 2>/dev/null || { cat "$log" >&2; die "cloudflared exited"; }
+    sleep 1
+  done
+  grep -q "Registered tunnel connection" "$log" || { tail -20 "$log" >&2; die "tunnel did not connect within 30s"; }
+  info "listening on https://$host — every request is printed below (Ctrl-C to stop)"
+  [[ "${TUNNEL_VERBOSE:-}" == "1" ]] && info "cloudflared log: $log"
+
+  # Stop when either process dies.
+  while kill -0 "$receiver_pid" 2>/dev/null && kill -0 "$tunnel_pid" 2>/dev/null; do
+    sleep 1
+  done
+  kill -0 "$tunnel_pid" 2>/dev/null || { tail -20 "$log" >&2; die "cloudflared exited"; }
+  die "receiver exited"
 }
 
 cmd_status() {
   local sub
-  sub="$(subdomain "${1:-}")"
+  sub="$(subdomain)"
   echo "domain:    $(domain)"
   echo "hostname:  https://$(hostname_for "$sub")"
   echo "tunnel:    $(tunnel_name "$sub")"
-  echo "port:      $(port_arg "")"
   if [[ -n "${TUNNEL_TOKEN:-}" ]]; then
-    echo "auth:      TUNNEL_TOKEN (from provision)"
-    return
+    echo "auth:      TUNNEL_TOKEN in tunnel/.env"
+  elif [[ -f "$(origin_cert)" ]]; then
+    echo "auth:      Cloudflare login ($(origin_cert))"
+  else
+    echo "auth:      none yet (put TUNNEL_TOKEN in tunnel/.env, or run listen to log in)"
   fi
-  need_cloudflared
-  if [[ ! -f "$(origin_cert)" ]]; then
-    echo "auth:      not logged in (run: tunnel/tunnel.sh up)"
-    return
+  local who
+  who="$(curl -s --max-time 5 "https://$(hostname_for "$sub")/__themis_receiver" 2>/dev/null || true)"
+  if echo "$who" | grep -q '"receiver":true'; then
+    echo "listening: $who"
+  else
+    echo "listening: nobody (or someone is running 'up' to an app)"
   fi
-  echo "auth:      $(origin_cert)"
-  cloudflared tunnel list --name "$(tunnel_name "$sub")"
 }
 
-cmd_provision() {
-  [[ -n "${1:-}" ]] || die "usage: tunnel/tunnel.sh provision <subdomain>"
+cmd_token() {
   local sub
-  sub="$(subdomain "$1")"
+  sub="$(subdomain)"
   need_cloudflared
   ensure_tunnel "$sub"
-  info "send these two lines privately (not in a public channel); they go in the colleague's tunnel/.env:"
-  echo "TUNNEL_SUBDOMAIN=$sub"
+  info "share privately (a DM or password manager, never a public channel); it goes in tunnel/.env:"
+  [[ "$sub" != "hook" ]] && echo "TUNNEL_SUBDOMAIN=$sub"
   echo "TUNNEL_TOKEN=$(cloudflared tunnel token "$(tunnel_name "$sub")")"
 }
 
 cmd_delete() {
   local sub name
-  sub="$(subdomain "${1:-}")"
+  sub="$(subdomain)"
   name="$(tunnel_name "$sub")"
   need_cloudflared
   need_login
@@ -183,13 +262,14 @@ cmd_delete() {
   info "deleted. Remove the CNAME for $(hostname_for "$sub") in the Cloudflare dashboard (DNS) by hand; cloudflared can't"
 }
 
-usage() { sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; }
 
 case "${1:-}" in
-  up)        shift; cmd_up "$@" ;;
-  status)    shift; cmd_status "$@" ;;
-  provision) shift; cmd_provision "$@" ;;
-  delete)    shift; cmd_delete "$@" ;;
+  listen) shift; cmd_listen "$@" ;;
+  up)     shift; cmd_up "$@" ;;
+  status) shift; cmd_status "$@" ;;
+  token)  shift; cmd_token "$@" ;;
+  delete) shift; cmd_delete "$@" ;;
   -h|--help|help|"") usage ;;
   *) usage; exit 1 ;;
 esac
