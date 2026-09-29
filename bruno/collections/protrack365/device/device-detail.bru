@@ -1,0 +1,26 @@
+meta {
+  name: device-detail
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/device/detail?access_token={{protrackAccessToken}}&imeis={{protrackImeis}}
+  body: none
+  auth: none
+}
+
+params:query {
+  access_token: {{protrackAccessToken}}
+  imeis: {{protrackImeis}}
+}
+
+docs {
+  `GET /api/device/detail?imeis=` (max 100) — same fields as `device/list` plus `customeraccount`,
+  the sub-account each device belongs to.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

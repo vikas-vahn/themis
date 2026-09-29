@@ -1,0 +1,31 @@
+meta {
+  name: transactions
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/FASTAG/01
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "vehiclenumber": "{{process.env.ULIP_VEHICLE_NUMBER}}"
+  }
+}
+
+docs {
+  `POST /ulip/v1.0.0/FASTAG/01` with `{"vehiclenumber"}`: recent FASTag toll transactions for the vehicle.
+  plutus-java: `ULIPClient.getFastagTransactions`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

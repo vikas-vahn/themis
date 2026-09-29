@@ -1,0 +1,36 @@
+meta {
+  name: fuel-prices
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/IOCL/02
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "referenceNo": "{{process.env.ULIP_IOCL_REFERENCE_NO}}",
+    "stateCode": "{{ulipIoclStateCode}}",
+    "longitude": "",
+    "latitude": "",
+    "radius": ""
+  }
+}
+
+docs {
+  `POST /ulip/v1.0.0/IOCL/02`: IOCL outlets and product prices for a state. `stateCode` is the
+  2-letter code (e.g. `TG`); `referenceNo` is plutus-java `ulip.ioclReferenceNo`. Lat/long/radius are sent
+  empty, as plutus-java does. plutus-java: `ULIPClient.getIOCLFuelPrices`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

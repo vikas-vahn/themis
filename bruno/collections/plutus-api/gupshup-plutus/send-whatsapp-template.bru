@@ -1,0 +1,47 @@
+meta {
+  name: Send WhatsApp template
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/gupshup/test/whatsapp/template
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phoneNumber": "{{process.env.GUPSHUP_TEST_PHONE}}",
+    "templateName": "driver_dl_expiry",
+    "parameters": {
+      "1": "TS0120200001234",
+      "2": "Test Driver",
+      "3": "9999999999",
+      "4": "7"
+    }
+  }
+}
+
+docs {
+  Sends a template (HSM) message through `GupshupWhatsappClient.sendTemplateMessage`
+  (VAHN_ADMIN only).
+
+  - `templateName` is a key of `TEMPLATE_CATALOG` in `GupshupWhatsappClient`, for example
+    `auth_otp`, `send_otp`, `truck_document_expiry`, `eway_bill_expiry`, `driver_dl_expiry`,
+    `tripsheet_resolved`, `iocl_pin_notification`, `new_user_2`, `fund_manager_added`,
+    `truck_manager_added_by_torg`, `driver_license_alert`, `truck_document_alert`.
+    Unknown names fall back to `templateMapping` in config and are sent with a placeholder body.
+  - `parameters` are positional, keyed `"1"`, `"2"`, ... and are substituted into `{{n}}` in the
+    body. For OTP templates, `"1"` is also sent as the button URL suffix.
+
+  The example is `driver_dl_expiry`: DL number, driver name, driver phone, days to expiry.
+}

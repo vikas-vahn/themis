@@ -1,0 +1,31 @@
+meta {
+  name: Send WhatsApp OTP
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/gupshup/test/whatsapp/otp
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phoneNumber": "{{process.env.GUPSHUP_TEST_PHONE}}",
+    "otp": "123456"
+  }
+}
+
+docs {
+  Sends an OTP over WhatsApp through `GupshupWhatsappClient.sendOtpMessage` (VAHN_ADMIN only),
+  using the `auth_otp` template (the OTP is also the "Copy code" button URL suffix).
+}

@@ -1,0 +1,26 @@
+meta {
+  name: gupshup-plutus
+}
+
+docs {
+  # plutus-api Gupshup endpoints
+
+  The plutus-api side of Gupshup: the VAHN_ADMIN test endpoints that call Gupshup through
+  `GupshupSmsClient` / `GupshupWhatsappClient`, and the inbound webhook. For direct calls to
+  Gupshup itself, see the `gupshup` folder.
+
+  ## Test endpoints (`/api/gupshup/test/*`)
+
+  - `@RolesAllowed(VAHN_ADMIN)`: `{{accessToken}}` must belong to a VAHN_ADMIN user. Log in
+    with "Send OTP" / "Verify OTP" using an admin phone first; a driver token gets 403.
+  - These send a **real** SMS or WhatsApp message. The recipient is read from
+    `GUPSHUP_TEST_PHONE` in `bruno/collections/plutus-api/.env` (gitignored), a 10-digit number
+    or one with the `91` prefix.
+  - Response is `200 {"success":true,"message":"...","provider":"GUPSHUP"}`, or `500` with
+    `success:false` when Gupshup rejects the request. Details are only in the plutus logs.
+
+  ## Webhook (`/webhooks/gupshup`)
+
+  Unauthenticated and always returns `200`. It logs the body when
+  `gupshup.webhook.logging_enabled` is on and relays the raw bytes to crm-service.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Send WhatsApp text
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/gupshup/test/whatsapp
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phoneNumber": "{{process.env.GUPSHUP_TEST_PHONE}}",
+    "message": "Test WhatsApp message from plutus-api via Gupshup"
+  }
+}
+
+docs {
+  Sends a free-form (session) WhatsApp text through `GupshupWhatsappClient.sendMessage`
+  (VAHN_ADMIN only). WhatsApp only delivers session messages inside the 24-hour window after the
+  recipient last messaged us, so outside it this is accepted but never arrives.
+}

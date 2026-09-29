@@ -1,0 +1,29 @@
+meta {
+  name: driving-license
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/driving-license/driving-license
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id_number": "{{process.env.SUREPASS_DL_NUMBER}}",
+    "dob": "{{process.env.SUREPASS_DOB}}"
+  }
+}
+
+docs {
+  `POST /api/v1/driving-license/driving-license` with `{"id_number","dob"}` (`dob` as `yyyy-MM-dd`),
+  exactly as `SurepassClient.verifyDrivingLicense` sends it. The licence details are in `data`.
+  Driver onboarding's DL check (`DriverService`) calls this.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

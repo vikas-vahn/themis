@@ -1,0 +1,36 @@
+meta {
+  name: playback
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/playback?access_token={{protrackAccessToken}}&imei={{protrackImei}}&begintime={{protrackBeginTime}}&endtime={{protrackEndTime}}
+  body: none
+  auth: none
+}
+
+params:query {
+  access_token: {{protrackAccessToken}}
+  imei: {{protrackImei}}
+  begintime: {{protrackBeginTime}}
+  endtime: {{protrackEndTime}}
+}
+
+script:pre-request {
+  // Last 6 hours, epoch seconds.
+  const now = Math.floor(Date.now() / 1000);
+  bru.setVar("protrackBeginTime", now - 6 * 3600);
+  bru.setVar("protrackEndTime", now);
+}
+
+docs {
+  `GET /api/playback?imei=&begintime=&endtime=` — history for one device, max 1000 points.
+  `record` is a **string**, not an array: `lng,lat,gpstime,speed,course;lng,lat,...`.
+  Useful for checking fix frequency and the `gpstime` timezone against `track`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

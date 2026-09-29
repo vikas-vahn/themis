@@ -1,0 +1,31 @@
+meta {
+  name: challans
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/ECHALLAN/01
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "vehicleNumber": "{{process.env.ULIP_VEHICLE_NUMBER}}"
+  }
+}
+
+docs {
+  `POST /ulip/v1.0.0/ECHALLAN/01` with `{"vehicleNumber"}` (camelCase, unlike the other vehicle
+  APIs): pending and disposed e-challans for the vehicle. plutus-java: `ULIPClient.getChallans`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

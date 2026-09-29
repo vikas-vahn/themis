@@ -1,0 +1,36 @@
+meta {
+  name: fuel-prices
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/BPCL/02
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "referenceNo": "{{process.env.ULIP_BPCL_REFERENCE_NO}}",
+    "stateCode": "{{ulipBpclStateCode}}",
+    "longitude": "",
+    "latitude": "",
+    "radius": ""
+  }
+}
+
+docs {
+  `POST /ulip/v1.0.0/BPCL/02`: BPCL retail outlets and fuel prices for a state. `stateCode` is the
+  uppercase abbreviation (e.g. `MAH`); `referenceNo` is plutus-java `ulip.bpclReferenceNo`. Lat/long/radius
+  are sent empty, as plutus-java does. plutus-java: `ULIPClient.getBPCLFuelPrices`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

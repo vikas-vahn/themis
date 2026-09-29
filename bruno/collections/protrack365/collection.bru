@@ -1,0 +1,48 @@
+tests {
+  // Protrack returns HTTP 200 with a non-zero `code` on every failure (expired token,
+  // unauthorised IMEI, blocked account), so the status code alone proves nothing.
+  test("envelope code is 0", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().code, JSON.stringify(res.getBody())).to.equal(0);
+  });
+}
+
+docs {
+  # Protrack365 Open API
+
+  Direct, **read-only** calls to the Protrack365 GPS platform (not a Vahn service), used to work out
+  the response shapes before building the `protrack365` polling adapter in `location-service`.
+  Vendor doc: https://www.protrack365.com/api.jsp
+
+  ## Credentials
+
+  Read from `bruno/collections/protrack365/.env` (gitignored). Create it locally:
+
+  ```
+  PROTRACK365_ACCOUNT=<account>
+  PROTRACK365_PASSWORD=<raw password>
+  ```
+
+  ## Token
+
+  `auth/authorization` computes `signature = md5(md5(password) + time)` in a pre-request script and
+  stores the token with `bru.setVar` (a runtime var), so it is **never written to the env file**.
+  Run it first in the app; the CLI runs the whole collection in `seq` order:
+
+  ```bash
+  npx @usebruno/cli run bruno/collections/protrack365 --env staging
+  ```
+
+  Issuing a token **invalidates the previous one** for the account. Anything else polling this
+  account (e.g. location-service once the adapter is live) loses its token when you run this.
+
+  `device/list` captures the account's IMEIs into `protrackImeis` / `protrackImei` for the later
+  requests. Blank both in `environments/staging.bru` before committing.
+
+  The vendor has one environment; `staging.bru` exists only to match the repo convention.
+
+  ## Deliberately not included
+
+  `command/send` (includes `RELAY,1` = cut the engine), geofence create/edit/delete,
+  user block/unblock and password set all act on the customer's live fleet. Do not add them here.
+}

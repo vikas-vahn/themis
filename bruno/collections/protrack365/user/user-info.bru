@@ -1,0 +1,26 @@
+meta {
+  name: user-info
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/user/info?access_token={{protrackAccessToken}}&account={{process.env.PROTRACK365_ACCOUNT}}
+  body: none
+  auth: none
+}
+
+params:query {
+  access_token: {{protrackAccessToken}}
+  account: {{process.env.PROTRACK365_ACCOUNT}}
+}
+
+docs {
+  `GET /api/user/info`. `roletype`: 1 = distributor, 2 = end user, 3 = virtual account.
+  A distributor (master) login means `device/list` may need `account=<sub>` scoping.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

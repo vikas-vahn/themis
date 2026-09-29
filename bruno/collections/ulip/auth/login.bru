@@ -1,0 +1,37 @@
+meta {
+  name: login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/user/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{process.env.ULIP_USERNAME}}",
+    "password": "{{process.env.ULIP_PASSWORD}}"
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.error === "false" && body.response) {
+    // Runtime var only: keeps the live token out of environments/staging.bru.
+    bru.setVar("ulipToken", body.response.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  `POST /ulip/v1.0.0/user/login` with `{"username","password"}`.
+  Response: `{"response":{"id":"<token>"},"error":"false","code":"200","message":"..."}`.
+  plutus-java caches this token for 29 minutes.
+}

@@ -1,0 +1,31 @@
+meta {
+  name: toll-master
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/TOLL/01
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "stateName": "{{ulipStateName}}"
+  }
+}
+
+docs {
+  `POST /ulip/v1.0.0/TOLL/01` with `{"stateName"}` (full name, e.g. `Maharashtra`): the toll plaza
+  master for a state. plutus-java: `ULIPClient.getTollMasterData`, from `TollMasterService`. Large response.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

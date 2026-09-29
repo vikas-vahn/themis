@@ -1,0 +1,31 @@
+meta {
+  name: vehicle-details
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/VAHAN/04
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "vehiclenumber": "{{process.env.ULIP_VEHICLE_NUMBER}}"
+  }
+}
+
+docs {
+  `POST /ulip/v1.0.0/VAHAN/04` with `{"vehiclenumber"}`: RC details from VAHAN as native JSON
+  (owner, registration and fitness/insurance/permit validity). plutus-java: `ULIPClient.getVahanDetails`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

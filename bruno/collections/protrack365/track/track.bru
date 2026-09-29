@@ -1,0 +1,29 @@
+meta {
+  name: track
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/track?access_token={{protrackAccessToken}}&imeis={{protrackImeis}}
+  body: none
+  auth: none
+}
+
+params:query {
+  access_token: {{protrackAccessToken}}
+  imeis: {{protrackImeis}}
+}
+
+docs {
+  `GET /api/track?imeis=` (max 100) — the call the polling adapter makes every cycle.
+  Per record: `imei`, `latitude`, `longitude`, `speed` (km/h), `course`, `gpstime`, `systemtime`,
+  `servertime`, `hearttime` (epoch seconds), `accstatus` (1/0/-1), `datastatus`
+  (1 never online, 2 ok, 3 expired, 4 offline, 5 blocked), `mileage`/`todaymileage` (m, -1 = n/a),
+  `battery`, `externalpower`, `chargestatus`, `doorstatus`, `fuel`, `temperature[]`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,51 @@
+meta {
+  name: Get VPAs By Driver
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/vpas/driver/{{driverId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  All VPAs linked to a driver, newest first (`VPAResource.getVPAsByDriver`,
+  `onboarding/controller/VPAResource.java:67`). It is the only VPA-listing endpoint that allows the
+  DRIVER role. Allowed roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER,
+  ACCOUNTANT, OPERATOR, DRIVER.
+
+  Soft-deleted VPAs (`deletedAt` set) are excluded; deactivated ones are still returned, so check
+  `status`. There's no ownership check on {{driverId}}: any caller with an allowed role gets the
+  list for any driver ID, including a DRIVER asking for someone else's VPAs.
+
+  To call it as a driver, run auth/send-otp + auth/verify-otp with the driver's phone first so
+  {{accessToken}} is a DRIVER token, and set {{driverId}} to that driver's ID.
+
+  Response is a bare JSON array of VpaDTO, with no CommonResponse `data` wrapper:
+
+  [
+    {
+      "id": 12,
+      "vpa": "driver@upi",
+      "vpaAddress": "driver@upi",
+      "name": "...",
+      "status": "ACTIVE",
+      "verified": true,
+      "verificationStatus": "...",
+      "relationType": "...",
+      "isDefault": true,
+      "driverId": 42,
+      "driverName": "...",
+      "torgId": 315,
+      "createdAt": "2026-09-01T10:00:00"
+    }
+  ]
+
+  (Illustrative shape built from `VpaDTO`, not captured from a live call.) Returns an empty array
+  if the driver has no VPAs or doesn't exist, not a 404.
+}

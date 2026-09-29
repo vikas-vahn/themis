@@ -1,0 +1,42 @@
+meta {
+  name: Webhook (message-event)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/webhooks/gupshup
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "app": "RItbOWWfbnTX1vRqkSBYpbPq",
+    "timestamp": 1790000000000,
+    "version": 2,
+    "type": "message-event",
+    "payload": {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "gsId": "00000000-0000-0000-0000-000000000000",
+      "type": "delivered",
+      "destination": "919999999999",
+      "payload": {
+        "ts": 1790000000
+      }
+    }
+  }
+}
+
+docs {
+  Simulates a Gupshup callback. The endpoint accepts any content type, is unauthenticated and
+  always returns 200. The raw body is logged (when `gupshup.webhook.logging_enabled` is on) and
+  forwarded unchanged to crm-service's `POST /webhooks/gupshup` (temporary relay, see
+  `GupshupWebhookResource`), so running this on staging also reaches crm-service.
+
+  The body is a sample self-serve `message-event` with placeholder ids.
+}

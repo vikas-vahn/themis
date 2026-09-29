@@ -1,0 +1,31 @@
+meta {
+  name: Send SMS OTP
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/gupshup/test/sms/otp
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phoneNumber": "{{process.env.GUPSHUP_TEST_PHONE}}",
+    "otp": "123456"
+  }
+}
+
+docs {
+  Sends an OTP SMS through `GupshupSmsClient.sendOtpSms` (VAHN_ADMIN only), using the same
+  message format as the login OTP. `otp` is any string; nothing is stored or verified.
+}

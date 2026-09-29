@@ -1,0 +1,32 @@
+meta {
+  name: ewaybill-details
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/EWAYBILL/01
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "ewbNo": "{{process.env.ULIP_EWB_NUMBER}}"
+  }
+}
+
+docs {
+  `POST /ulip/v1.0.0/EWAYBILL/01` with `{"ewbNo"}`: e-way bill details. On failure ULIP may still
+  answer HTTP 200 with `error: "true"`; plutus-java digs the reason out of the body
+  (`ULIPClient.resolveEwayBillErrorMessage`). plutus-java: `ULIPClient.getEwayBillDetails`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

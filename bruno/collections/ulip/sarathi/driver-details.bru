@@ -1,0 +1,41 @@
+meta {
+  name: driver-details
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/SARATHI/01
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "dlnumber": "{{process.env.ULIP_DL_NUMBER}}",
+    "dob": "{{process.env.ULIP_DOB}}"
+  }
+}
+
+tests {
+  test("SARATHI returned a result", function () {
+    const result = res.getBody().response[0];
+    expect(result.responseStatus, JSON.stringify(result)).to.equal("SUCCESS");
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  `POST /ulip/v1.0.0/SARATHI/01` with `{"dlnumber","dob"}` (`dob` as `yyyy-MM-dd`): the driver's
+  licence details from the Sarathi DL database (name, address, validity, vehicle classes, photo).
+  Result is in `response[0].response`; `response[0].responseStatus` is `SUCCESS` when the DL/DOB pair
+  matched. Run `auth/login` first.
+}

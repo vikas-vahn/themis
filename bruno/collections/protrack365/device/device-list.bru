@@ -1,0 +1,37 @@
+meta {
+  name: device-list
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/device/list?access_token={{protrackAccessToken}}
+  body: none
+  auth: none
+}
+
+params:query {
+  access_token: {{protrackAccessToken}}
+}
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.code === 0 && Array.isArray(body.record) && body.record.length) {
+    // /api/track and /api/device/detail take at most 100 IMEIs per call.
+    const imeis = body.record.map((d) => d.imei);
+    bru.setEnvVar("protrackImeis", imeis.slice(0, 100).join(","));
+    bru.setEnvVar("protrackImei", imeis[0]);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  `GET /api/device/list[?account=<sub>]` — `imei`, `devicename`, `devicetype`, `platenumber`,
+  `simcard`, `iccid`, `onlinetime`, `activatedtime`, `platformduetime`, `userduetime`. Max 500.
+  Onboarding-only: the source for the `truck_torg_providers` IMEI mapping rows.
+  Captures `protrackImeis` (first 100) and `protrackImei` into the env file — blank before committing.
+}

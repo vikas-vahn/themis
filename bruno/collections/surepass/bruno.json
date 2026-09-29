@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "surepass",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

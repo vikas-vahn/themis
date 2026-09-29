@@ -1,0 +1,41 @@
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{process.env.SUREPASS_API_KEY}}
+}
+
+tests {
+  // Surepass wraps every result in {"data":{...},"status_code":...,"success":...,"message":...}.
+  test("envelope success is true", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody())).to.equal(true);
+  });
+}
+
+docs {
+  # Surepass KYC API
+
+  Direct calls to Surepass (not a Vahn service), the KYC provider behind plutus-java's
+  `SurepassClient` (`verification.SUREPASS.baseUrl` in plutus-java `config.yml`). It is the second
+  source of driving-licence details, next to ULIP's `SARATHI/01` in the `ulip` collection.
+
+  ## Credentials and inputs
+
+  Read from `bruno/collections/surepass/.env` (gitignored). Create it locally:
+
+  ```
+  SUREPASS_API_KEY=<surepass token for the baseUrl's environment>
+  SUREPASS_DL_NUMBER=<driving licence number>
+  SUREPASS_DOB=<licence holder's date of birth, yyyy-MM-dd>
+  ```
+
+  The DL number and DOB are personal data, so they live in `.env` rather than the env file.
+
+  ```bash
+  npx @usebruno/cli run bruno/collections/surepass --env staging
+  ```
+
+  `baseUrl` is the Surepass sandbox. Production Surepass calls are billed per request.
+}

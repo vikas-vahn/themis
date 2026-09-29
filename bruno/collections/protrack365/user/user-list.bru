@@ -1,0 +1,24 @@
+meta {
+  name: user-list
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/user/list?access_token={{protrackAccessToken}}
+  body: none
+  auth: none
+}
+
+params:query {
+  access_token: {{protrackAccessToken}}
+}
+
+docs {
+  `GET /api/user/list` — sub-customers of the logged-in account (max 500). Empty for an end-user login.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

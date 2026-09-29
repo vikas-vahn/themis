@@ -1,0 +1,58 @@
+tests {
+  // ULIP wraps every result in {"response":[...],"error":"false","code":"200","message":"..."},
+  // with string-typed error/code, so check the envelope as well as the HTTP status.
+  test("envelope error is false and code is 200", function () {
+    expect(res.getStatus()).to.equal(200);
+    const body = res.getBody();
+    expect(body.error, JSON.stringify(body)).to.equal("false");
+    expect(body.code, JSON.stringify(body)).to.equal("200");
+  });
+}
+
+docs {
+  # ULIP (Unified Logistics Interface Platform)
+
+  Direct, **read-only** calls to ULIP (not a Vahn service), through the same relay that plutus-java's
+  `ULIPClient` uses (`ulip.endpoint` in plutus-java `config.yml`). It covers every ULIP API plutus-java
+  calls, plus `SARATHI/01` for driver/DL details (which plutus-api does not expose yet):
+
+  | Folder | API | Input |
+  |---|---|---|
+  | sarathi | SARATHI/01 driving licence | DL number + DOB |
+  | fastag | FASTAG/01 transactions, FASTAG/02 vehicle details | vehicle number |
+  | vahan | VAHAN/04 RC details | vehicle number |
+  | tgvahan | TGVAHAN/01 Telangana RC details (XML in JSON) | vehicle number |
+  | echallan | ECHALLAN/01 e-challans | vehicle number |
+  | ewaybill | EWAYBILL/01 e-way bill | e-way bill number |
+  | toll | TOLL/01 toll plaza master | `ulipStateName` |
+  | bpcl / iocl | BPCL/02, IOCL/02 fuel prices | `ulipBpclStateCode` / `ulipIoclStateCode` |
+
+  ## Credentials and inputs
+
+  Read from `bruno/collections/ulip/.env` (gitignored). Create it locally:
+
+  ```
+  ULIP_USERNAME=<ulip username>
+  ULIP_PASSWORD=<ulip password>
+  ULIP_DL_NUMBER=<driving licence number, e.g. MH1220190012345>
+  ULIP_DOB=<licence holder's date of birth, yyyy-MM-dd>
+  ULIP_VEHICLE_NUMBER=<registration number, e.g. MH12AB1234>
+  ULIP_EWB_NUMBER=<12-digit e-way bill number>
+  ULIP_BPCL_REFERENCE_NO=<plutus-java ulip.bpclReferenceNo>
+  ULIP_IOCL_REFERENCE_NO=<plutus-java ulip.ioclReferenceNo>
+  ```
+
+  DL, DOB, vehicle and e-way bill numbers are customer data, so they live in `.env` rather than the
+  env file. State inputs are plain vars in `environments/staging.bru`.
+
+  ## Token
+
+  `auth/login` stores the token with `bru.setVar` (a runtime var), so it is **never written to the env
+  file**. Run it before any other request; the CLI runs the whole collection:
+
+  ```bash
+  npx @usebruno/cli run bruno/collections/ulip --env staging
+  ```
+
+  Every call counts against the account's ULIP quota, which plutus-java's schedulers share.
+}

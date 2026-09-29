@@ -1,0 +1,31 @@
+meta {
+  name: vehicle-details
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/FASTAG/02
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "vehiclenumber": "{{process.env.ULIP_VEHICLE_NUMBER}}"
+  }
+}
+
+docs {
+  `POST /ulip/v1.0.0/FASTAG/02` with `{"vehiclenumber"}`: FASTag tag and vehicle details (tag status, issuer bank).
+  plutus-java: `ULIPClient.getFastagVehicleDetails`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

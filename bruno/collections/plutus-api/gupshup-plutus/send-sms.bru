@@ -1,0 +1,31 @@
+meta {
+  name: Send SMS
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/gupshup/test/sms
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phoneNumber": "{{process.env.GUPSHUP_TEST_PHONE}}",
+    "message": "Test SMS from plutus-api via Gupshup"
+  }
+}
+
+docs {
+  Sends a free-text SMS through `GupshupSmsClient.sendSms` (VAHN_ADMIN only). The operator may
+  drop messages that don't match a registered DLT template, even when this returns 200.
+}

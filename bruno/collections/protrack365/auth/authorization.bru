@@ -1,0 +1,46 @@
+meta {
+  name: authorization
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/authorization?time={{protrackTime}}&account={{process.env.PROTRACK365_ACCOUNT}}&signature={{protrackSignature}}
+  body: none
+  auth: none
+}
+
+params:query {
+  time: {{protrackTime}}
+  account: {{process.env.PROTRACK365_ACCOUNT}}
+  signature: {{protrackSignature}}
+}
+
+script:pre-request {
+  const CryptoJS = require("crypto-js");
+  const time = Math.floor(Date.now() / 1000);
+  const password = bru.getProcessEnv("PROTRACK365_PASSWORD");
+  const signature = CryptoJS.MD5(CryptoJS.MD5(password).toString() + time).toString();
+  bru.setVar("protrackTime", time);
+  bru.setVar("protrackSignature", signature);
+}
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.code === 0) {
+    // Runtime var only: keeps the live token out of environments/staging.bru.
+    bru.setVar("protrackAccessToken", body.record.access_token);
+  }
+}
+
+docs {
+  `GET /api/authorization?time=&account=&signature=`, signature = md5(md5(password) + time),
+  32-char lowercase hex, `time` in epoch seconds.
+  Response: `{"record":{"access_token":"...","expires_in":7200},"code":0}`.
+  A new token invalidates the previous one.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
