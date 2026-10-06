@@ -24,7 +24,6 @@ body:json {
     "vpaId": {{vendorVpaId}},
     "isTripExpense": false,
     "truckId": {{truckId}},
-    "driverId": {{driverId}},
     "narration": "Vendor payment"
   }
 }
@@ -35,7 +34,8 @@ docs {
   ownership check on the VPA or truck (logged as an open problem).
 
   Body: `amount` (string or number, > 0), `vpaId` (required), `isTripExpense` (null = false),
-  `truckId` and `driverId` (optional, independent of one another), `narration` (optional; default
+  `truckId` and `driverId` (optional, independent of one another; add `"driverId": <id>` to pin
+  one), `narration` (optional; default
   "Vendor expense for trip <n>" or "Vendor payout").
 
   What happens, in order:
