@@ -1,0 +1,68 @@
+meta {
+  name: Vendor Payout
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/vendor/payout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": "10",
+    "vpaId": {{vendorVpaId}},
+    "isTripExpense": false,
+    "truckId": {{truckId}},
+    "narration": "Vendor payment"
+  }
+}
+
+docs {
+  Pays a vendor's UPI ID from the caller's own VAHN wallet (`PaymentGatewayService.vendorPayout`).
+  Get `vpaId` from `vpas/vendor-lookup` first. Call it as a fleet owner or manager.
+
+  Body: `amount` (string or number, > 0), `vpaId` (required), `isTripExpense` (null = false),
+  `truckId` and `driverId` (optional, independent of one another; add `"driverId": <id>` to pin
+  one), `narration` (optional; default
+  "Vendor expense for trip <n>" or "Vendor payout").
+
+  What happens, in order:
+  1. A VENDOR transaction is recorded against the truck's in-progress trip, after the
+     VENDOR_ACCOUNT spend-limit check (per truck, rolling 24h). With `isTripExpense: true` an
+     OTHER_CHARGES "Vendor Payment" trip expense is raised on that trip.
+  2. The wallet is debited and a RazorpayX payout is created. The `TXN-…` reference is sent as
+     the RazorpayX idempotency key (PR #998), so a retried call cannot pay twice.
+  3. A synchronous failure marks the transaction FAILED, removes the trip expense and refunds the
+     wallet. Otherwise the final status arrives by webhook (staging never receives them).
+
+  Response (captured on staging 2026-10-06; `amount` is net of charge-inclusive payout fees):
+
+  {
+    "success": true,
+    "message": "Success",
+    "statusCode": 200,
+    "data": {
+      "transactionId": "TXN-94992EEF",
+      "entityId": 34277,
+      "status": "PROCESSING",
+      "amount": 8.230,
+      "success": true
+    }
+  }
+
+  Errors come back as HTTP 200 with `success:false` and `statusCode:400`, e.g. "Invalid amount",
+  "VPA not found", or a spend-limit message. The same amount to the same UPI ID within ~30s is
+  refused as a duplicate (HTTP 409). A missing `vpaId` returns `success:true` with
+  `data.status: "FAILED"` (pre-existing quirk).
+}
