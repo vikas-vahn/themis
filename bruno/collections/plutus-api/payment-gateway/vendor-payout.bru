@@ -30,8 +30,7 @@ body:json {
 
 docs {
   Pays a vendor's UPI ID from the caller's own VAHN wallet (`PaymentGatewayService.vendorPayout`).
-  Get `vpaId` from `vpas/vendor-lookup` first. Only `@Authenticated`: there is no role or torg
-  ownership check on the VPA or truck (logged as an open problem).
+  Get `vpaId` from `vpas/vendor-lookup` first. Call it as a fleet owner or manager.
 
   Body: `amount` (string or number, > 0), `vpaId` (required), `isTripExpense` (null = false),
   `truckId` and `driverId` (optional, independent of one another; add `"driverId": <id>` to pin
