@@ -1,0 +1,35 @@
+meta {
+  name: 6. Trip expenses before the trip-expense payout
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/trip-expenses/trip/{{vendorPayoutTripId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+    const body = res.body.data !== undefined ? res.body.data : res.body;
+    const expenses = Array.isArray(body) ? body : [];
+    const vendorExpenses = expenses.filter(function(e) {
+      return e.expenseType === "OTHER_CHARGES"
+        && Number(e.amount) === 12
+        && e.extraInfo && e.extraInfo.description === "Vendor Payment";
+    });
+    bru.setEnvVar("vendorPayoutExpenseCountBefore", vendorExpenses.length);
+}
+
+docs {
+  Counts the trip's existing ₹12 "Vendor Payment" expenses into
+  {{vendorPayoutExpenseCountBefore}}, so step 8 can check that step 7 added exactly one. The
+  expense DTO does not expose the linked transaction, so the check is by count.
+}

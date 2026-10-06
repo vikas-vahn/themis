@@ -1,0 +1,38 @@
+meta {
+  name: 8. Trip expenses include the payout
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/trip-expenses/trip/{{vendorPayoutTripId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("step 7 added exactly one Vendor Payment expense to the trip", function() {
+    const body = res.body.data !== undefined ? res.body.data : res.body;
+    const expenses = Array.isArray(body) ? body : [];
+    const vendorExpenses = expenses.filter(function(e) {
+      return e.expenseType === "OTHER_CHARGES"
+        && Number(e.amount) === 12
+        && e.extraInfo && e.extraInfo.description === "Vendor Payment";
+    });
+    const before = Number(bru.getEnvVar("vendorPayoutExpenseCountBefore"));
+    expect(vendorExpenses.length).to.equal(before + 1);
+  });
+}
+
+docs {
+  The trip (`vendorPayoutTripId`, the truck's in-progress trip) must now carry one more expense
+  than step 6 counted, raised by step 7's payout: OTHER_CHARGES, PENDING, "Vendor Payment".
+}

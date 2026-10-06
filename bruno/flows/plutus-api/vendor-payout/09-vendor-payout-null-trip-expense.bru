@@ -1,0 +1,48 @@
+meta {
+  name: 9. Vendor payout with isTripExpense null
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/vendor/payout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": "11",
+    "vpaId": {{vendorPayoutVpaId}},
+    "isTripExpense": null,
+    "truckId": {{vendorPayoutTruckId}},
+    "driverId": {{vendorPayoutDriverId}},
+    "narration": "Themis vendor null flag"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("payout is accepted with a TXN reference", function() {
+    expect(res.body.success).to.equal(true);
+    expect(res.body.data.status).to.be.oneOf(["PROCESSING", "PENDING", "COMPLETED"]);
+    expect(res.body.data.transactionId).to.match(/^TXN-[0-9A-F]{8}$/);
+    expect(res.body.data.entityId).to.be.a("number");
+  });
+}
+
+docs {
+  Regression check: a null `isTripExpense` is treated as false (no expense). Before PR #998 it
+  failed with an HTTP 500.
+}

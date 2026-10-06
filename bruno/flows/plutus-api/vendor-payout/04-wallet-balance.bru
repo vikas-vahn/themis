@@ -1,0 +1,25 @@
+meta {
+  name: 4. Wallet balance
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/wallets/balance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.balance: isNumber
+}
+
+docs {
+  The owner's VAHN balance. Vendor payouts debit the paying user's own wallet.
+}

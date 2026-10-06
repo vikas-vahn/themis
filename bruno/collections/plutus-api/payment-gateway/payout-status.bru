@@ -1,0 +1,29 @@
+meta {
+  name: Payout Status (reconcile)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/payment-gateway/payout-status/{{payoutReferenceId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Fetches a payout's status from Razorpay by our `TXN-…` reference and applies it
+  (`PaymentGatewayService.fetchAndUpdatePayoutStatus`): COMPLETED marks the transactions done,
+  FAILED refunds the wallet and removes any linked trip expense. Razorpay's
+  pending/queued/scheduled/processing all map to PENDING. Only `@Authenticated`.
+
+  On staging the RazorpayX test account queues payouts, so this returns PENDING.
+
+  {
+    "success": true,
+    "message": "Success",
+    "data": { "status": "PENDING", "transactionId": "TXN-94992EEF", ... }
+  }
+}

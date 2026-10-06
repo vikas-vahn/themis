@@ -1,0 +1,48 @@
+meta {
+  name: 7. Vendor payout as trip expense
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/vendor/payout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": "12",
+    "vpaId": {{vendorPayoutVpaId}},
+    "isTripExpense": true,
+    "truckId": {{vendorPayoutTruckId}},
+    "driverId": {{vendorPayoutDriverId}},
+    "narration": "Themis vendor trip expense"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("payout is accepted with a TXN reference", function() {
+    expect(res.body.success).to.equal(true);
+    expect(res.body.data.status).to.be.oneOf(["PROCESSING", "PENDING", "COMPLETED"]);
+    expect(res.body.data.transactionId).to.match(/^TXN-[0-9A-F]{8}$/);
+    expect(res.body.data.entityId).to.be.a("number");
+  });
+}
+
+docs {
+  Same payout, also raised as a trip expense on the truck's in-progress trip. If the payout
+  fails, the expense is removed again (synchronous failures too, since PR #998).
+}
