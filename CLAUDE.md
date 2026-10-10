@@ -15,10 +15,12 @@ npx @usebruno/cli run bruno/flows/plutus-api/driver-onboarding/01-send-otp.bru -
 npx @usebruno/cli run bruno/collections/plutus-api --env staging                               # whole reference collection
 ```
 
-**Maestro** (once flows exist under `maestro/tests/`):
+**End-to-end checks** (hermetic backend + Bruno + Maestro; see `e2e/README.md`):
 ```bash
-maestro test maestro/tests/driver-app/<flow>.yaml
+e2e/run.sh doctor                    # what this machine can run
+e2e/run.sh all api web mobile        # stack up, suites, stack down
 ```
+This is also what `.github/workflows/e2e.yml` runs. The Maestro flows under `maestro/tests/fleet-web` and `fleet-app` expect the environment variables that `e2e/run.sh` passes; run them through it rather than with a bare `maestro test`.
 
 **Mock server** (webhook inspector, Cloudflare Worker — see `mock-server/README.md`):
 ```bash

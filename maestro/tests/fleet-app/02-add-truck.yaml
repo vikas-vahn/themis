@@ -1,0 +1,66 @@
+# The onboarded owner from 01 adds their first truck, with a driver.
+# Continues in the same app session (no clearState).
+#
+# TRUCK_REG must be a fixture RC whose owner is the owner's PAN holder, so the
+# truck verifies.
+#
+# Env: TRUCK_REG, DRIVER_PHONE
+appId: in.vahn.fleet
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Trucks \\(0\\)"
+    timeout: 60000
+- scrollUntilVisible:
+    element: "Add Trucks"
+    direction: DOWN
+- tapOn: "Add Trucks"
+- extendedWaitUntil:
+    visible: "Add your Trucks"
+    timeout: 20000
+- takeScreenshot: 02-add-truck-empty
+# The screen offers five blank truck cards; only the first is filled in.
+- tapOn:
+    text: "Enter registration number"
+    index: 0
+- inputText: ${TRUCK_REG}
+- hideKeyboard
+# A truck needs a driver before a trip can be created for it.
+- tapOn:
+    text: "Add Driver"
+    index: 0
+- extendedWaitUntil:
+    visible: "Enter driver name"
+    timeout: 10000
+- tapOn: "Enter driver name"
+- inputText: "Mobile Driver One"
+- hideKeyboard
+- tapOn: "Enter driver mobile number"
+- inputText: ${DRIVER_PHONE}
+- hideKeyboard
+- takeScreenshot: 02-add-truck-filled
+- tapOn: "Continue"
+- extendedWaitUntil:
+    notVisible: "Add your Trucks"
+    timeout: 30000
+# RC verification runs in the background; until it finishes the truck sits
+# under "Unverified Vehicles" and the home list does not refresh on its own.
+# Relaunch (same session) until it is counted as a truck.
+- repeat:
+    times: 8
+    while:
+      notVisible: "Trucks \\(1\\)"
+    commands:
+      - launchApp
+      - extendedWaitUntil:
+          visible: "Your Account Balance"
+          timeout: 60000
+      - extendedWaitUntil:
+          visible: "Trucks \\(1\\)"
+          timeout: 5000
+          optional: true
+- assertVisible: "Trucks \\(1\\)"
+- scrollUntilVisible:
+    element: ${TRUCK_REG.slice(-4)}
+    direction: DOWN
+- takeScreenshot: 02-truck-on-home

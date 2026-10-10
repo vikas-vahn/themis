@@ -1,0 +1,17 @@
+# Phone + OTP on the login screens. Needs: PHONE, OTP.
+# Ends when the OTP has been submitted; the caller asserts where the app lands
+# (Basic Information for a new number, the dashboard for an existing owner).
+appId: in.vahn.fleet
+---
+- tapOn: "Enter your mobile number"
+- inputText: ${PHONE}
+- hideKeyboard
+- tapOn: "Get OTP"
+- extendedWaitUntil:
+    visible: "Verify your phone number"
+    timeout: 20000
+# The first OTP box takes focus by itself and spreads the digits across the
+# six boxes. Typed digits do not auto-submit, so press the button.
+- inputText: ${OTP}
+- hideKeyboard
+- tapOn: "Verify & Continue"

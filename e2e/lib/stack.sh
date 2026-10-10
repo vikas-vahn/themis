@@ -15,8 +15,8 @@ stack_build_backend() {
     die "plutus-java at $PLUTUS_DIR has no e2e/ directory. Check out a branch that contains it."
 
   E2E_PLUTUS_JAR="${E2E_PLUTUS_JAR:-$PLUTUS_DIR/target/plutus-1.0-SNAPSHOT.jar}"
-  if [ "${E2E_SKIP_BUILD:-0}" = "1" ] && [ -f "$E2E_PLUTUS_JAR" ]; then
-    log "reusing $E2E_PLUTUS_JAR (E2E_SKIP_BUILD=1)"
+  if { [ "${E2E_SKIP_BUILD:-0}" = "1" ] || [ "${E2E_SKIP_BACKEND_BUILD:-0}" = "1" ]; } && [ -f "$E2E_PLUTUS_JAR" ]; then
+    log "reusing $E2E_PLUTUS_JAR"
   else
     need mvn "Install Maven, or build the JAR elsewhere and set E2E_PLUTUS_JAR + E2E_SKIP_BUILD=1."
     group "build plutus-java"

@@ -80,8 +80,9 @@ wait_for() {
   log "$what ready after $((SECONDS - start))s"
 }
 
+# True when nothing accepts connections on the port, on either loopback.
 port_free() {
-  ! (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null
+  ! (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null && ! (exec 3<>"/dev/tcp/::1/$1") 2>/dev/null
 }
 
 # record_result <suite> <pass|fail|skip> [note]   -> $E2E_RUN_DIR/results.tsv

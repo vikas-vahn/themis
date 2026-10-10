@@ -52,6 +52,8 @@ summary() {
 cmd="${1:-}"
 [ $# -gt 0 ] && shift
 
+trap suites_cleanup EXIT
+
 case "$cmd" in
   doctor) doctor ;;
   up)     stack_up ;;
@@ -69,6 +71,7 @@ case "$cmd" in
     # Always tear down, including on Ctrl-C or a failed start, unless asked to
     # keep the stack for debugging.
     cleanup() {
+      suites_cleanup
       if [ "$E2E_KEEP_STACK" = "1" ]; then
         warn "stack left running (E2E_KEEP_STACK=1); stop it with: e2e/run.sh down"
       else

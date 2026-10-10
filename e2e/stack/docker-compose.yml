@@ -58,8 +58,9 @@ services:
     command: ["node", "server.js"]
     environment:
       PORT: "4010"
-      # Where a browser/WebView on the test device reaches this server.
-      MOCKS_PUBLIC_URL: ${E2E_MOCKS_PUBLIC_URL:-http://localhost:14010}
+      # Where a WebView on the test device reaches this server. 10.0.2.2 is the
+      # Android emulator's route to the host; the port is the one published below.
+      MOCKS_PUBLIC_URL: ${E2E_MOCKS_PUBLIC_URL:-http://10.0.2.2:14010}
     volumes:
       - ../mocks:/mocks:ro
     healthcheck:

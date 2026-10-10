@@ -65,6 +65,11 @@ const server = http.createServer(async (req, res) => {
   if (pathname === "/_health") return send(res, 200, { ok: true });
   if (pathname === "/_unmatched") return send(res, 200, unmatched);
   if (pathname === "/_calls") return send(res, 200, calls);
+  // A WebView showing one of our pages asks for this; it is not a vendor call.
+  if (pathname === "/favicon.ico") {
+    res.writeHead(204);
+    return res.end();
+  }
 
   const body = await readBody(req);
   for (const r of routes) {

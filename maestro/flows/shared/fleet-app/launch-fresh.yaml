@@ -1,0 +1,11 @@
+# Starts the fleet app as a first-time install: no stored session, and every
+# runtime permission pre-granted so no system dialog covers the UI.
+appId: in.vahn.fleet
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Login to your VAHN Account"
+    timeout: 90000
