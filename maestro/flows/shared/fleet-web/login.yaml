@@ -1,0 +1,23 @@
+# Logs an existing user into perseus with phone + OTP.
+# Needs: PHONE, OTP. Leaves the browser on whatever page the app routes to.
+#
+# Flows in one run share a browser, so start from a clean session: without
+# clearState a flow that follows another one opens already logged in.
+url: ${WEB_URL}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Enter Phone Number"
+    timeout: 30000
+- tapOn:
+    id: "mob_no"
+- inputText: ${PHONE}
+- tapOn: "Continue"
+- extendedWaitUntil:
+    visible: "Enter OTP"
+    timeout: 15000
+- tapOn:
+    id: "otp-input"
+- inputText: ${OTP}
+- tapOn: "Verify & Continue"

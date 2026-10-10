@@ -1,0 +1,126 @@
+# An onboarded fleet owner adds their first truck (with a driver) and creates a
+# trip for it. Needs a customer with one pickup and one drop address already
+# saved (e2e/lib/seed.mjs customer), because the trip form only offers saved
+# addresses.
+#
+# Env: WEB_URL, PHONE, OTP, TRUCK_REG, DRIVER_PHONE, DRIVER_LICENSE (unique per
+# driver), CUSTOMER_NAME, PICKUP, DROP
+url: ${WEB_URL}
+---
+- runFlow: ../../flows/shared/fleet-web/login.yaml
+- extendedWaitUntil:
+    visible: "Account Balance"
+    timeout: 30000
+
+# --- Add truck -------------------------------------------------------------
+# "Add Truck" is in the empty state for a new fleet and in the list header
+# once there are trucks; either way it is the only one on screen.
+- tapOn: "Add Truck"
+- extendedWaitUntil:
+    visible: "Add your Trucks"
+    timeout: 15000
+- tapOn:
+    id: "registrationNumber-0"
+- inputText: ${TRUCK_REG}
+# A truck without a driver cannot be picked on the trip form.
+- tapOn: "Don't have a driver"
+- scrollUntilVisible:
+    element:
+      id: "driver-dob-0"
+    direction: DOWN
+- tapOn:
+    id: "driver-name-0"
+- inputText: "Web Driver One"
+- tapOn:
+    id: "driver-phone-0"
+- inputText: ${DRIVER_PHONE}
+- tapOn:
+    id: "driver-license-0"
+- inputText: ${DRIVER_LICENSE}
+- tapOn:
+    id: "driver-dob-0"
+# The date of birth the test verification service returns for any licence;
+# anything else leaves the driver UNVERIFIED (DOB mismatch).
+- inputText: "24071999"
+- takeScreenshot: 02-truck-form
+- assertNotVisible: "Please enter valid.*"
+- tapOn: "Save Details"
+# Saving returns to the dashboard. RC verification runs in the background and
+# the list does not refresh by itself, so reload until the truck has a card.
+# The card shows the registration as a number plate ("KA 51 WA" over "0001"),
+# so match on the last four characters.
+- extendedWaitUntil:
+    notVisible: "Add your Trucks"
+    timeout: 30000
+- repeat:
+    times: 10
+    while:
+      notVisible: "No Trips currently"
+    commands:
+      - openLink: ${WEB_URL}/home
+      - extendedWaitUntil:
+          visible: "Account Balance"
+          timeout: 30000
+      - extendedWaitUntil:
+          visible: "No Trips currently"
+          timeout: 4000
+          optional: true
+- assertVisible: ${TRUCK_REG.slice(-4)}
+- assertVisible: "No Trips currently"
+- assertNotVisible: "No Trucks Added"
+- takeScreenshot: 02-truck-added
+
+# --- Create trip -----------------------------------------------------------
+# From the truck's own card, so the truck is already chosen on the form.
+- tapOn: "Create Trip"
+# A truck's first trip is gated on its mileage.
+- extendedWaitUntil:
+    visible: "Enter the mileage of your truck"
+    timeout: 15000
+- tapOn: "Enter milage at empty load"
+- inputText: "5"
+- tapOn: "Enter milage at full load"
+- inputText: "3.5"
+- tapOn: "Save Details"
+- extendedWaitUntil:
+    notVisible: "Enter the mileage of your truck"
+    timeout: 15000
+- takeScreenshot: 02-after-mileage
+- runFlow:
+    when:
+      notVisible: "Add New Trip"
+    commands:
+      - tapOn: "Create Trip"
+- extendedWaitUntil:
+    visible: "Add New Trip"
+    timeout: 15000
+# The dropdowns are custom components that open on a click on their
+# placeholder; tapping the read-only input by id only focuses it. Each choice
+# replaces a "Select" placeholder, so the next unfilled dropdown is index 0.
+- tapOn:
+    text: "Select"
+    index: 0
+    retryTapIfNoChange: false
+- tapOn: ${CUSTOMER_NAME}
+- tapOn:
+    text: "Select"
+    index: 0
+    retryTapIfNoChange: false
+- tapOn: ${PICKUP}
+- tapOn:
+    text: "Select"
+    index: 0
+    retryTapIfNoChange: false
+- tapOn: ${DROP}
+- assertNotVisible: "Select"
+- takeScreenshot: 02-trip-form
+- tapOn: "Create Trip"
+- extendedWaitUntil:
+    visible: "Trip has been created successfully"
+    timeout: 30000
+# The confirmation panel repeats what was just chosen.
+- assertVisible: "Trip Number"
+- assertVisible: "VN[0-9]+"
+- assertVisible: "One-way Trip"
+- assertVisible: "Start Trip"
+- takeScreenshot: 02-trip-created

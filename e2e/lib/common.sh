@@ -86,6 +86,11 @@ port_free() {
 
 # record_result <suite> <pass|fail|skip> [note]   -> $E2E_RUN_DIR/results.tsv
 record_result() {
+  local f="$E2E_RUN_DIR/results.tsv"
   mkdir -p "$E2E_RUN_DIR"
-  printf '%s\t%s\t%s\n' "$1" "$2" "${3:-}" >> "$E2E_RUN_DIR/results.tsv"
+  # One line per suite: a re-run of a suite replaces its earlier result.
+  if [ -f "$f" ]; then
+    awk -F'\t' -v s="$1" '$1 != s' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+  fi
+  printf '%s\t%s\t%s\n' "$1" "$2" "${3:-}" >> "$f"
 }
