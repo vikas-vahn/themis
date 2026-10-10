@@ -1,0 +1,41 @@
+meta {
+  name: 01. Send OTP
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/send-otp?channel=SMS
+  body: json
+  auth: none
+}
+
+params:query {
+  channel: SMS
+}
+
+body:json {
+  {
+    "phone": "{{fleetPhone}}"
+  }
+}
+
+script:pre-request {
+  // A phone number nobody has used, so verify-otp creates a brand-new user.
+  const digits = () => String(Math.floor(Math.random() * 1e9)).padStart(9, "0");
+  bru.setVar("fleetPhone", "7" + digits());
+  bru.setVar("fleetDriverPhone", "8" + digits());
+  bru.setVar("fleetAadhaar", "4" + String(Math.floor(Math.random() * 1e11)).padStart(11, "0"));
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+}
+
+docs {
+  Generates the run's phone numbers and Aadhaar number, then requests an OTP. In the
+  E2E stack no SMS is sent; the static OTP ({{e2eOtp}}) is accepted for every number.
+}

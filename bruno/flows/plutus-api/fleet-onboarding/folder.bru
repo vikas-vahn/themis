@@ -1,0 +1,28 @@
+meta {
+  name: Fleet onboarding (sign-up to first trip)
+}
+
+docs {
+  The fleet owner's whole first-day journey, as atlas-rn drives it:
+
+    sign up by phone + OTP -> basic info (becomes TORG_ADMIN, Torg is created)
+    -> KYC: PAN + Aadhaar -> onboarding completed
+    -> add a truck with a driver -> truck verified
+    -> customer with pickup/drop addresses -> trip created
+
+  Built for the hermetic E2E stack (`e2e/run.sh api`, environment `e2e`), where the
+  database is new on every run and verification is answered from plutus-java's
+  `e2e/verification-testing.yml`. The PAN and registration number below are fixtures
+  from that file; anything else fails verification.
+
+  Unlike the older flows, state is chained with `bru.setVar` (run-scoped, in memory),
+  not `bru.setEnvVar`, so a run never writes a token into an environment file.
+
+  A PAN can be linked to one Torg only, so this flow runs once per database. To run
+  it again against a stack you kept up (`E2E_KEEP_STACK=1`), pass another identity:
+    --env-var fleetPan=EEECA0002A --env-var fleetName="Api Fleet Two"
+    --env-var fleetTruckRegistration=KA51AA0002
+
+  Every /api response is wrapped as {data, message, statusCode, success}, and plutus
+  returns HTTP 200 for 400/422 too. Assert on `success` / `statusCode` in the body.
+}

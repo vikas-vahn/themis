@@ -1,0 +1,45 @@
+meta {
+  name: 12. Wait for truck verification
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{fleetTruckId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+script:post-response {
+  // RC verification is asynchronous: poll this request until it settles.
+  const data = res.getBody().data || {};
+  const polls = Number(bru.getVar("fleetTruckPolls") || 0) + 1;
+  bru.setVar("fleetTruckPolls", polls);
+  bru.setVar("fleetDriverId", data.driverId);
+  if (data.verificationStatus !== "VERIFIED" && polls < 20) {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    bru.setNextRequest("12. Wait for truck verification");
+  }
+}
+
+tests {
+  const data = res.getBody().data || {};
+  const settled = data.verificationStatus === "VERIFIED" || Number(bru.getVar("fleetTruckPolls")) >= 20;
+
+  // Only the final poll is asserted; earlier ones are expected to be pending.
+  if (settled) {
+    test("truck is verified: RC owner matches the PAN holder", function () {
+      expect(data.verificationStatus).to.equal("VERIFIED");
+      expect(data.ownerName).to.equal(bru.getEnvVar("fleetName"));
+      expect(data.registrationNumber).to.equal(bru.getEnvVar("fleetTruckRegistration"));
+    });
+
+    test("the driver was created and attached", function () {
+      expect(data.driverId).to.be.a("number");
+    });
+  }
+}

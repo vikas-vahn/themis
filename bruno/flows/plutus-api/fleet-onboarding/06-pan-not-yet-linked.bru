@@ -1,0 +1,27 @@
+meta {
+  name: 06. PAN is not linked to anyone yet
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/pan/number/{{fleetPan}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+tests {
+  test("lookup says the PAN is free (statusCode 204 in the envelope)", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().statusCode).to.equal(204);
+  });
+}
+
+docs {
+  The app checks this before submitting a PAN: statusCode 200 with data means the PAN
+  already belongs to a Torg, 204 means it is free.
+}

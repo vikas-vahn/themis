@@ -1,0 +1,42 @@
+meta {
+  name: 07. KYC: verify PAN
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/pan
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+body:json {
+  {
+    "panNumber": "{{fleetPan}}",
+    "isSoleProprietor": false
+  }
+}
+
+script:post-response {
+  const data = res.getBody().data || {};
+  bru.setVar("fleetPanId", data.id);
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("PAN is verified against the holder name", function () {
+    const data = res.getBody().data;
+    expect(data.status).to.equal("VERIFIED");
+    expect(data.panNumber).to.equal(bru.getEnvVar("fleetPan"));
+    expect(data.holderName).to.equal(bru.getEnvVar("fleetName"));
+    expect(data.torgId).to.equal(bru.getVar("fleetTorgId"));
+  });
+}

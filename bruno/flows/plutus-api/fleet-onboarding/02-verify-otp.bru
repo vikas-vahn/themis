@@ -1,0 +1,41 @@
+meta {
+  name: 02. Verify OTP (new user)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "phone": "{{fleetPhone}}",
+    "otp": "{{e2eOtp}}"
+  }
+}
+
+script:post-response {
+  const data = res.getBody().data || {};
+  bru.setVar("fleetAccessToken", data.accessToken);
+  bru.setVar("fleetRefreshToken", data.refreshToken);
+  bru.setVar("fleetUserId", data.user && data.user.id);
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("a brand-new user is created", function () {
+    const data = res.getBody().data;
+    expect(data.accessToken).to.be.a("string").and.not.empty;
+    expect(data.refreshToken).to.be.a("string").and.not.empty;
+    expect(data.user.role).to.equal("NEW_USER");
+    expect(data.user.onboardingStatus).to.equal("NOT_STARTED");
+    expect(data.user.torgId).to.equal(null);
+  });
+}

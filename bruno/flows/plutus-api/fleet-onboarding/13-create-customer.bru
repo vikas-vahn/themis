@@ -1,0 +1,45 @@
+meta {
+  name: 13. Create a customer
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/customers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+body:json {
+  {
+    "name": "E2E Api Customer",
+    "torgId": {{fleetTorgId}}
+  }
+}
+
+script:post-response {
+  const data = res.getBody().data || {};
+  bru.setVar("fleetCustomerId", data.id);
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("customer is created for this Torg", function () {
+    const data = res.getBody().data;
+    expect(data.id).to.be.a("number");
+    expect(data.torgId).to.equal(bru.getVar("fleetTorgId"));
+    expect(data.status).to.equal("ACTIVE");
+  });
+}
+
+docs {
+  The "Manual" tab of the apps' Add Customer modal: a name only, no GSTIN lookup.
+}

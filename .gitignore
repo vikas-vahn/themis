@@ -16,3 +16,8 @@ mock-server/.dev.vars
 
 # Tunnel per-developer settings (may hold a tunnel token)
 tunnel/.env
+
+# E2E run state: generated backend config (contains values from plutus-java config.yml), logs, reports
+e2e/.run/
+e2e/node_modules/
+e2e/local.env

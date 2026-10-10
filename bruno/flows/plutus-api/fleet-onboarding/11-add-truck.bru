@@ -1,0 +1,53 @@
+meta {
+  name: 11. Add a truck with a driver
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/bulk
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+body:json {
+  [
+    {
+      "registrationNumber": "{{fleetTruckRegistration}}",
+      "driver": {
+        "name": "E2E Api Driver",
+        "phone": "{{fleetDriverPhone}}"
+      }
+    }
+  ]
+}
+
+script:post-response {
+  const rows = res.getBody().data || [];
+  bru.setVar("fleetTruckId", rows[0] && rows[0].id);
+  bru.setVar("fleetTruckPolls", 0);
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("the row itself succeeded", function () {
+    const rows = res.getBody().data;
+    expect(rows).to.have.lengthOf(1);
+    // A row can fail while the request succeeds, so check it explicitly.
+    expect(rows[0].status, JSON.stringify(rows[0])).to.equal("SUCCESS");
+    expect(rows[0].id).to.be.a("number");
+  });
+}
+
+docs {
+  The endpoint atlas-rn's "Add your Trucks" screen calls. RC verification runs in
+  the background after this returns; the next request waits for it.
+}

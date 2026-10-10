@@ -1,0 +1,118 @@
+# The hermetic stack for one E2E run. Driven by e2e/run.sh; do not start it by
+# hand unless you export the variables it sets (see e2e/lib/stack.sh).
+#
+# Two networks:
+#   backend - `internal: true`, so nothing on it has a route to the internet.
+#             plutus-api lives only here. An integration that the overrides
+#             forgot to switch off fails fast instead of calling a real vendor.
+#   edge    - ordinary bridge. Only the gateway is on it, and it only forwards
+#             the published ports inwards.
+#
+# Nothing is persisted: no named volumes, Postgres data is on tmpfs.
+name: ${E2E_PROJECT:-themis-e2e}
+
+networks:
+  backend:
+    internal: true
+  edge: {}
+
+services:
+  postgres:
+    # Production is Aurora Postgres 16.
+    image: postgres:16-alpine
+    networks: [backend]
+    environment:
+      POSTGRES_USER: plutus
+      POSTGRES_PASSWORD: plutus
+      POSTGRES_DB: plutus
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plutus -d plutus"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    networks: [backend]
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # SQS-compatible queue, so queued work (licence verification, truck-card
+  # refresh) runs for real instead of erroring in a loop.
+  sqs:
+    image: softwaremill/elasticmq-native:1.6.11
+    networks: [backend]
+
+  # Stand-in for the third parties the core flows cannot avoid (Surepass
+  # DigiLocker, ULIP vehicle lookup, map provider). See e2e/mocks/README.md.
+  mocks:
+    image: node:22-alpine
+    networks: [backend]
+    working_dir: /mocks
+    command: ["node", "server.js"]
+    environment:
+      PORT: "4010"
+      # Where a browser/WebView on the test device reaches this server.
+      MOCKS_PUBLIC_URL: ${E2E_MOCKS_PUBLIC_URL:-http://localhost:14010}
+    volumes:
+      - ../mocks:/mocks:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4010/_health"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  plutus:
+    image: eclipse-temurin:21-jre-jammy
+    networks: [backend]
+    working_dir: /app
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      mocks: { condition: service_healthy }
+      sqs: { condition: service_started }
+    environment:
+      # Dummy values: SQSFactory falls back to the default credential chain
+      # when a custom endpoint is configured.
+      AWS_ACCESS_KEY_ID: e2e
+      AWS_SECRET_ACCESS_KEY: e2e
+      AWS_REGION: ap-south-1
+      TZ: Asia/Kolkata
+    command:
+      - sh
+      - -c
+      - exec java -XX:MaxRAMPercentage=75 --enable-preview -jar plutus.jar server config.yml
+    volumes:
+      - ${E2E_PLUTUS_JAR:-/nonexistent/plutus.jar}:/app/plutus.jar:ro
+      - ${E2E_RUN_DIR:-/nonexistent}/plutus/config.yml:/app/config.yml:ro
+      - ${E2E_RUN_DIR}/plutus/verification-testing.yml:/app/verification-testing.yml:ro
+    mem_limit: ${E2E_PLUTUS_MEM:-2g}
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "-o", "/dev/null", "http://127.0.0.1:8081/healthcheck"]
+      interval: 3s
+      timeout: 3s
+      retries: 60
+      start_period: 10s
+
+  # The only container with a foot in both networks. Plain TCP forwarding.
+  gateway:
+    image: alpine/socat:1.8.0.3
+    networks: [backend, edge]
+    depends_on: [plutus, mocks]
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        socat TCP-LISTEN:8080,fork,reuseaddr TCP:plutus:8080 &
+        socat TCP-LISTEN:8081,fork,reuseaddr TCP:plutus:8081 &
+        socat TCP-LISTEN:4010,fork,reuseaddr TCP:mocks:4010 &
+        wait
+    ports:
+      - "${E2E_BIND:-127.0.0.1}:${E2E_API_PORT:-18080}:8080"
+      - "${E2E_BIND:-127.0.0.1}:${E2E_ADMIN_PORT:-18081}:8081"
+      - "${E2E_BIND:-127.0.0.1}:${E2E_MOCKS_PORT:-14010}:4010"
