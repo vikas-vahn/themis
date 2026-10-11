@@ -111,6 +111,7 @@ Everything from a run is under `e2e/.run/` (gitignored):
 
 ```
 results.tsv                    suite, pass|fail|skip
+checks.json                    one result per test, as reported to the pull request
 api/<flow>.html, .junit.xml    Bruno reports
 web/junit.xml, web/debug/      Maestro report; screenshot + UI hierarchy of each failed step
 mobile/<flow>/…, logcat.txt    same per flow, plus the device log
@@ -123,8 +124,8 @@ The rendered backend config is deleted at `down`: it contains values from plutus
 
 ## Adding tests
 
-**API flow.** A new folder under `bruno/flows/plutus-api/`, then add its name to the loop in
-`suite_api` (`e2e/lib/suites.sh`). Follow `fleet-onboarding/`: chain state with `bru.setVar`
+**API flow.** A new folder under `bruno/flows/plutus-api/`, then add its name to
+`E2E_API_FLOWS` (`e2e/lib/common.sh`). Follow `fleet-onboarding/`: chain state with `bru.setVar`
 (in memory) rather than `bru.setEnvVar` (which writes tokens into the environment file), and
 assert on `success`/`statusCode` in the response body, because plutus answers HTTP 200 for
 400 and 422.
@@ -140,8 +141,8 @@ assert on `success`/`statusCode` in the response body, because plutus answers HT
 - Flows share one browser. `login.yaml` clears state so each starts logged out.
 
 **Mobile flow.** The flows in `maestro/tests/fleet-app/` are one journey for one user and run
-in the order listed in `suite_mobile`. Add a step to an existing file, or a new file to that
-list. Selectors are visible text, since the app has no `testID`s yet.
+in file-name order, stopping at the first failure. Add a step to an existing file, or a new
+numbered file. Selectors are visible text, since the app has no `testID`s yet.
 
 **Starting state.** If a flow needs an owner who already has something (KYC done, a customer
 with addresses), add a command to `e2e/lib/seed.mjs` instead of clicking through it. It uses
@@ -165,6 +166,26 @@ then `api`, `web` and `mobile` in parallel, each on its own stack.
 
 The manual trigger is how to test a change that spans repos: give it the matching branch of
 each.
+
+### What a pull request shows
+
+Besides the job checks (`E2E / API (Bruno)` and so on), every test reports as its own commit
+status, so a PR shows which journey broke without opening a log:
+
+```
+e2e/api/fleet-onboarding                 17 requests, 30/30 checks passed (2s)
+e2e/web/02-add-truck-and-create-trip     Failed after 1m 11s: Assertion is false: …
+e2e/mobile/03-create-trip                Did not run (the stack or an earlier step failed; …)
+```
+
+One status per Bruno flow folder and one per Maestro flow file, named from the folder or
+file. They show as pending while the job runs. `e2e/lib/report.mjs` builds them from the JUnit
+reports and the list of test files, so a test that never ran is reported rather than missing;
+a local run prints the same list. A new flow file gets a status automatically. Each status
+can be made required on its own in branch protection.
+
+A job can fail with every test status green: when the stack breaks at teardown or a
+third-party call had no stand-in. The job check is the overall verdict.
 
 ### One-time setup
 

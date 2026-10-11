@@ -42,6 +42,10 @@ E2E_WEB_URL="http://localhost:${E2E_WEB_PORT}"
 E2E_OTP="667766"
 E2E_ADMIN_PHONE="9000000001"
 
+# Bruno flow folders (under bruno/flows/plutus-api) the API suite runs, in order.
+: "${E2E_API_FLOWS:=fleet-onboarding}"
+
+export E2E_API_FLOWS
 export E2E_PROJECT E2E_API_PORT E2E_ADMIN_PORT E2E_MOCKS_PORT E2E_WEB_PORT E2E_BIND E2E_RUN_DIR
 
 if [ -t 1 ] && [ -z "${CI:-}" ]; then

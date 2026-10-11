@@ -16,7 +16,7 @@ suite_api() {
   mkdir -p "$out"
   # Each journey is a folder of numbered requests; run them one journey at a
   # time so a failure in one does not hide the others.
-  for flow in fleet-onboarding; do
+  for flow in $E2E_API_FLOWS; do
     log "bruno: $flow"
     (
       cd "$THEMIS_DIR/bruno/flows/plutus-api" &&
@@ -288,9 +288,10 @@ suite_mobile() {
 
   # The flows are one journey for one user, so they run in order and stop at
   # the first failure: later steps would only fail for the same reason.
-  local flow
-  for flow in 01-sign-up-and-kyc 02-add-truck 03-create-trip; do
-    [ -f "$flows/$flow.yaml" ] || continue
+  local flow file
+  for file in "$flows"/*.yaml; do
+    [ -f "$file" ] || continue
+    flow="$(basename "$file" .yaml)"
     if [ "$flow" = "03-create-trip" ]; then
       # Trip creation needs a customer with saved addresses; adding one in the
       # app goes through a Google map, which a hermetic run cannot use.

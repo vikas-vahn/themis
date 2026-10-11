@@ -49,6 +49,14 @@ summary() {
   fi
 }
 
+# One result per test (each API flow, each Maestro flow), posted to the pull
+# request as commit statuses when the workflow provides a token.
+report() {
+  command -v node >/dev/null 2>&1 || return 0
+  mkdir -p "$E2E_RUN_DIR"
+  node "$E2E_DIR/lib/report.mjs" "$@" || warn "could not write the per-test report"
+}
+
 cmd="${1:-}"
 [ $# -gt 0 ] && shift
 
@@ -61,6 +69,7 @@ case "$cmd" in
   api|web|mobile)
     run_suite "$cmd"; rc=$?
     summary
+    report "$cmd"
     [ "$rc" -eq 77 ] && [ "${E2E_SKIP_IS_FAILURE:-0}" != "1" ] && rc=0
     exit "$rc"
     ;;
@@ -79,7 +88,7 @@ case "$cmd" in
       fi
     }
     trap cleanup EXIT
-    stack_up || exit 1
+    stack_up || { report "${suites[@]}"; exit 1; }
     for s in "${suites[@]}"; do
       run_suite "$s"; rc=$?
       if [ "$rc" -eq 77 ]; then
@@ -90,6 +99,7 @@ case "$cmd" in
     done
     stack_check_unmatched || failed=1
     summary
+    report "${suites[@]}"
     exit "$failed"
     ;;
   ""|-h|--help|help) usage ;;

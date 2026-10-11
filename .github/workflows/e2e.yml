@@ -16,6 +16,10 @@ name: E2E
 #   E2E_RUNNER_MOBILE    atlas-rn (Android emulator) default "ubuntu-latest"
 # Each is a JSON value: "ubuntu-latest" or ["self-hosted","linux","arm64","e2e"].
 #
+# Every test reports to the pull request as its own commit status
+# (e2e/api/<flow>, e2e/web/<flow>, e2e/mobile/<flow>), next to the job checks.
+# That needs `statuses: write`, which a calling workflow must also grant.
+#
 # Secret E2E_REPO_TOKEN: read access to plutus-java, perseus and atlas-rn
 # contents (fine-grained PAT or GitHub App token).
 
@@ -74,6 +78,7 @@ concurrency:
 
 permissions:
   contents: read
+  statuses: write
 
 env:
   ORG: Vahn-Engineering
@@ -93,6 +98,12 @@ env:
   PERSEUS_DIR: ${{ github.workspace }}/perseus
   ATLAS_DIR: ${{ github.workspace }}/atlas-rn
   E2E_SKIP_IS_FAILURE: "1"
+  # Where e2e/lib/report.mjs posts one status per test: the commit under test
+  # in the repository that started the run.
+  E2E_STATUS_TOKEN: ${{ github.token }}
+  E2E_STATUS_REPO: ${{ github.repository }}
+  E2E_STATUS_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  E2E_STATUS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
 jobs:
   backend:
@@ -148,6 +159,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Mark tests as running
+        run: node themis/e2e/lib/report.mjs --pending api
       - name: Run
         env:
           E2E_SKIP_BACKEND_BUILD: "1"
@@ -204,6 +217,8 @@ jobs:
         run: |
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Mark tests as running
+        run: node themis/e2e/lib/report.mjs --pending web
       - name: Run
         env:
           # The backend JAR comes from the build job; perseus is built here.
@@ -259,6 +274,8 @@ jobs:
         run: |
           curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Mark tests as running
+        run: node themis/e2e/lib/report.mjs --pending mobile
 
       # atlas-rn commits no lockfile, so key the dependency and Gradle caches
       # on package.json; a cache hit also pins the resolved versions until
