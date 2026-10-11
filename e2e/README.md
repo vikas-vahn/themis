@@ -222,8 +222,8 @@ The same variable later points at the Mac mini, which can also take an iOS job.
 
 ### Preparing an Oracle arm64 VM as a runner
 
-`e2e/ci/setup-runner-ubuntu.sh` installs what the backend and API jobs need (Docker, JDK 21,
-Maven, Node 22) on Ubuntu 22.04/24.04. Then register the GitHub runner with the labels
+`e2e/ci/setup-runner-linux.sh` installs what the backend and API jobs need (Docker, JDK 21,
+Maven, Node 22) on Ubuntu 22.04/24.04 or Oracle Linux 9. Then register the GitHub runner with the labels
 `e2e` (the script prints the steps). Sizing: the stack peaks around 3 GB of memory; 2 OCPU /
 8 GB per runner is comfortable. Run **one runner per VM**, or give each runner its own ports
 (`E2E_API_PORT`, `E2E_ADMIN_PORT`, `E2E_MOCKS_PORT`, `E2E_WEB_PORT` in the runner's
