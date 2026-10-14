@@ -37,7 +37,7 @@ docs {
   Response `data`: `{ data: [note...], page, pageSize, total, hasMore }`.
 
   A deleted note is listed only while it still has live replies; it then has `deleted: true` and
-  `content: null`.
+  `content`/`author` null.
 
   400 for a missing/unknown `entityType`, a missing `entityId`, bad paging, or a truck the caller can't
   see.

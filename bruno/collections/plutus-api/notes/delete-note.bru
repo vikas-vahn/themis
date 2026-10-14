@@ -19,7 +19,7 @@ docs {
   author, a TORG_ADMIN of the note's torg, or VAHN_ADMIN.
 
   Replies are not deleted. A deleted note that still has live replies stays in the thread as a
-  placeholder (`deleted: true`, `content: null`) so the replies keep their context; once nothing live
+  placeholder (`deleted: true`, `content` and `author` null) so the replies keep their context; once nothing live
   is left under it, it disappears from lists.
 
   204 on success. 403 "Only the author or an admin can delete a note". 404 "Note not found" for an

@@ -35,7 +35,7 @@ docs {
   service `NoteService.createNote`). Notes are generic: `entityType` + `entityId` say what the note is
   on. Only `TRUCK` is supported today.
 
-  Roles: every torg role except DRIVER (VAHN_ADMIN, TORG_ADMIN, ADMIN, MANAGER, TRUCK_MANAGER,
+  Roles: every torg role except DRIVER (VAHN_ADMIN, TORG_ADMIN, MANAGER, TRUCK_MANAGER,
   FUND_MANAGER, FLEET_OWNER, ACCOUNTANT, OPERATOR, AGENT). The caller must be able to see the truck.
   The note belongs to the caller's torg, and only that torg's users see it. VAHN_ADMIN has no torg, so
   it must add `?torgId=<id>`.
@@ -43,7 +43,7 @@ docs {
   Set `truckId` (and `accessToken`) in the selected environment first. The created note's id is saved
   to `noteId` for the other requests in this folder.
 
-  201 with the note: `id`, `torgId`, `entityType`, `entityId`, `parentNoteId`, `rootNoteId`, `content`,
+  201 with the note: `id`, `torgId`, `entityType`, `entityId`, `parentNoteId`, `rootNoteId`, `depth`, `content`,
   `author {id, name, role}`, `createdAt`, `editedAt`, `edited`, `deleted`, `canEdit`, `canDelete`,
   `replyCount`.
 
