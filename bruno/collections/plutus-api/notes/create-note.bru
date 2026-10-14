@@ -43,11 +43,12 @@ docs {
   Set `truckId` (and `accessToken`) in the selected environment first. The created note's id is saved
   to `noteId` for the other requests in this folder.
 
-  201 with the note: `id`, `torgId`, `entityType`, `entityId`, `parentNoteId`, `rootNoteId`, `depth`, `content`,
+  Every response is HTTP 200 with the real code in the body's `statusCode` (the API wrapper does this
+  for errors too, so check the body). Success returns the note in `data`: `id`, `torgId`, `entityType`, `entityId`, `parentNoteId`, `rootNoteId`, `depth`, `content`,
   `author {id, name, role}`, `createdAt`, `editedAt`, `edited`, `deleted`, `canEdit`, `canDelete`,
   `replyCount`.
 
   400 if `entityType`/`entityId` is missing, the truck isn't visible to the caller, or VAHN_ADMIN sent no
   `torgId`. 404 "Vehicle not found" for an unknown truck. 422 if `content` is blank or over 2000
-  characters. Remember 400/422 come back as HTTP 200 with the code in the body's `statusCode`.
+  characters.
 }

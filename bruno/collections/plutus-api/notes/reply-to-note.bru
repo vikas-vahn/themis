@@ -40,7 +40,7 @@ docs {
 
   Run "Create Note" first (it sets `noteId`). The reply's id is saved to `replyNoteId`.
 
-  201 with the reply. 404 "Note not found" if the parent doesn't exist or belongs to another torg.
+  Returns the reply in `data`. 404 "Note not found" if the parent doesn't exist or belongs to another torg.
   400 "Cannot reply to a deleted note", if the entity sent doesn't match the parent's, or if the
   thread has hit a limit above.
 }

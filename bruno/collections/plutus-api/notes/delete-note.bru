@@ -22,6 +22,6 @@ docs {
   placeholder (`deleted: true`, `content` and `author` null) so the replies keep their context; once nothing live
   is left under it, it disappears from lists.
 
-  204 on success. 403 "Only the author or an admin can delete a note". 404 "Note not found" for an
+  HTTP 200 with body `statusCode` 204 on success. 403 "Only the author or an admin can delete a note". 404 "Note not found" for an
   unknown, other-torg or already deleted note.
 }
