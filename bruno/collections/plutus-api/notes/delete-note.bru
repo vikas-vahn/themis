@@ -1,0 +1,27 @@
+meta {
+  name: Delete Note
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/api/notes/{{noteId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Soft-deletes a note (`NoteResource.deleteNote`, service `NoteService.deleteNote`). Allowed for the
+  author, a TORG_ADMIN of the note's torg, or VAHN_ADMIN.
+
+  Replies are not deleted. A deleted note that still has live replies stays in the thread as a
+  placeholder (`deleted: true`, `content: null`) so the replies keep their context; once nothing live
+  is left under it, it disappears from lists.
+
+  204 on success. 403 "Only the author or an admin can delete a note". 404 "Note not found" for an
+  unknown, other-torg or already deleted note.
+}

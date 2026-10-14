@@ -1,0 +1,44 @@
+meta {
+  name: List Notes
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/notes?entityType=TRUCK&entityId={{truckId}}&page=1&pageSize=20&includeReplies=false
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityId: {{truckId}}
+  page: 1
+  pageSize: 20
+  includeReplies: false
+  ~torgId: {{torgId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Lists the caller's torg's top-level notes on an entity, newest first (`NoteResource.listNotes`,
+  service `NoteService.listNotes`). Same roles as "Create Note".
+
+  Query: `entityType` and `entityId` are required. `page` is 1-based (default 1), `pageSize` defaults to
+  20 and is capped at 100. `torgId` is required for VAHN_ADMIN and ignored for everyone else.
+
+  With `includeReplies=false` each note carries only `replyCount` (live replies at any depth). With
+  `includeReplies=true` each note also has `replies`: its direct replies, oldest first, each with their
+  own `replies`.
+
+  Response `data`: `{ data: [note...], page, pageSize, total, hasMore }`.
+
+  A deleted note is listed only while it still has live replies; it then has `deleted: true` and
+  `content: null`.
+
+  400 for a missing/unknown `entityType`, a missing `entityId`, bad paging, or a truck the caller can't
+  see.
+}
