@@ -15,13 +15,14 @@ auth:bearer {
 }
 
 docs {
-  Soft-deletes a note (`NoteResource.deleteNote`, service `NoteService.deleteNote`). Allowed for the
-  author, a TORG_ADMIN of the note's torg, or VAHN_ADMIN.
+  Soft-deletes a note (`NoteResource.deleteNote`, service `NoteService.deleteNote`). Truck notes: only
+  the author, and only within 15 minutes of the note being added; no admin override. (Entity types
+  without that rule also allow a TORG_ADMIN of the note's torg, or VAHN_ADMIN.)
 
   Replies are not deleted. A deleted note that still has live replies stays in the thread as a
   placeholder (`deleted: true`, `content` and `author` null) so the replies keep their context; once nothing live
   is left under it, it disappears from lists.
 
-  HTTP 200 with body `statusCode` 204 on success. 403 "Only the author or an admin can delete a note". 404 "Note not found" for an
+  HTTP 200 with body `statusCode` 204 on success. 403 "Only the author can delete a note", or "A note can only be deleted within 15 minutes of being added". 404 "Note not found" for an
   unknown, other-torg or already deleted note.
 }

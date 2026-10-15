@@ -1,0 +1,41 @@
+meta {
+  name: Upload Attachment
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/storage/upload
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:multipart-form {
+  file: @file(notes/sample-attachment.txt)
+  fileName: sample-attachment.txt
+  fileSize: 59
+  folder: notes/{{torgId}}
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.key) {
+    bru.setEnvVar("attachmentKey", res.body.data.key);
+  }
+}
+
+docs {
+  Step 1 of attaching a file to a note: the existing storage upload (`StorageResource.uploadFile`). Notes
+  only accept keys under `notes/<torgId>/`, so `folder` must be `notes/<your torgId>`.
+
+  `fileName` and `fileSize` are required form fields even though `file` is sent: the key is built from
+  `fileName` (the request fails without it) and `fileSize` is the byte count sent to storage, so it must
+  match the file. The response `data` has `key` (send this with the note), `url` (a 10-minute link),
+  `fileName`, `contentType`, `size`. The key is saved to `attachmentKey`.
+
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, DRIVER, OPERATOR, ACCOUNTANT,
+  FUEL_STATION_MANAGER, FUEL_STATION_ATTENDER. MANAGER and AGENT can use notes but can't upload here.
+}

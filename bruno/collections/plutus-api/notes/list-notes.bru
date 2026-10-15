@@ -34,7 +34,13 @@ docs {
   `includeReplies=true` each note also has `replies`: its direct replies, oldest first, each with their
   own `replies`.
 
-  Response `data`: `{ data: [note...], page, pageSize, total, hasMore }`.
+  Response `data`: `{ data: [note...], page, pageSize, total, hasMore, lastId, unread }`. `lastId` is
+  always null here.
+
+  Read status: `unread` is true when someone else added a live note (top-level or reply) since the
+  caller last listed this entity's notes. Listing then marks everything read, so a second call returns
+  `unread: false` until someone adds a note. The caller's own notes never make anything unread.
+  VAHN_ADMIN views aren't recorded and always get `unread: false`. "Get Note" doesn't change read status.
 
   A deleted note is listed only while it still has live replies; it then has `deleted: true` and
   `content`/`author` null.

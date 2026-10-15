@@ -1,0 +1,32 @@
+meta {
+  name: Note Viewers
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/notes/viewers?entityType=TRUCK&entityId={{truckId}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityId: {{truckId}}
+  ~torgId: {{torgId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Who in the torg has viewed an entity's notes (`NoteResource.getViewers`), most recent first. A user
+  "viewed" when they called "List Notes" for the entity; users who never did aren't listed.
+
+  Response `data`: `[{ user: {id, name, role}, lastViewedAt, seenLatest }]`. `seenLatest` is true when
+  nobody else has added a live note since that user last viewed.
+
+  Roles: every torg role except DRIVER; VAHN_ADMIN must pass `torgId`. The caller must be able to see
+  the truck. 400 for a missing/unknown `entityType` or missing `entityId`.
+}

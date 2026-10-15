@@ -25,11 +25,16 @@ body:json {
 }
 
 docs {
-  Edits a note's text (`NoteResource.updateNote`, service `NoteService.updateNote`). Only the author can
-  edit, not even an admin. Works the same for replies.
+  Edits a note (`NoteResource.updateNote`, service `NoteService.updateNote`). Only the author can edit,
+  not even an admin. For trucks, only within 15 minutes of the note being added. Works the same for
+  replies.
+
+  `content` is always required. `attachments`, when sent, replaces the note's files (`[]` removes them
+  all); leave it out to keep them. Same rules as on create.
 
   200 with the note; `edited` becomes true and `editedAt` is set.
 
-  403 "Only the author can edit a note". 404 "Note not found" for an unknown, other-torg or deleted note.
-  400 if `content` is blank or over 2000 characters.
+  403 "Only the author can edit a note", or "A note can only be edited within 15 minutes of being added".
+  404 "Note not found" for an unknown, other-torg or deleted note. 400 if `content` is blank or over 2000
+  characters, or for invalid attachments.
 }

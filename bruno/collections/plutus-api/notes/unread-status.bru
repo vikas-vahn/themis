@@ -1,0 +1,32 @@
+meta {
+  name: Unread Status
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/notes/unread?entityType=TRUCK&entityIds={{truckId}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityIds: {{truckId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Unread badges for list screens (`NoteResource.getUnreadStatus`). `entityIds` is comma-separated, at
+  most 100 (duplicates are ignored). Doesn't mark anything read; only "List Notes" does.
+
+  Response `data`: `[{ entityId, unread }]` in the order asked. `unread` is true when someone else added
+  a live note since the caller last listed that entity's notes. Entities the caller can't see come back
+  `unread: false`.
+
+  Roles: every torg role except DRIVER. VAHN_ADMIN can't call this (its views aren't tracked).
+  400 for a missing or unknown `entityType`, missing or non-numeric `entityIds`, or more than 100.
+}

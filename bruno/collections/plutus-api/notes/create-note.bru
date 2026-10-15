@@ -46,9 +46,18 @@ docs {
   Every response is HTTP 200 with the real code in the body's `statusCode` (the API wrapper does this
   for errors too, so check the body). Success returns the note in `data`: `id`, `torgId`, `entityType`, `entityId`, `parentNoteId`, `rootNoteId`, `depth`, `content`,
   `author {id, name, role}`, `createdAt`, `editedAt`, `edited`, `deleted`, `canEdit`, `canDelete`,
-  `replyCount`.
+  `replyCount`, `attachments [{id, key, fileName, contentType, size, url}]`. `url` is a short-lived
+  signed link; fetch the note again once it has expired.
+
+  Optional `attachments: [{key, fileName, contentType, size}]`: files already uploaded with "Upload
+  Attachment" (folder `notes/<torgId>`). Trucks allow at most 10. See "Create Note With Attachment".
+
+  Truck notes can be edited and deleted only by the author, and only within 15 minutes of being added;
+  `canEdit`/`canDelete` already reflect that at the time of the response.
 
   400 if `entityType`/`entityId` is missing, the truck isn't visible to the caller, or VAHN_ADMIN sent no
   `torgId`. 404 "Vehicle not found" for an unknown truck. 400 "content is required" or "content must be at
-  most 2000 characters" for blank or over-long `content`. Success is body `statusCode` 200, not 201.
+  most 2000 characters" for blank or over-long `content`. 400 for more than 10 attachments, a key outside
+  `notes/<torgId>/`, a file missing from storage, or the same file twice. Success is body `statusCode`
+  200, not 201.
 }

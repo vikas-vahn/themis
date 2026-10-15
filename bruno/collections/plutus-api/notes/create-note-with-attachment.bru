@@ -1,0 +1,53 @@
+meta {
+  name: Create Note With Attachment
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "entityId": {{truckId}},
+    "content": "Tyre bill attached",
+    "attachments": [
+      {
+        "key": "{{attachmentKey}}",
+        "fileName": "sample-attachment.txt",
+        "contentType": "text/plain",
+        "size": 59
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setEnvVar("noteId", res.body.data.id);
+  }
+}
+
+docs {
+  Step 2: add a note with the file from "Upload Attachment" (`attachmentKey`). Same endpoint and rules as
+  "Create Note"; replies can carry `attachments` too.
+
+  Each attachment needs `key` and `fileName`; `contentType` and `size` are optional and stored as sent.
+  The key must start with `notes/<torgId>/` (the caller's torg) and the file must exist in storage. Trucks
+  allow at most 10 files per note.
+
+  The response note has `attachments: [{id, key, fileName, contentType, size, url}]`, where `url` is a
+  short-lived signed link.
+}
