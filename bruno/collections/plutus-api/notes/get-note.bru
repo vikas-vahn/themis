@@ -1,0 +1,25 @@
+meta {
+  name: Get Note
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/notes/{{noteId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Returns one note with every reply under it nested in `replies` (`NoteResource.getNote`, service
+  `NoteService.getNote`). Works for a reply id too, and then returns just that reply's own subtree.
+
+  Same roles and torg scoping as "List Notes".
+
+  404 "Note not found" if the id doesn't exist, belongs to another torg, or is deleted with no live
+  replies left under it.
+}

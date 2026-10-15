@@ -1,0 +1,46 @@
+meta {
+  name: Reply To Note
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "parentNoteId": {{noteId}},
+    "content": "Bill uploaded, amount 4,200"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("replyNoteId", res.body.data.id);
+}
+
+docs {
+  Replies to an existing note. Same endpoint as "Create Note", with `parentNoteId` in place of the
+  entity: the reply takes its entity and torg from the note it answers. `entityType`/`entityId` may be
+  sent too, but must then match the parent.
+
+  Replies nest: reply to a reply by sending that reply's id as `parentNoteId`. In the response,
+  `parentNoteId` is the note answered, `rootNoteId` is the top-level note of the thread and `depth` is
+  how many levels down the reply sits. Safety limits: 100 levels deep and 500 replies per thread.
+
+  Run "Create Note" first (it sets `noteId`). The reply's id is saved to `replyNoteId`.
+
+  Returns the reply in `data`. 404 "Note not found" if the parent doesn't exist or belongs to another torg.
+  400 "Cannot reply to a deleted note", if the entity sent doesn't match the parent's, or if the
+  thread has hit a limit above.
+}

@@ -1,0 +1,54 @@
+meta {
+  name: Create Note
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "entityId": {{truckId}},
+    "content": "Tyre replaced at Nagpur, bill pending"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("noteId", res.body.data.id);
+}
+
+docs {
+  Adds a top-level note on an entity (`NoteResource.createNote`, `common/controller/NoteResource.java`,
+  service `NoteService.createNote`). Notes are generic: `entityType` + `entityId` say what the note is
+  on. Only `TRUCK` is supported today.
+
+  Roles: every torg role except DRIVER (VAHN_ADMIN, TORG_ADMIN, MANAGER, TRUCK_MANAGER,
+  FUND_MANAGER, FLEET_OWNER, ACCOUNTANT, OPERATOR, AGENT). The caller must be able to see the truck.
+  The note belongs to the caller's torg, and only that torg's users see it. VAHN_ADMIN has no torg, so
+  it must add `?torgId=<id>`.
+
+  Set `truckId` (and `accessToken`) in the selected environment first. The created note's id is saved
+  to `noteId` for the other requests in this folder.
+
+  Every response is HTTP 200 with the real code in the body's `statusCode` (the API wrapper does this
+  for errors too, so check the body). Success returns the note in `data`: `id`, `torgId`, `entityType`, `entityId`, `parentNoteId`, `rootNoteId`, `depth`, `content`,
+  `author {id, name, role}`, `createdAt`, `editedAt`, `edited`, `deleted`, `canEdit`, `canDelete`,
+  `replyCount`.
+
+  400 if `entityType`/`entityId` is missing, the truck isn't visible to the caller, or VAHN_ADMIN sent no
+  `torgId`. 404 "Vehicle not found" for an unknown truck. 422 if `content` is blank or over 2000
+  characters.
+}
