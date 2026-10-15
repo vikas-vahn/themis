@@ -49,6 +49,6 @@ docs {
   `replyCount`.
 
   400 if `entityType`/`entityId` is missing, the truck isn't visible to the caller, or VAHN_ADMIN sent no
-  `torgId`. 404 "Vehicle not found" for an unknown truck. 422 if `content` is blank or over 2000
-  characters.
+  `torgId`. 404 "Vehicle not found" for an unknown truck. 400 "content is required" or "content must be at
+  most 2000 characters" for blank or over-long `content`. Success is body `statusCode` 200, not 201.
 }
