@@ -1,0 +1,21 @@
+meta {
+  name: Delete Note Category
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/note-categories/{{categoryId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  VAHN_ADMIN only. Soft delete: the category is no longer listed or accepted for new notes, but notes
+  already filed under it keep showing it. Body `statusCode` 204; 404 for an unknown or already deleted
+  category.
+}

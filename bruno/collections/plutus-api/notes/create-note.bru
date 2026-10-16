@@ -22,6 +22,7 @@ body:json {
   {
     "entityType": "TRUCK",
     "entityId": {{truckId}},
+    "categoryId": {{categoryId}},
     "content": "Tyre replaced at Nagpur, bill pending"
   }
 }
@@ -45,9 +46,17 @@ docs {
 
   Every response is HTTP 200 with the real code in the body's `statusCode` (the API wrapper does this
   for errors too, so check the body). Success returns the note in `data`: `id`, `torgId`, `entityType`, `entityId`, `parentNoteId`, `rootNoteId`, `depth`, `content`,
-  `author {id, name, role}`, `createdAt`, `editedAt`, `edited`, `deleted`, `canEdit`, `canDelete`,
-  `replyCount`, `attachments [{id, key, fileName, contentType, size, url}]`. `url` is a short-lived
+  `category {id, name}`, `author {id, name, role, image, imageUrl}`, `createdAt`, `editedAt`, `edited`,
+  `editableUntil`, `deleted`, `canEdit`, `canDelete`, `replyCount`, `attachments [{id, key, fileName, contentType, size, url}]`. `url` is a short-lived
   signed link; fetch the note again once it has expired.
+
+  `categoryId` is required on a top-level truck note: one of "List Note Categories" (run it first; it
+  saves the first category to `categoryId`). Replies don't need one.
+
+  `author.image` is the profile image storage key (`User.image`) and `imageUrl` a short-lived link to it,
+  only for `profile_pic/...` keys (null otherwise).
+  `editableUntil` is when the author loses edit/delete (trucks: 15 minutes after creation); null for
+  entity types without a time limit.
 
   Optional `attachments: [{key, fileName, contentType, size}]`: files already uploaded with "Upload
   Attachment" (folder `notes/<torgId>`). Trucks allow at most 10. See "Create Note With Attachment".
@@ -56,7 +65,8 @@ docs {
   `canEdit`/`canDelete` already reflect that at the time of the response.
 
   400 if `entityType`/`entityId` is missing, the truck isn't visible to the caller, or VAHN_ADMIN sent no
-  `torgId`. 404 "Vehicle not found" for an unknown truck. 400 "content is required" or "content must be at
+  `torgId`, or `categoryId` is missing ("categoryId is required for a TRUCK note") or not a live truck
+  category ("Unknown category for TRUCK: <id>"). 404 "Vehicle not found" for an unknown truck. 400 "content is required" or "content must be at
   most 2000 characters" for blank or over-long `content`. 400 for more than 10 attachments, a key outside
   `notes/<torgId>/`, a file missing from storage, or the same file twice. Success is body `statusCode`
   200, not 201.

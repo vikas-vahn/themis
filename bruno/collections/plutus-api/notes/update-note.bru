@@ -29,7 +29,8 @@ docs {
   not even an admin. For trucks, only within 15 minutes of the note being added. Works the same for
   replies.
 
-  `content` is always required. `attachments`, when sent, replaces the note's files (`[]` removes them
+  `content` is always required. `categoryId`, when sent, moves the note to another live category of
+  its entity type; leave it out to keep the current one. `attachments`, when sent, replaces the note's files (`[]` removes them
   all); leave it out to keep them. Same rules as on create.
 
   200 with the note; `edited` becomes true and `editedAt` is set.

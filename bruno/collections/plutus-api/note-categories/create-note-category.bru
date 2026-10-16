@@ -1,0 +1,33 @@
+meta {
+  name: Create Note Category
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/note-categories
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "name": "Tyres",
+    "displayOrder": 4
+  }
+}
+
+docs {
+  VAHN_ADMIN only. `entityType` and `name` (max 100) are required; the name is trimmed and repeated spaces
+  collapsed. `displayOrder` defaults to 0 (lower first; ties by name). Returns the category with body
+  `statusCode` 200. 409 if a live category of that type already has the name, ignoring case.
+}

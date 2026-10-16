@@ -1,0 +1,11 @@
+meta {
+  name: note-categories
+  seq: 99
+}
+
+docs {
+  Categories that notes are filed under (`NoteCategoryResource`, `/api/note-categories`), one list per
+  entity type shared by every torg (TRUCK: Maintenance, Challan, Others to start with, seeded by V97).
+  Reading is open to every notes role; adding, renaming/reordering and deleting is VAHN_ADMIN only.
+  Names are unique per entity type ignoring case and repeated spaces (409 otherwise).
+}

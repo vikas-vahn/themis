@@ -1,0 +1,33 @@
+meta {
+  name: Latest Notes If Unread
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/notes/latest-unread?entityType=TRUCK&entityId={{truckId}}&n=1
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityId: {{truckId}}
+  n: 1
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  For the Home banner (`NoteResource.getLatestIfUnread`). When the caller has unread notes on the entity
+  (someone else added a live note since they last listed or dismissed), returns the newest `n` live notes
+  (1 to 20, default 1), newest first, replies included but not nested. Otherwise `data` is `[]`.
+
+  Doesn't mark anything read. To dismiss the banner, call "Mark Notes Read".
+
+  Roles: every torg role except DRIVER. VAHN_ADMIN can't call this (its views aren't tracked).
+  400 for a missing/unknown `entityType`, missing `entityId` or `n` out of range; the truck access rules of
+  "List Notes" apply.
+}

@@ -22,6 +22,7 @@ body:json {
   {
     "entityType": "TRUCK",
     "entityId": {{truckId}},
+    "categoryId": {{categoryId}},
     "content": "Tyre bill attached",
     "attachments": [
       {
@@ -46,7 +47,10 @@ docs {
 
   Each attachment needs `key` and `fileName`; `contentType` and `size` are optional and stored as sent.
   The key must start with `notes/<torgId>/` (the caller's torg) and the file must exist in storage. Trucks
-  allow at most 10 files per note.
+  allow at most 10 files per note. Allowed types, by extension in any case (`.JPG` is fine): images (jpg,
+  jpeg, png, gif, webp, bmp, tif, tiff, heic, heif), videos (mp4, mov, m4v, 3gp, avi, mkv, webm, hevc),
+  pdf, documents (doc, docx, odt, rtf, txt, ppt, pptx, odp) and spreadsheets (xls, xlsx, xlsm, csv, ods).
+  Both `fileName` and the key must have one of these extensions.
 
   The response note has `attachments: [{id, key, fileName, contentType, size, url}]`, where `url` is a
   short-lived signed link.

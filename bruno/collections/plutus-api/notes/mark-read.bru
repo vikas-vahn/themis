@@ -1,0 +1,28 @@
+meta {
+  name: Mark Notes Read
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/notes/mark-read?entityType=TRUCK&entityId={{truckId}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityId: {{truckId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Marks every note on the entity read for the caller (`NoteResource.markRead`), e.g. when the Home banner
+  is dismissed. The banner ("Latest Notes If Unread") comes back once someone else adds a note; the
+  caller's own notes don't bring it back. "List Notes" does the same implicitly.
+
+  HTTP 200 with body `statusCode` 204. Roles: every torg role except DRIVER (not VAHN_ADMIN).
+}

@@ -16,6 +16,10 @@ params:query {
   page: 1
   pageSize: 20
   includeReplies: false
+  ~q: tyre
+  ~categoryIds: {{categoryId}}
+  ~includeDeleted: false
+  ~markRead: false
   ~torgId: {{torgId}}
 }
 
@@ -42,8 +46,15 @@ docs {
   `unread: false` until someone adds a note. The caller's own notes never make anything unread.
   VAHN_ADMIN views aren't recorded and always get `unread: false`. "Get Note" doesn't change read status.
 
-  A deleted note is listed only while it still has live replies; it then has `deleted: true` and
-  `content`/`author` null.
+  Deleted notes stay in place: `deleted: true`, `content` "This remark was deleted", and `author`, `category` and `attachments` null. Pass `includeDeleted=false` to leave them out, e.g.
+  for the Home/Vehicle Details preview (`pageSize=1`, AC-12: newest non-deleted remark).
+
+  Search and filter: `q` matches the note text or its category name, ignoring case (max 100 characters;
+  `%` and `_` match literally). `categoryIds` is comma-separated and keeps notes in any of those
+  categories. Either one leaves deleted notes out and only searches top-level notes.
+
+  `markRead` (default true) marks the entity's notes read. A list narrowed by `q` or `categoryIds` never
+  marks anything read, so searching doesn't clear the unread state.
 
   400 for a missing/unknown `entityType`, a missing `entityId`, bad paging, or a truck the caller can't
   see.

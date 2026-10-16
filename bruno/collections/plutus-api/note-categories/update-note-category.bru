@@ -1,0 +1,32 @@
+meta {
+  name: Update Note Category
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/note-categories/{{categoryId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Maintenance",
+    "displayOrder": 1
+  }
+}
+
+docs {
+  VAHN_ADMIN only. Renames a category and, when `displayOrder` is sent, reorders it. `entityType` is
+  ignored. Notes filed under it show the new name. 404 for an unknown or deleted category, 409 for a
+  name clash.
+}

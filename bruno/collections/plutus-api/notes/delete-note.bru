@@ -19,9 +19,8 @@ docs {
   the author, and only within 15 minutes of the note being added; no admin override. (Entity types
   without that rule also allow a TORG_ADMIN of the note's torg, or VAHN_ADMIN.)
 
-  Replies are not deleted. A deleted note that still has live replies stays in the thread as a
-  placeholder (`deleted: true`, `content` and `author` null) so the replies keep their context; once nothing live
-  is left under it, it disappears from lists.
+  Replies are not deleted. The deleted note keeps its place in lists and threads as a placeholder:
+  `deleted: true`, `content` "This remark was deleted", and `author`, `category` and `attachments` null.
 
   HTTP 200 with body `statusCode` 204 on success. 403 "Only the author can delete a note", or "A note can only be deleted within 15 minutes of being added". 404 "Note not found" for an
   unknown, other-torg or already deleted note.

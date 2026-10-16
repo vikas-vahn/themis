@@ -1,0 +1,33 @@
+meta {
+  name: List Note Categories
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/note-categories?entityType=TRUCK
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:post-response {
+  if (res.body && Array.isArray(res.body.data) && res.body.data.length > 0) {
+    bru.setEnvVar("categoryId", res.body.data[0].id);
+  }
+}
+
+docs {
+  Live categories of an entity type in display order: `data: [{ id, entityType, name, displayOrder,
+  deleted }]`. Use these for the composer and the filter. Saves the first id to `categoryId`.
+
+  Roles: every notes role (VAHN_ADMIN, TORG_ADMIN, MANAGER, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT,
+  OPERATOR, AGENT). 400 for a missing or unknown `entityType`.
+}
