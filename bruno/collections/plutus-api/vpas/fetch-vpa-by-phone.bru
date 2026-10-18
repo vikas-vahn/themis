@@ -1,0 +1,33 @@
+meta {
+  name: Fetch VPAs by Phone
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/vpas/phone/{{vendorLookupIdentifier}}/fetch
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  `VPAResource.fetchVPA`, roles VAHN_ADMIN and TORG_ADMIN. Looks the phone number up through
+  Surepass and saves the returned VPAs (writes staging data, bills one Surepass call); the response
+  is a list of VPA entities.
+
+  Known quirk (pre-existing, not ENG-1309): the resource returns the raw `VPA` entities, and each
+  `driver` nests its `vpas` back to the VPA again, so on staging the body is ~1.1 MB of
+  driver/vpa nesting about 250 levels deep. Bruno cannot parse it (`res.body` is a string), so
+  this request only asserts the HTTP status. Use a phone with no linked driver for a small body.
+
+  ENG-1309: a Surepass outage now gives body `statusCode: 503` (was 400). The HTTP status stays 200
+  because ApiResponseFilter rewrites it. Not reproducible on staging.
+}

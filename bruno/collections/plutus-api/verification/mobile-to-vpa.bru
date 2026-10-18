@@ -1,0 +1,31 @@
+meta {
+  name: Mobile to VPA (Surepass)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/verification/vpa/mobile-to-vpa?mobileNumber={{driverPhone}}
+  body: none
+  auth: none
+}
+
+params:query {
+  mobileNumber: {{driverPhone}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.success: eq true
+  res.body.data.mobile_number: isString
+  res.body.data.upi_id: isArray
+}
+
+docs {
+  `VerificationResource.mobileToVpa`. Unauthenticated (no @RolesAllowed). Bills one Surepass call.
+  Staging returns the stub name "Test User" and `upi_id` as a list (`["<number>@upi"]`).
+
+  ENG-1309 outage branch (not reproducible on staging): the data map carries
+  `provider_unavailable: true` instead of the VPA list, still under HTTP 200.
+}

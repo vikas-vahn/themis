@@ -1,0 +1,36 @@
+meta {
+  name: Verify Vehicle RC (Surepass)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/verification/vehicle-rc/verify?registrationNumber={{rcRegistrationNumber}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  registrationNumber: {{rcRegistrationNumber}}
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.registrationNumber: isString
+}
+
+docs {
+  `VerificationResource.verifyVehicleRc`, VAHN_ADMIN only. Re-fetches the RC from Surepass for an
+  existing truck and returns the updated truck. Bills one Surepass call and rewrites the truck's RC
+  fields, so point `rcRegistrationNumber` at a throwaway truck (staging: TN66AS6226, truck 1100).
+
+  Other outcomes: blank registrationNumber -> 400; unknown truck -> 404 `{"error":"Truck not found"}`.
+  ENG-1309 outage branch (not reproducible on staging): Surepass 5xx after retries -> a real HTTP 503
+  `{"error": "<unavailable message>"}`, the truck is left PENDING and queued for background
+  re-verification.
+}

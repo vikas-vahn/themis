@@ -1,0 +1,29 @@
+meta {
+  name: Surepass Balance - non-admin (driver)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/verification/balance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 403
+  res.body.success: eq false
+}
+
+docs {
+  A role other than VAHN_ADMIN is refused. Auth failures come back as HTTP 200 with
+  `{"statusCode":403,"message":"User not authorized."}`, so assert the body, not the HTTP status.
+
+  Run auth/send-otp then auth/verify-otp first so `{{accessToken}}` is the DRIVER token for
+  `{{driverPhone}}`.
+}

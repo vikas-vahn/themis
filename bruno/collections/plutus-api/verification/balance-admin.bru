@@ -1,0 +1,29 @@
+meta {
+  name: Surepass Balance - VAHN_ADMIN
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/verification/balance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data: isNumber
+}
+
+docs {
+  Returns the remaining Surepass wallet balance as a number in `data`
+  (`{"data":1000000,"statusCode":200,"success":true}` on staging). A Surepass failure gives a
+  500 `{"error":"An unexpected error occurred","status_code":500}` body.
+  Needs `{{vahnAdminToken}}` (see folder docs).
+}

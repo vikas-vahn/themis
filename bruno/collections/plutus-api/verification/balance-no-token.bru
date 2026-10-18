@@ -1,0 +1,22 @@
+meta {
+  name: Surepass Balance - no token
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/verification/balance
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+  res.body.statusCode: eq 401
+}
+
+docs {
+  `GET /api/verification/balance` (`VerificationResource.getBalance`) has been
+  `@RolesAllowed(VAHN_ADMIN)` + `@Auth` since ENG-1309. With no Authorization header the auth filter
+  answers a real HTTP 401, body `{"statusCode":401,"message":"Credentials are required ..."}`.
+}

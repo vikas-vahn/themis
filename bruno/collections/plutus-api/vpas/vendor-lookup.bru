@@ -1,0 +1,39 @@
+meta {
+  name: Vendor Lookup (VPA by mobile or UPI)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/vpas/vendor-lookup?identifier={{vendorLookupIdentifier}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  identifier: {{vendorLookupIdentifier}}
+}
+
+auth:bearer {
+  token: {{torgAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.upiId: isString
+  res.body.data.id: isNumber
+}
+
+docs {
+  `VPAResource.getVPAForVendorPayout`. Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER,
+  ACCOUNTANT, OPERATOR; it uses the caller's torgId, so use a TORG_ADMIN token (the static
+  VAHN_ADMIN has no torg). Creates a driver-less VPA plus a torg mapping when the identifier is new
+  and Surepass resolves it, so it writes staging data and bills a Surepass call.
+
+  Outcomes: blank identifier -> 400; `error: NOT_FOUND` -> 404; ENG-1309: Surepass outage ->
+  `error: SERVICE_DOWN` -> a real HTTP 503 (was 404). Not reproducible on staging.
+
+  Set `torgAdminToken` by running auth/send-otp + verify-otp for a torg admin phone, or pass it
+  with --env-var. It is blank in environments/staging.bru.
+}
