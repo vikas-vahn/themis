@@ -1,0 +1,52 @@
+meta {
+  name: 7b. Upload UPI ID Proof (name mismatch)
+  type: http
+  seq: 7.5
+}
+
+put {
+  url: {{baseUrl}}/api/vpas/{{vpaId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "verificationDocumentUrl": "driver/{{driverId}}/aadhaar/bruno-upi-id-proof.jpg"
+  }
+}
+
+assert {
+  res.body.success: eq true
+  res.body.data.id: eq {{vpaId}}
+  res.body.data.verificationStatus: eq IN_PROGRESS
+  res.body.data.verificationDocumentUrl: eq driver/{{driverId}}/aadhaar/bruno-upi-id-proof.jpg
+}
+
+docs {
+  Only needed when step 7 comes back with `verificationStatus: NAME_MISMATCH`, meaning the name
+  the UPI provider returned doesn't match the driver's profile. On staging the provider returns
+  "Test User" for every UPI, so step 7 almost always ends in a mismatch there.
+
+  This is exactly what the driver app (hermes 1.1.5, `uploadVpaVerificationDocument`) sends: the
+  Aadhaar front's storage **key** (not a CDN URL) written onto the UPI through its own PUT route.
+  It moves the UPI to `IN_PROGRESS` for an admin to verify in zeus. The driver app collects no
+  relation type, so `relationType` stays null here and the admin picks one when verifying.
+
+  A DRIVER may only attach proof to their own UPI; any other field in the body (name, status)
+  is ignored for them. `PUT /api/vpas/{{vpaId}}/id-proof` with the same body is the dedicated
+  equivalent, mirroring the bank-account id-proof route.
+
+  BUG-69 / MBT-69: before the fix, this route did not allow the DRIVER role, so the app got
+  `{"statusCode":403,"message":"User not authorized."}` and the proof never reached the UPI.
+  The fix is on plutus-java branch `fix/BUG-69-driver-upi-verify-relation-null` and is **not**
+  on staging yet as of 2026-09-28. Until it ships, this step fails with that 403.
+}
