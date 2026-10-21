@@ -1,0 +1,55 @@
+meta {
+  name: 5. Vendor payout (no trip expense)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/vendor/payout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": "10",
+    "vpaId": {{vendorPayoutVpaId}},
+    "isTripExpense": false,
+    "truckId": {{vendorPayoutTruckId}},
+    "driverId": {{vendorPayoutDriverId}},
+    "narration": "Themis vendor payout"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("vendorPayoutReferenceId", res.body.data.transactionId);
+}
+
+tests {
+  test("payout is accepted with a TXN reference", function() {
+    expect(res.body.success).to.equal(true);
+    expect(res.body.data.status).to.be.oneOf(["PROCESSING", "PENDING", "COMPLETED"]);
+    expect(res.body.data.transactionId).to.match(/^TXN-[0-9A-F]{8}$/);
+    expect(res.body.data.entityId).to.be.a("number");
+  });
+}
+
+docs {
+  Debits the wallet and sends a RazorpayX payout to the UPI ID. `data.transactionId` is the
+  payout's `TXN-…` reference: since PR #998 it is also the RazorpayX idempotency key, so a
+  retried call returns the same payout instead of paying twice. `data.amount` is what the vendor
+  receives; it is lower than `amount` when the torg has charge-inclusive payout fees configured.
+  The payment is booked against the truck's in-progress trip. Captures {{vendorPayoutReferenceId}}.
+}

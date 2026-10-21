@@ -1,0 +1,40 @@
+meta {
+  name: vendor-payout
+}
+
+docs {
+  # Vendor Payout Journey
+
+  A fleet owner (TORG_ADMIN) pays a vendor's UPI ID from their VAHN wallet through
+  `POST /api/payment-gateway/vendor/payout`, which debits the wallet and sends a RazorpayX
+  payout to the UPI ID. This is the money rail that merchant payment requests (ENG-1126) build
+  on; the journey pins its behaviour after the ENG-1126 groundwork (PR #998).
+
+  Run requests 1–12 in order (use the "staging" environment, top-right):
+
+  - 1–2: the owner logs in (OTP `667766` on staging). Step 2 captures `accessToken`.
+  - 3: resolve the vendor UPI ID into a VPA row (`vendorPayoutVpaId`). Staging's mock UPI lookup
+    always returns the name "Test User".
+  - 4: wallet balance before paying.
+  - 5: plain payout, no trip expense. Captures `vendorPayoutReferenceId` (the `TXN-…` id, which
+    is also the RazorpayX idempotency key since PR #998).
+  - 6: count the trip's existing ₹12 "Vendor Payment" expenses.
+  - 7: payout booked as a trip expense on the truck's in-progress trip.
+  - 8: the trip must now have exactly one more such expense (OTHER_CHARGES, "Vendor Payment").
+  - 9: `isTripExpense: null` must be treated as false (it used to fail with a 500).
+  - 10–11: validation: a zero amount and an unknown VPA are refused.
+  - 12: reconcile step 5's payout status with Razorpay.
+
+  **Staging caveats.** Staging never receives Razorpay payout webhooks, and its RazorpayX test
+  account queues payouts, so payouts stay PROCESSING/PENDING: step 12 reports PENDING, never
+  COMPLETED or FAILED. Each run moves about ₹33 of test-mode money out of the owner's wallet.
+
+  This flow uses its own `vendorPayout*` variables: it needs a TORG_ADMIN whose wallet has a
+  balance and a truck with an in-progress trip and a driver (torg 315, user 1490, truck 1256 /
+  MH12IO1234, trip 2631, driver 940 on 2026-10-06). If the trip ends, point
+  `vendorPayoutTruckId`/`vendorPayoutTripId`/`vendorPayoutDriverId` at another live trip of the
+  same torg.
+
+  Do not re-run step 5, 7 or 9 within 30 seconds of itself: the duplicate-request guard refuses a
+  second payout of the same amount to the same UPI ID in that window (HTTP 409).
+}

@@ -1,0 +1,30 @@
+meta {
+  name: 1. Send OTP (Fleet Owner)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/send-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{vendorPayoutOwnerPhone}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Log in as the paying fleet owner (TORG_ADMIN). OTP is `667766` on local and staging.
+}

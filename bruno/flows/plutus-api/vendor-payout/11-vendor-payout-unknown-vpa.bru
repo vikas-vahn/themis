@@ -1,0 +1,38 @@
+meta {
+  name: 11. Vendor payout refused: unknown VPA
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/vendor/payout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": "5",
+    "vpaId": 99999999,
+    "truckId": {{vendorPayoutTruckId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq false
+  res.body.statusCode: eq 400
+  res.body.message: eq VPA not found
+}
+
+docs {
+  A VPA id that does not exist is refused before any money moves.
+}

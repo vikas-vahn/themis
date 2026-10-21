@@ -1,0 +1,32 @@
+meta {
+  name: 12. Reconcile payout status
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/payment-gateway/payout-status/{{vendorPayoutReferenceId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+tests {
+  test("status is a known payout state", function() {
+    expect(res.body.data.status).to.be.oneOf(["PENDING", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED"]);
+  });
+}
+
+docs {
+  Pulls step 5's payout status from Razorpay and applies it (refunding the wallet on FAILED).
+  On staging this stays PENDING: the RazorpayX test account queues payouts and no webhooks
+  arrive. In an environment that settles payouts, expect COMPLETED.
+}

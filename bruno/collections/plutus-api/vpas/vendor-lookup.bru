@@ -1,0 +1,32 @@
+meta {
+  name: Vendor Lookup
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/vpas/vendor-lookup?identifier={{vendorUpiId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Resolves a vendor's UPI ID (or mobile number) to a VPA row a vendor payout can target
+  (`VPAService.getVPAForVendorPayout`). An unknown UPI ID is looked up at the bank and saved as a
+  driver-less VPA with a mapping to the caller's torg. A UPI ID that is verified and linked to a
+  driver of the same torg is refused. Not open to DRIVER.
+
+  Response (staging 2026-10-06; staging's mock lookup names every UPI ID "Test User"):
+
+  {
+    "success": true,
+    "message": "Success",
+    "statusCode": 200,
+    "data": { "id": 401, "name": "Test User", ... }
+  }
+
+  Use `data.id` as `vpaId` in `payment-gateway/vendor-payout`.
+}

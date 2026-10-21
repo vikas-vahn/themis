@@ -1,0 +1,39 @@
+meta {
+  name: 10. Vendor payout refused: zero amount
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/vendor/payout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": "0",
+    "vpaId": {{vendorPayoutVpaId}},
+    "truckId": {{vendorPayoutTruckId}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq false
+  res.body.statusCode: eq 400
+  res.body.message: eq Invalid amount
+}
+
+docs {
+  Refused before any money moves. Note the shape: plutus rewrites a 400 to HTTP 200 with
+  `{success:false, statusCode:400}`, so check the body, not the HTTP status.
+}
