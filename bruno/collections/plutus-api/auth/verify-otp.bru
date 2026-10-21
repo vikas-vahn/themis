@@ -21,6 +21,11 @@ body:json {
   }
 }
 
+vars:pre-request {
+  driverPhone: 9360245308
+  driverOtp: 160261
+}
+
 script:post-response {
   bru.setEnvVar("accessToken", res.body.data.accessToken);
 }
@@ -28,7 +33,7 @@ script:post-response {
 docs {
   Exchanges the OTP from "Send OTP" for a bearer token. On success this sets {{accessToken}}
   automatically — every other request in this collection uses that variable.
-
+  
   If the phone number has never logged in before, `data.role` in the response is NEW_USER; no
   User/Driver record exists yet. See the driver-onboarding flow (bruno/flows/plutus-api/
   driver-onboarding/) for the full self-registration sequence that follows from there.

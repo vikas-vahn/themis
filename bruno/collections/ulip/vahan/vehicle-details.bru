@@ -16,16 +16,20 @@ auth:bearer {
 
 body:json {
   {
-    "vehiclenumber": "{{process.env.ULIP_VEHICLE_NUMBER}}"
+    "vehiclenumber": "AP39WJ6345"
   }
 }
 
-docs {
-  `POST /ulip/v1.0.0/VAHAN/04` with `{"vehiclenumber"}`: RC details from VAHAN as native JSON
-  (owner, registration and fitness/insurance/permit validity). plutus-java: `ULIPClient.getVahanDetails`.
+vars:pre-request {
+  ulipToken: eyJhbGciOiJIUzUxMiJ9.eyJhcHBzIjoiYXBpR2F0ZXdheSIsInN1YiI6Imd0Y3ZfdmFobl91c3IiLCJpYXQiOjE3OTE1MjYwNjJ9.sKlJLFFwt_1Z2bntTnJVDR9MFZx_KnA262FC9WpitYfjB9Iv_uK2uFuqem_9GCihc9Uv4-dylrzC-_uT69QmJg
 }
 
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  `POST /ulip/v1.0.0/VAHAN/04` with `{"vehiclenumber"}`: RC details from VAHAN as native JSON
+  (owner, registration and fitness/insurance/permit validity). plutus-java: `ULIPClient.getVahanDetails`.
 }

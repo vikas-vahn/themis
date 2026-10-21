@@ -1,0 +1,31 @@
+meta {
+  name: Delete Trucks (Bulk)
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "truckIds": [7826,7825,7823]
+  }
+}
+
+docs {
+  Soft-deletes several trucks in one call (`TruckResource.deleteTruckList`,
+  `common/controller/TruckResource.java:439`). Roles: VAHN_ADMIN, TORG_ADMIN.
+  Fill the `truckIds` array in the body before running.
+  
+  Always 200; each id is processed independently and reported as
+  `[{ "truckId", "success", "errorMessage" }]`. Check every entry: a VERIFIED truck, a missing
+  id or another torg's truck comes back with `success: false` instead of failing the request.
+}

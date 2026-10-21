@@ -1,0 +1,39 @@
+meta {
+  name: Delete User (Truck Manager)
+  type: http
+  seq: 1
+}
+
+delete {
+  url: {{baseUrl}}/api/users/{{truckManagerUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  truckManagerUserId: 22366
+}
+
+docs {
+  Soft-deletes a user (`UserResource.deleteUser`, `common/controller/UserResource.java:351`,
+  service `UserService.deleteUser`). Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER,
+  FUEL_STATION_MANAGER.
+  
+  For a TRUCK_MANAGER the service moves any wallet balance back to the admin wallet, unassigns
+  the user from all their trucks, then marks the user deleted. OPERATOR and ACCOUNTANT users are
+  only marked deleted. Any other role is rejected.
+  
+  Set `truckManagerUserId` (and `accessToken`) in the selected environment before each run.
+  
+  204 on success. 400 "User not found" if the id doesn't exist, "User is already deleted" on a
+  repeat call, "Unsupported user role for deletion" for other roles, or "Failed to transfer
+  balance to admin wallet, please try again later" if the wallet sweep fails.
+  
+  The service does not check that the target user belongs to the caller's torg (that check is
+  commented out), so double-check the id before running.
+}
+​

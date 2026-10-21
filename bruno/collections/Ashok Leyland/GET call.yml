@@ -1,0 +1,19 @@
+info:
+  name: GET call
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: https://ialertelite.ashokleyland.com/ialert/daas/api/getdata?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJNalk0T0RFMiIsImF1ZCI6IkRBQVMifQ.z3-oiElN9TtBQn1QutzDFB2kYDmMa3Gsqblb_c0vo4w
+  params:
+    - name: token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJNalk0T0RFMiIsImF1ZCI6IkRBQVMifQ.z3-oiElN9TtBQn1QutzDFB2kYDmMa3Gsqblb_c0vo4w
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,34 @@
+meta {
+  name: Remove Manager From Truck
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/{{truckId}}/managers/{{truckManagerUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Removes one manager from a truck's manager set; the user itself is kept
+  (`TruckResource.removeManagerFromTruck`, `common/controller/TruckResource.java:805`, service
+  `TruckService.removeManagerFromTruck` → `unassignManagerFromTruck`). Roles: VAHN_ADMIN,
+  TORG_ADMIN, FUND_MANAGER. Non-VAHN_ADMIN callers can only touch trucks owned by their own torg.
+  Replaces the deprecated `PUT /api/trucks/{truckId}/unassign-manager?userId=`.
+
+  Set `truckId`, `truckManagerUserId` (and `accessToken`) in the selected environment before
+  each run.
+
+  200 with the updated TruckDTO. If the removed manager was primary, the oldest remaining manager
+  is promoted; if none remain the truck's manager is cleared. An in-progress trip managed by the
+  removed user moves to the new primary manager, or to the torg admin when no manager is left.
+  A user who is not a manager of the truck also gets 200 with the truck unchanged.
+
+  404 "Vehicle not found with ID: ..." if the truck doesn't exist. 400 if the truck belongs to
+  another torg.
+}

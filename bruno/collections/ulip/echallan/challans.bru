@@ -16,16 +16,20 @@ auth:bearer {
 
 body:json {
   {
-    "vehicleNumber": "{{process.env.ULIP_VEHICLE_NUMBER}}"
+    "vehicleNumber": "AP39UT4203"
   }
 }
 
-docs {
-  `POST /ulip/v1.0.0/ECHALLAN/01` with `{"vehicleNumber"}` (camelCase, unlike the other vehicle
-  APIs): pending and disposed e-challans for the vehicle. plutus-java: `ULIPClient.getChallans`.
+vars:pre-request {
+  ulipToken: eyJhbGciOiJIUzUxMiJ9.eyJhcHBzIjoiYXBpR2F0ZXdheSIsInN1YiI6Imd0Y3ZfdmFobl91c3IiLCJpYXQiOjE3OTE1MjYwNjJ9.sKlJLFFwt_1Z2bntTnJVDR9MFZx_KnA262FC9WpitYfjB9Iv_uK2uFuqem_9GCihc9Uv4-dylrzC-_uT69QmJg
 }
 
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  `POST /ulip/v1.0.0/ECHALLAN/01` with `{"vehicleNumber"}` (camelCase, unlike the other vehicle
+  APIs): pending and disposed e-challans for the vehicle. plutus-java: `ULIPClient.getChallans`.
 }

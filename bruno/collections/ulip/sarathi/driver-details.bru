@@ -21,6 +21,10 @@ body:json {
   }
 }
 
+vars:pre-request {
+  ulipToken: eyJhbGciOiJIUzUxMiJ9.eyJhcHBzIjoiYXBpR2F0ZXdheSIsInN1YiI6Imd0Y3ZfdmFobl91c3IiLCJpYXQiOjE3OTAwODg0NDh9.GqwW_HsqWu5ZKKHD-RALpK70hQxwwj5J4b05LdxJgY_pEq8Uqsq-1eEenoNW-wbqleTPQGQ8bWF-5BOTIgzEKQ
+}
+
 tests {
   test("SARATHI returned a result", function () {
     const result = res.getBody().response[0];
@@ -39,3 +43,4 @@ docs {
   Result is in `response[0].response`; `response[0].responseStatus` is `SUCCESS` when the DL/DOB pair
   matched. Run `auth/login` first.
 }
+​

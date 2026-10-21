@@ -1,0 +1,26 @@
+meta {
+  name: Delete Truck
+  type: http
+  seq: 1
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/{{truckId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Soft-deletes one truck (`TruckResource.deleteTruck`, `common/controller/TruckResource.java:233`,
+  service `TruckService.deleteTruck`). Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER.
+  Non-VAHN_ADMIN callers can only delete trucks owned by their own torg.
+
+  Set `truckId` (and `accessToken`) in the selected environment before each run.
+
+  204 on success. 404 "Vehicle not found" if the id doesn't exist or is already deleted.
+  400 if the truck is VERIFIED (verified trucks can't be deleted) or belongs to another torg.
+}
