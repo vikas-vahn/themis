@@ -1,0 +1,82 @@
+meta {
+  name: Create Driver
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "{{newDriverName}}",
+    "phone": "{{newDriverPhone}}",
+    "licenseNumber": "{{newDriverLicenseNumber}}",
+    "email": "{{newDriverEmail}}",
+    "ownerId": {{newDriverOwnerId}}
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("createdDriverId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq {{newDriverName}}
+  res.body.data.phone: eq "{{newDriverPhone}}"
+}
+
+docs {
+  Creates a driver directly as an admin/fleet role (`DriverResource.createDriver`,
+  `common/controller/DriverResource.java:199-231`, service `DriverService.createDriver`).
+
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER.
+
+  `name` and `phone` (exactly 10 digits) are required; `licenseNumber` and `email` are optional
+  and shown here as the common extra fields other driver requests in this collection populate.
+
+  Ownership: for TORG_ADMIN/TRUCK_MANAGER/FUND_MANAGER callers, the driver is attached to the
+  caller's own torg and `ownerId` in the body is ignored. For a VAHN_ADMIN caller, `ownerId` is
+  the only source of the torg — omit or send a bad id and the driver is created with no owner
+  (`torgDAO.findById` just returns empty, no error). Set `newDriverOwnerId` to a real torg id
+  before running as VAHN_ADMIN; leave it unset (and drop the field) when running as a torg role.
+
+  Every response is HTTP 200 with the real code in body `statusCode`, even for errors — this
+  matches the other reference requests in this collection; check the body on failure.
+  `DriverResource.createDriver` itself also still returns a raw 201 on success before the
+  wrapper rewrites the status to 200, and a raw 400 (`{"message": ...}`) if `driverService
+  .createDriver` throws `BadRequestException`.
+
+  409/400 "Driver already exists" if a driver with this phone already has an owner (see
+  `driver-onboarding`'s step 11 "Create Second Driver" for the same call from inside a flow,
+  which needs a phone unique across the whole staging DB). If a driver with this phone exists
+  but has no owner yet (e.g. self-registered, never linked), this call attaches it to the
+  caller's/`ownerId`'s torg instead of creating a new row, and `verifyDLMatch` 400s if the
+  incoming `licenseNumber` conflicts with the existing one.
+
+  Verified on staging 2026-10-21: a reused `licenseNumber` (unlike a reused `phone`) is **not**
+  caught by `DriverService.createDriver` before insert — it hits the DB's unique constraint and
+  comes back as an unhandled `500` (`{"statusCode":500,"success":false,"message":"There was an
+  error processing your request. Log ID: ..."}`), not the `400`/`409` the Swagger doc on this
+  endpoint promises. Bump `newDriverLicenseNumber` to a fresh value before every re-run, same as
+  `newDriverPhone`, or drop the field — it's optional.
+
+  Set `accessToken` in the environment to a VAHN_ADMIN/TORG_ADMIN/TRUCK_MANAGER/FUND_MANAGER
+  token first (e.g. run "Send OTP"/"Verify OTP" in the auth/ folder, or copy it from a flow run).
+  Uses `{{plutusBaseUrl}}` rather than this collection's `{{baseUrl}}` — same staging host today,
+  kept separate so this request doesn't silently move if `{{baseUrl}}` is ever repointed for the
+  other requests in this collection.
+}
