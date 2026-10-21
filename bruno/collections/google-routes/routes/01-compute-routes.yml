@@ -1,0 +1,47 @@
+info:
+  name: compute-routes
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/directions/v2:computeRoutes"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: X-Goog-FieldMask
+      value: "{{googleRoutesFieldMask}}"
+  body:
+    type: json
+    data: |-
+      {
+        "origin": { "address": "{{googleRoutesOriginAddress}}" },
+        "destination": { "address": "{{googleRoutesDestinationAddress}}" },
+        "travelMode": "DRIVE"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status is 200", function () {
+          expect(res.getStatus(), JSON.stringify(res.getBody())).to.equal(200);
+        });
+        test("first route has an encoded polyline", function () {
+          const route = (res.getBody().routes || [])[0];
+          expect(route, JSON.stringify(res.getBody())).to.be.an("object");
+          expect(route.polyline.encodedPolyline).to.be.a("string").that.is.not.empty;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: |-
+  `POST /directions/v2:computeRoutes` with `{"origin":{"address"},"destination":{"address"},"travelMode":"DRIVE"}`,
+  scoped to `routes.polyline.encodedPolyline` via the `X-Goog-FieldMask` header. Returns a Google-encoded
+  polyline that can be fed into TollGuru's `toll/02-polyline` request (`tollguruPolyline` var) to price
+  a route Google itself geocoded, instead of one priced by lat/lng waypoints.

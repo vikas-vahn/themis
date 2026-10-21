@@ -1,0 +1,41 @@
+opencollection: 1.0.0
+
+info:
+  name: google-routes
+  version: "1"
+
+request:
+  headers:
+    - name: X-Goog-Api-Key
+      value: "{{process.env.GOOGLE_ROUTES_API_KEY}}"
+
+docs:
+  content: |-
+    # Google Routes API (v2)
+
+    Direct calls to Google's Routes API (`routes.googleapis.com`, not a Vahn service). plutus-java's
+    `mapService.google_maps` config already points `api_versions.v2` at this host for the `GOOGLE_MAPS`
+    toll estimate strategy (ENG-1313); `GoogleMapsClient` doesn't call `computeRoutes` yet, so this
+    collection is for exploring the API directly.
+
+    ## Credentials and inputs
+
+    Read from `bruno/collections/google-routes/.env` (gitignored). Create it locally:
+
+    ```
+    GOOGLE_ROUTES_API_KEY=<google routes api key>
+    ```
+
+    Origin/destination are plain vars in `environments/staging.yml` (default: Mudhol, Karnataka ->
+    Choti Khatu/Khatu Khurd, Rajasthan).
+
+    ```bash
+    npx @usebruno/cli run bruno/collections/google-routes --env staging
+    ```
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

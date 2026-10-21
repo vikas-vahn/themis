@@ -1,0 +1,10 @@
+name: staging
+variables:
+  - name: baseUrl
+    value: https://routes.googleapis.com
+  - name: googleRoutesOriginAddress
+    value: "Mudhol, Karnataka 587313"
+  - name: googleRoutesDestinationAddress
+    value: "Choti Khatu, Khatu Khurd, Rajasthan 341302"
+  - name: googleRoutesFieldMask
+    value: routes.polyline.encodedPolyline

@@ -1,0 +1,10 @@
+info:
+  name: routes
+  type: folder
+
+request: {}
+
+docs:
+  content: |-
+    Google Routes API v2 endpoints.
+  type: text/markdown
