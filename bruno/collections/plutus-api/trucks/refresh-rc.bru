@@ -1,0 +1,39 @@
+meta {
+  name: Refresh Truck RC (Surepass)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/{{rcTruckId}}/refresh-rc
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.id: eq {{rcTruckId}}
+  res.body.data.registrationNumber: isString
+}
+
+docs {
+  `TruckResource.refreshTruckRc`, VAHN_ADMIN only. Re-runs external RC verification
+  (`TruckVerificationService.verifyTruckExternal`) for the truck and returns the updated TruckDTO
+  wrapped by the response filter as `{data, message, statusCode, success}`. Bills a Surepass call and rewrites the truck's RC fields,
+  so use a throwaway truck (staging: truck 1100, TN66AS6226) and set `rcTruckId` to it.
+
+  If the truck is already VERIFIED / PAN_CARD_NOT_VALID / PAN_CARD_PENDING the service returns it
+  as-is without calling Surepass (on staging truck 1100 was RC_NOT_VALID when checked 2026-10-21, so each call does bill Surepass).
+
+  Other outcomes: unknown truck -> 404 `{"error":"Truck not found"}`; any other failure -> 500
+  `{"error":"Failed to refresh RC details"}`. ENG-1309 outage branch (not reproducible on
+  staging): Surepass 5xx after retries -> HTTP 503 `{"error": "<message>"}`, truck left PENDING and queued
+  for background re-verification.
+
+  Needs `{{vahnAdminToken}}`; pass it at run time with --env-var, never commit it.
+}
