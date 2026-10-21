@@ -1,0 +1,56 @@
+meta {
+  name: polyline
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/complete-polyline-from-mapping-service
+  body: json
+  auth: none
+}
+
+script:pre-request {
+  // A route pasted into .env wins; otherwise price the polyline step 01 returned.
+  const polyline = bru.getProcessEnv("TOLLGURU_POLYLINE") || bru.getVar("tollguruRoutePolyline");
+  if (!polyline) {
+    throw new Error("No polyline: set TOLLGURU_POLYLINE in .env or run origin-destination first");
+  }
+  bru.setVar("tollguruPolyline", polyline);
+}
+
+body:json {
+  {
+    "polyline": "{{tollguruPolyline}}",
+    "vehicle": { "type": "{{tollguruVehicleType}}" },
+    "units": { "currency": "{{tollguruCurrency}}" }
+  }
+}
+
+tests {
+  test("route has a tag cost and plazas", function () {
+    const route = res.getBody().route;
+    expect(route.hasTolls).to.equal(true);
+    expect(route.costs.tag, JSON.stringify(route.costs)).to.be.a("number");
+    expect(route.tolls).to.be.an("array").that.is.not.empty;
+  });
+
+  test("priced in the requested currency", function () {
+    expect(res.getBody().summary.currency).to.equal(bru.getEnvVar("tollguruCurrency"));
+  });
+}
+
+docs {
+  `POST /complete-polyline-from-mapping-service` with `{"polyline","vehicle":{"type"},"units":{"currency"}}`,
+  exactly as `TollGuruClient` sends it for a trip with an encoded polyline (the trip's own, or Google's).
+  plutus reads `route.costs.tag` (falling back to `minimumTollCost`) and `route.tolls[].name/tagCost`.
+
+  Vehicle types plutus sends, by NETC class: VC4/VC20 `2AxlesAuto`, VC5 `2AxlesLCV`,
+  VC7/VC10/VC11 `3AxlesTruck`, VC12–14 `5AxlesTruck`, VC15–16 `7AxlesTruck`.
+  Change `tollguruVehicleType` in the env to try one.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
