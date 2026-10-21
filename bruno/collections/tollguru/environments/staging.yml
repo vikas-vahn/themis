@@ -1,0 +1,22 @@
+name: staging
+variables:
+  - name: baseUrl
+    value: https://apis.tollguru.com/toll/v2
+  - name: tollguruCurrency
+    value: INR
+  - name: tollguruVehicleType
+    value: 3AxlesTruck
+  - name: tollguruFromLat
+    value: "28.4595"
+  - name: tollguruFromLng
+    value: "77.0266"
+  - name: tollguruToLat
+    value: "26.9124"
+  - name: tollguruToLng
+    value: "75.7873"
+  - name: tollguruWaypointLat
+    value: "27.9881"
+  - name: tollguruWaypointLng
+    value: "76.3869"
+  - name: tollguruDepartureTime
+    value: 2026-11-02T08:00:00+05:30

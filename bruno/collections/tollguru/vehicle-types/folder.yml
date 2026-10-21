@@ -1,0 +1,21 @@
+info:
+  name: vehicle-types
+  type: folder
+
+request:
+  scripts:
+    - type: before-request
+      code: |-
+        // A route pasted into .env wins; otherwise the polyline toll/01-origin-destination returned.
+        const polyline = bru.getProcessEnv("TOLLGURU_POLYLINE") || bru.getVar("tollguruRoutePolyline");
+        if (!polyline) {
+          throw new Error("No polyline: set TOLLGURU_POLYLINE in .env or run toll/origin-destination first");
+        }
+        bru.setVar("tollguruPolyline", polyline);
+
+docs:
+  content: |-
+    The same polyline priced once per TollGuru vehicle type plutus-java's `TollGuruClient` sends,
+    by NETC class. Run after `toll/origin-destination`, or with `TOLLGURU_POLYLINE` in `.env`.
+    Each request checks that TollGuru accepted the type (`summary.vehicleType` echoes it).
+  type: text/markdown

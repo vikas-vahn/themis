@@ -1,0 +1,37 @@
+info:
+  name: seven-plus-axle-7AxlesTruck
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}/complete-polyline-from-mapping-service"
+  body:
+    type: json
+    data: |-
+      {
+        "polyline": "{{tollguruPolyline}}",
+        "vehicle": { "type": "7AxlesTruck" },
+        "units": { "currency": "{{tollguruCurrency}}" }
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("TollGuru accepted 7AxlesTruck", function () {
+          expect(res.getBody().summary.vehicleType).to.equal("7AxlesTruck");
+        });
+
+        test("route has a tag cost", function () {
+          expect(res.getBody().route.costs.tag, JSON.stringify(res.getBody().route.costs)).to.be.a("number");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: "`7AxlesTruck`, what plutus sends for VC15, VC16 (seven or more axle)."

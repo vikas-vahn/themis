@@ -1,0 +1,12 @@
+info:
+  name: toll
+  type: folder
+
+request: {}
+
+docs:
+  content: |-
+    The two TollGuru endpoints plutus-java's `TollGuruClient` calls. `origin-destination` runs first
+    and keeps TollGuru's route polyline in a runtime var, so `polyline` has a real road polyline to
+    price even without `TOLLGURU_POLYLINE` in `.env`.
+  type: text/markdown

@@ -1,0 +1,37 @@
+info:
+  name: lcv-2AxlesLCV
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/complete-polyline-from-mapping-service"
+  body:
+    type: json
+    data: |-
+      {
+        "polyline": "{{tollguruPolyline}}",
+        "vehicle": { "type": "2AxlesLCV" },
+        "units": { "currency": "{{tollguruCurrency}}" }
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("TollGuru accepted 2AxlesLCV", function () {
+          expect(res.getBody().summary.vehicleType).to.equal("2AxlesLCV");
+        });
+
+        test("route has a tag cost", function () {
+          expect(res.getBody().route.costs.tag, JSON.stringify(res.getBody().route.costs)).to.be.a("number");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: "`2AxlesLCV`, what plutus sends for VC5, VC05 (LCV)."

@@ -1,0 +1,37 @@
+info:
+  name: multi-axle-3AxlesTruck
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/complete-polyline-from-mapping-service"
+  body:
+    type: json
+    data: |-
+      {
+        "polyline": "{{tollguruPolyline}}",
+        "vehicle": { "type": "3AxlesTruck" },
+        "units": { "currency": "{{tollguruCurrency}}" }
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("TollGuru accepted 3AxlesTruck", function () {
+          expect(res.getBody().summary.vehicleType).to.equal("3AxlesTruck");
+        });
+
+        test("route has a tag cost", function () {
+          expect(res.getBody().route.costs.tag, JSON.stringify(res.getBody().route.costs)).to.be.a("number");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: "`3AxlesTruck`, what plutus sends for VC7, VC10, VC11 and the default class (multi-axle)."

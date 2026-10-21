@@ -1,0 +1,53 @@
+opencollection: 1.0.0
+
+info:
+  name: tollguru
+  version: "1"
+
+request:
+  headers:
+    - name: x-api-key
+      value: "{{process.env.TOLLGURU_API_KEY}}"
+  scripts:
+    - type: tests
+      code: |-
+        // TollGuru answers {"status":"OK", ...} on success and an error message otherwise.
+        test("status is OK", function () {
+          expect(res.getStatus(), JSON.stringify(res.getBody())).to.equal(200);
+          expect(res.getBody().status, JSON.stringify(res.getBody())).to.equal("OK");
+        });
+
+docs:
+  content: |-
+    # TollGuru Toll API (v2)
+
+    Direct calls to TollGuru (not a Vahn service), the provider behind plutus-java's
+    `TollGuruClient` (ENG-1313). plutus-java uses it for the FASTag estimate when
+    `tollEstimate.primaryStrategy` is `TOLLGURU`, with the key from the `TOLLGURU_API_KEY` env var.
+
+    ## Credentials and inputs
+
+    Read from `bruno/collections/tollguru/.env` (gitignored). Create it locally:
+
+    ```
+    TOLLGURU_API_KEY=<tollguru api key>
+    # optional: price a specific route, e.g. a trip's encoded_polyline from plutus
+    TOLLGURU_POLYLINE=<google encoded polyline>
+    ```
+
+    Route endpoints and vehicle type are plain vars in `environments/staging.yml`
+    (default: Gurugram → Jaipur on NH48, `3AxlesTruck`, the type plutus sends for VC7/VC10/VC11).
+
+    ```bash
+    npx @usebruno/cli run bruno/collections/tollguru --env staging
+    ```
+
+    Every request is billed against the TollGuru plan: a full run makes 9 calls
+    (`toll/` 4, `vehicle-types/` 5). Run one folder or request to spend less.
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

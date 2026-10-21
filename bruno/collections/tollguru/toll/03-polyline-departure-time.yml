@@ -1,0 +1,44 @@
+info:
+  name: polyline-departure-time
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/complete-polyline-from-mapping-service"
+  body:
+    type: json
+    data: |-
+      {
+        "polyline": "{{tollguruPolyline}}",
+        "vehicle": { "type": "{{tollguruVehicleType}}" },
+        "units": { "currency": "{{tollguruCurrency}}" },
+        "departure_time": "{{tollguruDepartureTime}}"
+      }
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const polyline = bru.getProcessEnv("TOLLGURU_POLYLINE") || bru.getVar("tollguruRoutePolyline");
+        if (!polyline) {
+          throw new Error("No polyline: set TOLLGURU_POLYLINE in .env or run origin-destination first");
+        }
+        bru.setVar("tollguruPolyline", polyline);
+    - type: tests
+      code: |-
+        test("route has a tag cost", function () {
+          expect(res.getBody().route.costs.tag, JSON.stringify(res.getBody().route.costs)).to.be.a("number");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: |-
+  The polyline request with `departure_time` (ISO-8601 with offset, `tollguruDepartureTime` in the env).
+  plutus does not send a departure time today, so TollGuru prices "now"; compare this against
+  `polyline` to see whether time of travel changes the FASTag price on a route.

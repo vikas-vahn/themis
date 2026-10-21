@@ -1,0 +1,37 @@
+info:
+  name: four-to-six-axle-5AxlesTruck
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/complete-polyline-from-mapping-service"
+  body:
+    type: json
+    data: |-
+      {
+        "polyline": "{{tollguruPolyline}}",
+        "vehicle": { "type": "5AxlesTruck" },
+        "units": { "currency": "{{tollguruCurrency}}" }
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("TollGuru accepted 5AxlesTruck", function () {
+          expect(res.getBody().summary.vehicleType).to.equal("5AxlesTruck");
+        });
+
+        test("route has a tag cost", function () {
+          expect(res.getBody().route.costs.tag, JSON.stringify(res.getBody().route.costs)).to.be.a("number");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: "`5AxlesTruck`, what plutus sends for VC12, VC13, VC14 (four to six axle)."

@@ -1,0 +1,39 @@
+info:
+  name: origin-destination-waypoints
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/origin-destination-waypoints"
+  body:
+    type: json
+    data: |-
+      {
+        "from": { "lat": {{tollguruFromLat}}, "lng": {{tollguruFromLng}} },
+        "to": { "lat": {{tollguruToLat}}, "lng": {{tollguruToLng}} },
+        "waypoints": [
+          { "lat": {{tollguruWaypointLat}}, "lng": {{tollguruWaypointLng}} }
+        ],
+        "vehicle": { "type": "{{tollguruVehicleType}}" },
+        "units": { "currency": "{{tollguruCurrency}}" }
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("first route has a tag cost", function () {
+          expect(res.getBody().routes[0].costs.tag, JSON.stringify(res.getBody().routes[0].costs)).to.be.a("number");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: |-
+  `origin-destination` with a `waypoints` stop (default: Neemrana, on NH48 between Gurugram and Jaipur).
+  plutus does not send waypoints; use this to price a multi-stop trip by hand.
