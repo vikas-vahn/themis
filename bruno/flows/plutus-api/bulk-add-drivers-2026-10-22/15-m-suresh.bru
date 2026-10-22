@@ -1,0 +1,42 @@
+meta {
+  name: 15. M Suresh
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "M SURESH",
+    "phone": "9000708250",
+    "licenseNumber": "AP20420120008570",
+    "dateOfBirth": "1983-06-09"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "M SURESH"
+  res.body.data.phone: eq "9000708250"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 15 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number KA01AS6699 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

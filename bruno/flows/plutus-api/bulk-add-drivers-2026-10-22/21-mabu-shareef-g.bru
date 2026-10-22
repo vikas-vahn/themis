@@ -1,0 +1,42 @@
+meta {
+  name: 21. Mabu Shareef G
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "MABU SHAREEF G",
+    "phone": "7893715607",
+    "licenseNumber": "AP20420010000978",
+    "dateOfBirth": "1980-04-12"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "MABU SHAREEF G"
+  res.body.data.phone: eq "7893715607"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 21 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39WD6638 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

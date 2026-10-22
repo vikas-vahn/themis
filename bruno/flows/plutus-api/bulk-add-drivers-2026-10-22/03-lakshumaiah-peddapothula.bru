@@ -1,0 +1,42 @@
+meta {
+  name: 03. Lakshumaiah Peddapothula
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "LAKSHUMAIAH PEDDAPOTHULA",
+    "phone": "9390697230",
+    "licenseNumber": "AP00419992804199",
+    "dateOfBirth": "1977-07-12"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "LAKSHUMAIAH PEDDAPOTHULA"
+  res.body.data.phone: eq "9390697230"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 03 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39VD0077 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

@@ -1,0 +1,42 @@
+meta {
+  name: 09. Khasim Valli Shaik
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "KHASIM VALLI SHAIK",
+    "phone": "8247316183",
+    "licenseNumber": "AP20420030000034",
+    "dateOfBirth": "1983-05-04"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "KHASIM VALLI SHAIK"
+  res.body.data.phone: eq "8247316183"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 09 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number KA01AR4335 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

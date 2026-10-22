@@ -1,0 +1,42 @@
+meta {
+  name: 18. Chinna Seshaiah Jonna
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "CHINNA SESHAIAH JONNA",
+    "phone": "8179483946",
+    "licenseNumber": "AP20420189030401",
+    "dateOfBirth": "1968-09-01"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "CHINNA SESHAIAH JONNA"
+  res.body.data.phone: eq "8179483946"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 18 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39UU6699 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

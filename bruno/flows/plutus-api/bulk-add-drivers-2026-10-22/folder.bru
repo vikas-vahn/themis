@@ -1,0 +1,39 @@
+meta {
+  name: bulk-add-drivers-2026-10-22
+}
+
+docs {
+  # One-time bulk driver import (2026-10-22)
+
+  One-time bulk import of 28 real drivers via `POST /api/drivers` (`DriverResource.createDriver`),
+  sourced from `DRIVER_LICENSE_DETAILS_(1).csv`. This is not a reusable journey — run it once, then
+  leave it; there is no "undo" step.
+
+  Each numbered request is a single, independent `createDriver` call with the driver's real
+  `name`, `phone`, `licenseNumber`, and `dateOfBirth` (where known) hardcoded directly in the
+  request body, at the user's explicit request — matching the existing precedent of hardcoded
+  driver data elsewhere in this repo (e.g. `driver-onboarding`'s `secondDriverPhone`). There is no
+  chaining between steps; run them in any order, or re-run an individual one that failed.
+
+  ## Source data notes
+  - 2 source rows were skipped entirely for invalid phone numbers (11 digits instead of the
+    required 10): "G RAMIREDDY CHINNA PRASAD REDDY" and "SIVANAGAMALLESH PAPAGARI".
+  - Row 12 (RAMALAKSHMIREDDY K) has no `dateOfBirth` field — the source value was an invalid
+    future date, so the field is omitted rather than sent with bad data. `dateOfBirth` is
+    optional on `DriverDTO`.
+  - The source file's truck registration numbers are **not** sent anywhere in this flow — they're
+    out of scope for `POST /api/drivers`. Driver-to-truck assignment is a separate concern and is
+    not part of this import.
+
+  ## Auth
+  Every request uses `auth: bearer` with `{{adminStaticToken}}`, a VAHN_ADMIN token the user pastes
+  into the environment by hand before running (`environments/staging.bru`). It is intentionally
+  left blank in source control — never commit a real value there. `ownerId` is omitted from every
+  body, so each driver is created with no owner (`torgDAO.findById` on a missing id just returns
+  empty, per `DriverService.createDriver`); assigning these drivers to a torg/truck is a separate,
+  later step outside this flow.
+
+  ## Running
+  This hits real production-sourced driver PII on whichever environment `{{plutusBaseUrl}}` points
+  at. Only the person who owns this data should run it, once.
+}

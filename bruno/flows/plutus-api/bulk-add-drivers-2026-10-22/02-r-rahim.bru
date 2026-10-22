@@ -1,0 +1,42 @@
+meta {
+  name: 02. R Rahim
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "R RAHIM",
+    "phone": "9398428622",
+    "licenseNumber": "AP30220160001302",
+    "dateOfBirth": "1996-01-01"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "R RAHIM"
+  res.body.data.phone: eq "9398428622"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 02 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39VB0077 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

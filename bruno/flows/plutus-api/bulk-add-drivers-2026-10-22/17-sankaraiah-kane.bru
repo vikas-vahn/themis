@@ -1,0 +1,42 @@
+meta {
+  name: 17. Sankaraiah Kane
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "SANKARAIAH KANE",
+    "phone": "8897870693",
+    "licenseNumber": "AP02720000004038",
+    "dateOfBirth": "1981-04-06"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "SANKARAIAH KANE"
+  res.body.data.phone: eq "8897870693"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 17 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39UU6688 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

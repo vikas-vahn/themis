@@ -1,0 +1,42 @@
+meta {
+  name: 26. Sai Seswaraiah M
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "SAI SESWARAIAH M",
+    "phone": "9989878241",
+    "licenseNumber": "AP20420100008151",
+    "dateOfBirth": "1991-07-18"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "SAI SESWARAIAH M"
+  res.body.data.phone: eq "9989878241"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 26 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39WR3448 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

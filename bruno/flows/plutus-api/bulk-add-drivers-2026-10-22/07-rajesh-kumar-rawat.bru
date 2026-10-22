@@ -1,0 +1,42 @@
+meta {
+  name: 07. Rajesh Kumar Rawat
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "RAJESH KUMAR RAWAT",
+    "phone": "7489602210",
+    "licenseNumber": "MP17 20070110542",
+    "dateOfBirth": "1983-01-01"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "RAJESH KUMAR RAWAT"
+  res.body.data.phone: eq "7489602210"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 07 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39WL6689 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

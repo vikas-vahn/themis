@@ -1,0 +1,42 @@
+meta {
+  name: 23. Yakubu G
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "YAKUBU G",
+    "phone": "9391458564",
+    "licenseNumber": "AP00420030002648",
+    "dateOfBirth": "1980-07-01"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "YAKUBU G"
+  res.body.data.phone: eq "9391458564"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 23 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39WD6658 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

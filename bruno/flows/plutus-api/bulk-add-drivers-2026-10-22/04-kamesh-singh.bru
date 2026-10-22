@@ -1,0 +1,42 @@
+meta {
+  name: 04. Kamesh Singh
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "KAMESH SINGH",
+    "phone": "8074249797",
+    "licenseNumber": "MP18 20100007010",
+    "dateOfBirth": "1978-07-02"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "KAMESH SINGH"
+  res.body.data.phone: eq "8074249797"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 04 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39VD6679 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

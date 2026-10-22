@@ -1,0 +1,42 @@
+meta {
+  name: 28. Mahehsbabu Chennuru
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "MAHEHSBABU CHENNURU",
+    "phone": "9502202225",
+    "licenseNumber": "AP00420160001122",
+    "dateOfBirth": "1994-06-08"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "MAHEHSBABU CHENNURU"
+  res.body.data.phone: eq "9502202225"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 28 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39WS3448 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}

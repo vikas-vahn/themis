@@ -1,0 +1,42 @@
+meta {
+  name: 22. Chandra Batthala
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{plutusBaseUrl}}/api/drivers
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "CHANDRA BATTHALA",
+    "phone": "8498958473",
+    "licenseNumber": "AP10420140001906",
+    "dateOfBirth": "1989-06-14"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.name: eq "CHANDRA BATTHALA"
+  res.body.data.phone: eq "8498958473"
+}
+
+docs {
+  One-time bulk import (2026-10-22), row 22 of 28 from `DRIVER_LICENSE_DETAILS_(1).csv`.
+  Source truck registration number AP39WD6648 is NOT sent in this request (out of scope for
+  `POST /api/drivers` — driver-to-truck assignment is a separate concern, not part of this
+  endpoint). See the flow's `folder.bru` for the full import notes (skipped/adjusted rows).
+}
