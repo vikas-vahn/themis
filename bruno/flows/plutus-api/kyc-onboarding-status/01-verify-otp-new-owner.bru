@@ -1,0 +1,46 @@
+meta {
+  name: 1. Verify OTP (new fleet owner)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{plutusKycOwnerPhone}}",
+    "otp": "667766"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.role: eq NEW_USER
+  res.body.data.isNewUser: eq true
+  res.body.data.user.onboardingStatus: eq NOT_STARTED
+}
+
+script:pre-request {
+  // fresh owner per run
+  const phone = "99997" + String(Math.floor(10000 + Math.random() * 90000));
+  bru.setVar("plutusKycOwnerPhone", phone);
+}
+
+script:post-response {
+  bru.setVar("plutusKycOwnerToken", res.body.data.accessToken);
+  bru.setVar("plutusKycUserId", res.body.data.userId);
+}
+
+docs {
+  Creates a NEW_USER on first verify-otp (no send-otp needed on staging; OTP 667766). Captures the
+  runtime vars `plutusKycOwnerToken` and `plutusKycUserId`.
+}

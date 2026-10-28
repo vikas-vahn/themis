@@ -1,0 +1,36 @@
+meta {
+  name: 3. Re-login as TORG_ADMIN
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{plutusKycOwnerPhone}}",
+    "otp": "667766"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.user.role: eq TORG_ADMIN
+  res.body.data.user.onboardingStatus: eq BASIC_DETAILS_ADDED
+}
+
+script:post-response {
+  bru.setVar("plutusKycOwnerToken", res.body.data.accessToken);
+}
+
+docs {
+  Fresh token so the role-gated PAN and Aadhaar endpoints see TORG_ADMIN.
+}

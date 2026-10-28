@@ -1,0 +1,45 @@
+meta {
+  name: 2. Set role and name (basic details)
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/users/{{plutusKycUserId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusKycOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "BUG108 Fleet Owner",
+    "role": "TORG_ADMIN",
+    "onboardingStatus": "BASIC_DETAILS_ADDED"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.role: eq TORG_ADMIN
+  res.body.data.onboardingStatus: eq BASIC_DETAILS_ADDED
+  res.body.data.torgId: isNumber
+}
+
+script:post-response {
+  bru.setVar("plutusKycTorgId", res.body.data.torgId);
+}
+
+docs {
+  The app's basic-info step. A NEW_USER promoting itself to TORG_ADMIN with a name gets a minimal
+  torg auto-created (`UserService.shouldAutoCreateTorg`). The client's `onboardingStatus` is only a
+  marker that this is an onboarding request; the value is derived server-side.
+}

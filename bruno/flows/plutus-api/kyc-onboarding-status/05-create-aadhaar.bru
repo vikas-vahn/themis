@@ -1,0 +1,47 @@
+meta {
+  name: 5. Owner adds Aadhaar (PENDING)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/aadhaar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusKycOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "torgId": {{plutusKycTorgId}},
+    "aadhaarNumber": "{{plutusKycAadhaarNumber}}",
+    "name": "BUG108 Fleet Owner"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.id: isNumber
+  res.body.data.status: eq PENDING
+  res.body.data.torgId: eq {{plutusKycTorgId}}
+}
+
+script:pre-request {
+  bru.setVar("plutusKycAadhaarNumber", "9" + String(Math.floor(10000000000 + Math.random() * 89999999999)));
+}
+
+script:post-response {
+  bru.setVar("plutusKycAadhaarId", res.body.data.id);
+}
+
+docs {
+  `AadhaarResource.createAadhaar` stores the record as PENDING (no auto-verification). `torgId` is
+  required in the body. Captures `plutusKycAadhaarId`.
+}

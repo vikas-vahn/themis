@@ -1,0 +1,26 @@
+meta {
+  name: 8. Admin reads user (Aadhaar still pending)
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/users/{{plutusKycUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.id: eq {{plutusKycUserId}}
+  res.body.data.onboardingStatus: eq BUSINESS_DETAILS_ADDED
+}
+
+docs {
+  PAN is VERIFIED but the Aadhaar is PENDING, so completion must not happen yet.
+}

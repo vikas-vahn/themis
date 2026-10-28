@@ -1,0 +1,28 @@
+meta {
+  name: Retry PAN verification
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/pan/{{plutusPanCardId}}/retry-verification
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: isDefined
+}
+
+docs {
+  `PANCardResource.retryVerification` (VAHN_ADMIN, TORG_ADMIN) -> `PANCardService.retryVerification`:
+  re-runs the Surepass check. 400 "PAN Card is already verified" if VERIFIED; 404 if unknown. When the
+  retry verifies the PAN, BUG-108's recompute runs. On staging Surepass fails for test PANs and the endpoint answers statusCode 500 "There was an error
+  processing your request" in the body (the Surepass failure is rethrown as a RuntimeException, not a
+  BadRequest), never VERIFIED.
+}
