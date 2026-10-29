@@ -1,0 +1,24 @@
+meta {
+  name: Trips v2 by driver (GET) - take=0 rejected
+  type: http
+  seq: 102
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/driver/{{plutusApiPaginationDriverId}}?take=0
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiDriverToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Boundary case: take must be 1-200, so take=0 returns body statusCode 400 (HTTP status stays 200).
+}

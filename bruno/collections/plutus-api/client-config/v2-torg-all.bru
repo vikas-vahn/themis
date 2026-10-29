@@ -1,0 +1,32 @@
+meta {
+  name: Client config v2 all torgs
+  type: http
+  seq: 101
+}
+
+get {
+  url: {{baseUrl}}/api/v2/client/torg/all?skip=0&take=2
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("envelope shape and hasMore", function () {
+    const e = res.body.data;
+    expect(e.data).to.be.an("array");
+    expect(e.skip).to.equal(0);
+    expect(e.take).to.equal(2);
+    expect(e.total).to.be.a("number");
+    expect(e.data.length).to.be.at.most(e.take);
+    expect(e.hasMore).to.equal(e.skip + e.data.length < e.total);
+  });
+}
+
+docs {
+  No auth annotation, same as v1. ENG-1335 skip/take envelope: asserts skip=0, take=2, hasMore == skip + data.length < total.
+}
