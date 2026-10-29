@@ -1,0 +1,20 @@
+meta {
+  name: Client config v2 all torgs - take=0 rejected
+  type: http
+  seq: 102
+}
+
+get {
+  url: {{baseUrl}}/api/v2/client/torg/all?take=0
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Boundary case: take must be 1-200, so take=0 returns body statusCode 400 (HTTP status stays 200).
+}
