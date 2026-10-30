@@ -1,0 +1,29 @@
+meta {
+  name: Send OTP
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/send-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{plutusApiNotesPhone}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  Sends a login OTP to the notes test user (`plutusApiNotesPhone`). On staging the OTP is always 667766.
+}

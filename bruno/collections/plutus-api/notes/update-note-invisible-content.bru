@@ -1,0 +1,38 @@
+meta {
+  name: Update Note With Invisible Content
+  type: http
+  seq: 15
+}
+
+put {
+  url: {{baseUrl}}/api/notes/{{noteId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "content": " ⁠ ​"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+  res.body.message: eq content is required
+}
+
+docs {
+  Negative case for "Update Note" (BUG-718): `content` of only invisible characters (space, word joiner
+  U+2060, zero-width space) is refused with body `statusCode` 400, "content is required". The note is
+  left unchanged.
+
+  Needs a live note you wrote within the last 15 minutes: run "Create Note" first (it sets `noteId`).
+}

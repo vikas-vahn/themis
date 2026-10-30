@@ -22,6 +22,14 @@ docs {
   Replies are not deleted. The deleted note keeps its place in lists and threads as a placeholder:
   `deleted: true`, `content` "This remark was deleted", and `author`, `category` and `attachments` null.
 
+  The note's attachment rows stay as a record, but the files are removed from storage right after the
+  delete commits (BUG-691): a signed link handed out earlier stops opening (S3 answers 403/404 instead
+  of 200). A file that another live note still uses is kept. If storage fails the delete still succeeds
+  and the failure is only logged. See the "vehicle-remarks-attachment-delete" flow.
+
+  Deleting is final: afterwards "Update Note" and a second delete both get 404 "Note not found" (BUG-717
+  covers the delete/edit race: the loser gets that 404).
+
   HTTP 200 with body `statusCode` 204 on success. 403 "Only the author can delete a note", or "A note can only be deleted within 15 minutes of being added". 404 "Note not found" for an
   unknown, other-torg or already deleted note.
 }

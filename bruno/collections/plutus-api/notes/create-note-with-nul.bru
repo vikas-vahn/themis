@@ -1,0 +1,56 @@
+meta {
+  name: Create Note With NUL Character
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "entityId": {{truckId}},
+    "categoryId": {{categoryId}},
+    "content": "STRESS-NUL a\u0000b"
+  }
+}
+
+script:post-response {
+  // Clean up: the note is a throwaway, and a truck note can be deleted by its author for 15 minutes.
+  // It is deliberately not stored in noteId so it can't clobber a note other requests are using.
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setVar("plutusApiNulNoteId", res.body.data.id);
+    await bru.sendRequest({
+      method: "DELETE",
+      url: bru.interpolate("{{baseUrl}}/api/notes/" + res.body.data.id),
+      headers: { Authorization: "Bearer " + bru.getEnvVar("accessToken") }
+    });
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.content: eq STRESS-NUL ab
+}
+
+docs {
+  Regression for BUG-720: a NUL character (U+0000, sent as the JSON escape `\u0000`) in `content` used to
+  fail in Postgres with a 500. It is now dropped before saving, so the note is saved and the response
+  `content` is "STRESS-NUL ab".
+
+  Cleanup: the post-response script deletes the note it just created (its id is kept in the runtime var
+  `plutusApiNulNoteId`, not written to the environment file). If that delete fails, the note stays on
+  the truck with the text above and can be deleted by its author within 15 minutes.
+}
