@@ -1,0 +1,58 @@
+meta {
+  name: List Notes (includeDeleted default)
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/notes?entityType=TRUCK&entityId={{plutusApiRemarksTruckId}}&page=1&pageSize=100&includeReplies=false&markRead=false
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityId: {{plutusApiRemarksTruckId}}
+  page: 1
+  pageSize: 100
+  includeReplies: false
+  markRead: false
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("deleted note A is a placeholder with deletedAt and deletedBy {id, name}", function () {
+    const n = res.body.data.data.find(x => x.id === bru.getVar("plutusApiRemarksNoteA"));
+    expect(n, "note A in list").to.exist;
+    expect(n.deleted).to.equal(true);
+    expect(n.content).to.equal("This remark was deleted");
+    expect(n.deletedAt).to.be.a("string");
+    expect(n.deletedAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+    expect(n.deletedBy).to.be.an("object");
+    expect(n.deletedBy.id).to.equal(bru.getVar("plutusApiRemarksUserId"));
+    expect(n.deletedBy.name).to.be.a("string").and.not.empty;
+    expect(n.author).to.equal(null);
+    expect(n.category).to.equal(null);
+    expect(n.attachments).to.equal(null);
+  });
+
+  test("live control note C has null deletedAt and deletedBy", function () {
+    const n = res.body.data.data.find(x => x.id === bru.getVar("plutusApiRemarksNoteC"));
+    expect(n, "note C in list").to.exist;
+    expect(n.deleted).to.equal(false);
+    expect(n.deletedAt).to.equal(null);
+    expect(n.deletedBy).to.equal(null);
+  });
+}
+
+docs {
+  `GET /api/notes` with `includeDeleted` left at its default (true). Deleted top-level note A is kept as
+  a placeholder with `deletedAt` and `deletedBy {id, name}`; live note C has both null.
+}

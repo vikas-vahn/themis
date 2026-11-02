@@ -1,0 +1,43 @@
+meta {
+  name: Reply R To Note A
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+body:json {
+  {
+    "parentNoteId": {{plutusApiRemarksNoteA}},
+    "content": "ENG-1000 deleted-info flow reply R"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setVar("plutusApiRemarksReplyR", res.body.data.id);
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.parentNoteId: eq {{plutusApiRemarksNoteA}}
+  res.body.data.deletedAt: isNull
+  res.body.data.deletedBy: isNull
+}
+
+docs {
+  Creates reply R under note A. Deleted later to check a deleted reply inside a thread.
+}

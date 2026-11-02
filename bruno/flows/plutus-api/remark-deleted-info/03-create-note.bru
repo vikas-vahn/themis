@@ -1,0 +1,47 @@
+meta {
+  name: Create Note A
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "entityId": {{plutusApiRemarksTruckId}},
+    "categoryId": {{plutusApiRemarksCategoryId}},
+    "content": "ENG-1000 deleted-info flow note A {{$timestamp}}"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setVar("plutusApiRemarksNoteA", res.body.data.id);
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.deleted: eq false
+  res.body.data.deletedAt: isNull
+  res.body.data.deletedBy: isNull
+  res.body.data.edited: eq false
+}
+
+docs {
+  Creates top-level truck note A. A live note carries null `deletedAt` and `deletedBy`. The category
+  comes from `plutusApiRemarksCategoryId` (see "List Note Categories" in the notes collection).
+}

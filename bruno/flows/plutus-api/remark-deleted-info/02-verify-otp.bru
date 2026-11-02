@@ -1,0 +1,38 @@
+meta {
+  name: Verify OTP
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{plutusApiRemarksPhone}}",
+    "otp": "{{plutusApiRemarksOtp}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("plutusApiRemarksToken", res.body.data.accessToken);
+  const payload = JSON.parse(Buffer.from(res.body.data.accessToken.split(".")[1], "base64").toString());
+  bru.setVar("plutusApiRemarksUserId", Number(payload.sub));
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  Keeps the bearer token in the runtime var `plutusApiRemarksToken` and the user id in
+  `plutusApiRemarksUserId` (the JWT `sub`), which later steps compare with `deletedBy.id`. Must be a real
+  torg user, not a static token (those are user id 1 with no torg).
+}

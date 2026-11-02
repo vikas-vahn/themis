@@ -1,0 +1,49 @@
+meta {
+  name: Get Note A (deleted reply in thread)
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/notes/{{plutusApiRemarksNoteA}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.deleted: eq true
+}
+
+tests {
+  test("deleted top-level note A has deletedAt and deletedBy", function () {
+    const n = res.body.data;
+    expect(n.content).to.equal("This remark was deleted");
+    expect(n.deletedAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+    expect(n.deletedBy.id).to.equal(bru.getVar("plutusApiRemarksUserId"));
+    expect(n.deletedBy.name).to.be.a("string").and.not.empty;
+    expect(n.author).to.equal(null);
+    expect(n.category).to.equal(null);
+    expect(n.attachments).to.equal(null);
+  });
+
+  test("deleted reply R inside replies has deletedAt and deletedBy", function () {
+    const r = res.body.data.replies.find(x => x.id === bru.getVar("plutusApiRemarksReplyR"));
+    expect(r, "reply R in thread").to.exist;
+    expect(r.deleted).to.equal(true);
+    expect(r.content).to.equal("This remark was deleted");
+    expect(r.deletedAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+    expect(r.deletedBy.id).to.equal(bru.getVar("plutusApiRemarksUserId"));
+    expect(r.deletedBy.name).to.be.a("string").and.not.empty;
+    expect(r.author).to.equal(null);
+  });
+}
+
+docs {
+  `GET /api/notes/{id}` returns the thread with replies nested. Both the deleted note and its deleted reply
+  carry `deletedAt` and `deletedBy {id, name}`.
+}

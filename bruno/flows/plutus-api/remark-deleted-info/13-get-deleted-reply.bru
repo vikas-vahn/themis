@@ -1,0 +1,26 @@
+meta {
+  name: Get Deleted Reply R
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/notes/{{plutusApiRemarksReplyR}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.deleted: eq true
+  res.body.data.deletedAt: isString
+  res.body.data.deletedBy.name: isString
+}
+
+docs {
+  `GET /api/notes/{id}` on the deleted reply itself.
+}

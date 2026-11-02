@@ -1,0 +1,42 @@
+meta {
+  name: List Notes (includeDeleted=false)
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/notes?entityType=TRUCK&entityId={{plutusApiRemarksTruckId}}&page=1&pageSize=100&includeReplies=false&markRead=false&includeDeleted=false
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityId: {{plutusApiRemarksTruckId}}
+  page: 1
+  pageSize: 100
+  includeReplies: false
+  markRead: false
+  includeDeleted: false
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("deleted note A is dropped, live note C stays", function () {
+    const ids = res.body.data.data.map(x => x.id);
+    expect(ids).to.not.include(bru.getVar("plutusApiRemarksNoteA"));
+    expect(ids).to.include(bru.getVar("plutusApiRemarksNoteC"));
+    expect(res.body.data.data.every(x => x.deleted === false)).to.equal(true);
+  });
+}
+
+docs {
+  `includeDeleted=false` leaves deleted notes out of the list.
+}

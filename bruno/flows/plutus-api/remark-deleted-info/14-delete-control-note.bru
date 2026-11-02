@@ -1,0 +1,23 @@
+meta {
+  name: Delete Control Note C (cleanup)
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{baseUrl}}/api/notes/{{plutusApiRemarksNoteC}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+assert {
+  res.body.statusCode: eq 204
+}
+
+docs {
+  Cleanup: deletes the live control note so the flow leaves no live remarks behind.
+}

@@ -1,0 +1,40 @@
+meta {
+  name: List Notes (q search)
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/notes?entityType=TRUCK&entityId={{plutusApiRemarksTruckId}}&page=1&pageSize=100&q=ENG-1000 deleted-info
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityId: {{plutusApiRemarksTruckId}}
+  page: 1
+  pageSize: 100
+  q: ENG-1000 deleted-info
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("search leaves deleted notes out", function () {
+    const ids = res.body.data.data.map(x => x.id);
+    expect(ids).to.not.include(bru.getVar("plutusApiRemarksNoteA"));
+    expect(ids).to.include(bru.getVar("plutusApiRemarksNoteC"));
+    expect(res.body.data.data.every(x => x.deleted === false)).to.equal(true);
+  });
+}
+
+docs {
+  Passing `q` drops deleted notes. Note C matches the text, deleted A does not appear.
+}
