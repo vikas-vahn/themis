@@ -1,0 +1,30 @@
+meta {
+  name: Trips v3 by driver - a driver reading another driver refused
+  type: http
+  seq: 131
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v3/driver/{{plutusApiDriverIdWithTrips}}?skip=0&take=2
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiDriverToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiDriverToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 403
+}
+
+docs {
+  A DRIVER-role user whose own driver record is NOT {{plutusApiDriverIdWithTrips}}: body statusCode 403
+  "Not authorized to view this driver's trips" (v1/v2 allowed it). Needs {{plutusApiDriverToken}} of a different
+  driver; skipped when empty.
+}

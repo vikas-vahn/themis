@@ -1,0 +1,24 @@
+meta {
+  name: Trips v2 by truck - date range, end before start
+  type: http
+  seq: 122
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/truck/{{plutusApiTruckIdMultiStop}}/date-range?startDate=2026-12-31&endDate=2026-01-01
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  endDate before startDate: body statusCode 400 "End date must be after start date" (HTTP status stays 200).
+}

@@ -37,6 +37,16 @@ tests {
       });
     }
   });
+
+  test("VAHN_ADMIN sees the same driver personal keys as /trips/v1/{id} (run the v1 request first)", function () {
+    const v1 = bru.getVar("plutusApiTripV1DriverPii");
+    if (!v1) { return; }
+    const o = JSON.parse(v1);
+    const d = res.body.data.driver;
+    ["address", "dateOfBirth", "email", "aadhaarNumber", "aadhaarId"].forEach(function (k) {
+      expect(d[k] === undefined ? null : d[k], k).to.equal(o[k] === undefined ? null : o[k]);
+    });
+  });
 }
 
 docs {

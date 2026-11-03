@@ -1,0 +1,60 @@
+meta {
+  name: Trips v2 by truck - date range (lean)
+  type: http
+  seq: 120
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/truck/{{plutusApiTruckIdMultiStop}}/date-range?startDate=2026-01-01&endDate=2026-12-31&skip=0&take=3
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("skip/take envelope", function () {
+    const e = res.body.data;
+    expect(e.data).to.be.an("array");
+    expect(e.skip).to.equal(0);
+    expect(e.take).to.equal(3);
+    expect(e.total).to.be.a("number");
+    expect(e.data.length).to.be.at.most(e.take);
+    expect(e.hasMore).to.equal(e.skip + e.data.length < e.total);
+  });
+
+  test("lean rows: no truck/driver graph, managers or expense list", function () {
+    res.body.data.data.forEach(function (r) {
+      ["truck", "truckManager", "fundManager", "truckManagers", "fundManagers", "tripExpenses", "expenseSummary",
+       "createdById", "createdByName", "vtsOdometerStartReading", "vtsOdometerEndReading"].forEach(function (k) {
+        expect(r, k).to.not.have.property(k);
+      });
+      ["id", "tripNumber", "status", "freightCharge", "totalTripExpenses"].forEach(function (k) { expect(r, k).to.have.property(k); });
+      (r.lorryReceipts || []).forEach(function (lr) { expect(lr).to.not.have.property("lrUrl"); });
+      if (r.driver) {
+        Object.keys(r.driver).forEach(function (k) { expect(["id", "name", "phone"]).to.include(k); });
+      }
+    });
+  });
+
+  test("total covers the whole range and rows are multi-stop aware", function () {
+    expect(res.body.data.total).to.be.greaterThan(0);
+    res.body.data.data.forEach(function (r) {
+      if (r.stopCount !== undefined && r.stopCount !== null) { expect(r.stopCount).to.be.a("number"); }
+    });
+  });
+}
+
+docs {
+  ENG-1335 R6: the rows of GET /api/trips/truck/{truckId}/date-range without the truck/driver graph,
+  managers and expense list, one skip/take page at a time, newest departure first. The truck must
+  belong to the caller's torg (VAHN_ADMIN: any); see "... other torg" for the refusal. A MARKET
+  trip's customer is masked for its provider. Needs {{plutusApiTruckIdMultiStop}} to have trips in 2026.
+}

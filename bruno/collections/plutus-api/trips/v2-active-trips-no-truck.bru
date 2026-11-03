@@ -1,0 +1,24 @@
+meta {
+  name: Trips v2 active - truckId missing
+  type: http
+  seq: 135
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/active
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  truckId is required: body statusCode 400.
+}

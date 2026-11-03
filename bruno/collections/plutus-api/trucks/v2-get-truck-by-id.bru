@@ -1,5 +1,5 @@
 meta {
-  name: Trucks v2 get by id (lean, non-owner)
+  name: Trucks v2 get by id (lean, VAHN_ADMIN)
   type: http
   seq: 204
 }
@@ -31,14 +31,15 @@ tests {
     });
   });
 
-  test("non-owner viewer gets a masked fuel-card number and no pin", function () {
+  test("VAHN_ADMIN gets the full fuel-card number and the pin", function () {
     const cards = res.body.data.fuelCards;
     expect(cards).to.be.an("array").that.is.not.empty;
     cards.forEach(function (c) {
-      expect(c.pin === undefined || c.pin === null, "pin").to.equal(true);
-      expect(String(c.cardNumber), "cardNumber").to.match(/[Xx*]/);
+      expect(String(c.cardNumber), "cardNumber").to.not.match(/[Xx*]/);
+      expect(c, "pin").to.have.property("pin");
       ["expiryDate", "updatedAt", "torgId", "last_changed_by_name"].forEach(function (k) { expect(c, k).to.not.have.property(k); });
     });
+    expect(cards.some(function (c) { return !!c.pin; }), "some card has a pin").to.equal(true);
   });
 
   test("fastag is trimmed", function () {
@@ -78,9 +79,9 @@ tests {
 
 docs {
   ENG-1335 lean truck detail: GET /api/trucks/{id} without the keys no client reads (no nested
-  driver truck, managers as summaries, trimmed FASTag). Fuel-card pin and full cardNumber are sent
-  only when the viewer's torg owns the truck, so with the static VAHN_ADMIN token (no torg) the
-  number is masked and pin is null. The owner-side check is "Trucks v2 get by id (owner)".
-  Roles include DRIVER. {{plutusApiTruckIdMultiStop}} must be a truck with a fuel card and a
-  multi-stop trip (staging data).
+  driver truck, managers as summaries, trimmed FASTag). Fuel-card pin and full cardNumber go to
+  VAHN_ADMIN and to the truck owner's torg; every other viewer gets a masked number and no pin
+  (see "Trucks v2 get by id (non-owner)", which needs a login). This request uses the static
+  VAHN_ADMIN token. Roles include DRIVER. {{plutusApiTruckIdMultiStop}} must be a truck with a fuel
+  card that has a pin and a multi-stop trip (staging data).
 }

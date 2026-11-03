@@ -1,0 +1,28 @@
+meta {
+  name: Trips v2 truck PnL - another torg refused
+  type: http
+  seq: 126
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/truck/{{plutusApiTruckIdMultiStop}}/pnl?startDate=2026-01-01&endDate=2026-12-31
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiOtherTorgToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiOtherTorgToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  A TORG_ADMIN of a torg that does not own the truck: body statusCode 400. Needs {{plutusApiOtherTorgToken}}; skipped when empty.
+}

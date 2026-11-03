@@ -1,0 +1,24 @@
+meta {
+  name: Trips v3 by driver - take over cap
+  type: http
+  seq: 130
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v3/driver/{{plutusApiDriverIdWithTrips}}?take=201
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  take must be 1-200: body statusCode 400.
+}

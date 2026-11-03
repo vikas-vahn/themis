@@ -1,0 +1,28 @@
+meta {
+  name: Trips v2 by truck - another torg refused
+  type: http
+  seq: 133
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/truck/{{plutusApiTruckIdMultiStop}}?skip=0&take=3
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiOtherTorgToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiOtherTorgToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Another torg's truck: body statusCode 400. Needs {{plutusApiOtherTorgToken}}; skipped when empty.
+}
