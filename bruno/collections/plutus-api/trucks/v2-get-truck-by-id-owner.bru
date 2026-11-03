@@ -1,0 +1,40 @@
+meta {
+  name: Trucks v2 get by id (owner)
+  type: http
+  seq: 205
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v2/{{plutusApiTruckIdMultiStop}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiOwnerTorgToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiOwnerTorgToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("owner sees the full card number", function () {
+    if (!bru.getEnvVar("plutusApiOwnerTorgToken")) { return; }
+    res.body.data.fuelCards.forEach(function (c) {
+      expect(String(c.cardNumber), "cardNumber").to.not.match(/[Xx*]/);
+    });
+  });
+}
+
+docs {
+  Owner-side counterpart of "Trucks v2 get by id (lean, non-owner)". Needs {{plutusApiOwnerTorgToken}}
+  set to a login token of a user in the torg that owns {{plutusApiTruckIdMultiStop}}. It is skipped
+  when the variable is empty. Staging OTP login currently does not accept 667766 (see the run
+  notes on ENG-1335), so a token has to come from elsewhere (pass it with --env-var).
+}

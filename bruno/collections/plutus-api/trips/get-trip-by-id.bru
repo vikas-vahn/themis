@@ -13,6 +13,19 @@ auth:bearer {
   token: {{accessToken}}
 }
 
+tests {
+  test("multi-stop stops tolerate the arrivedAt key (ENG-1335)", function () {
+    const stops = res.body.data.stops;
+    if (stops) {
+      stops.forEach(function (s) {
+        if (s.arrivedAt !== undefined && s.arrivedAt !== null) {
+          expect(s.arrivedAt).to.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+        }
+      });
+    }
+  });
+}
+
 docs {
   Full trip details. Accessible to VAHN_ADMIN, TORG_ADMIN/TRUCK_MANAGER/FUND_MANAGER/OPERATOR/
   ACCOUNTANT of the owning torg, an ATORG counterpart on a MARKET trip, or the trip's own driver.

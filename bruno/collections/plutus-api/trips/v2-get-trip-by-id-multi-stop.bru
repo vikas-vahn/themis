@@ -1,0 +1,74 @@
+meta {
+  name: Trips v2 get by id (multi-stop, owned)
+  type: http
+  seq: 110
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/{{plutusApiTripIdMultiStop}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("customerId stays present and null on a multi-stop trip", function () {
+    expect(res.body.data).to.have.property("customerId");
+    expect(res.body.data.customerId).to.equal(null);
+  });
+
+  test("no nested truckDTO, vp, pin, lrUrl or fuel-card number", function () {
+    const bad = ["truckDTO", "vp", "pin", "lrUrl", "createdById", "createdByName", "vtsOdometerStartReading", "vtsOdometerEndReading"];
+    const hits = [];
+    (function walk(o, path) {
+      if (Array.isArray(o)) { o.forEach(function (x, i) { walk(x, path + "[" + i + "]"); }); }
+      else if (o && typeof o === "object") {
+        Object.keys(o).forEach(function (k) {
+          if (bad.indexOf(k) >= 0) { hits.push(path + "." + k); }
+          walk(o[k], path + "." + k);
+        });
+      }
+    })(res.body.data, "data");
+    expect(hits).to.eql([]);
+  });
+
+  test("stops carry arrivedAt", function () {
+    const stops = res.body.data.stops;
+    expect(stops).to.be.an("array").that.is.not.empty;
+    stops.forEach(function (s) {
+      if (s.status === "COMPLETED") { expect(s.arrivedAt).to.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/); }
+    });
+  });
+
+  test("trip card keys", function () {
+    const t = res.body.data;
+    expect(t).to.have.property("tripNumber");
+    // the detail view keeps null here (as GET /trips/{id}); only the card surfaces default to 0
+    expect(t).to.have.property("totalTransactionAmount");
+    expect(t).to.have.property("distanceRemaining");
+  });
+
+  test("lean truck", function () {
+    const truck = res.body.data.truck;
+    expect(truck).to.be.an("object");
+    expect(truck).to.not.have.property("trip");
+    expect(truck).to.not.have.property("otherDocuments");
+    expect(truck).to.not.have.property("truckMaster");
+  });
+}
+
+docs {
+  ENG-1335 lean trip detail (TripDetailV2DTO): GET /api/trips/v1/{id} without the keys no client
+  reads: no nested driver/truck copies (truckDTO), managers as summaries (no vp / PIN hash), no
+  nested fuel-card pin or full number, no lorryReceipts[].lrUrl. Same authorisation and masking.
+  customerId is deliberately not omitted when null. {{plutusApiTripIdMultiStop}} must be a
+  completed or running multi-stop OWNED trip (staging data).
+}

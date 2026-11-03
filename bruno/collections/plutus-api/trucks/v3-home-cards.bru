@@ -1,0 +1,121 @@
+meta {
+  name: Trucks v3 home cards (lean)
+  type: http
+  seq: 200
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/v3
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "pageNumber": 1,
+    "itemsPerPage": 200
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("page envelope", function () {
+    const d = res.body.data;
+    expect(d.pageNumber).to.equal(1);
+    expect(d.itemsPerPage).to.equal(200);
+    expect(d.totalCount).to.be.a("number");
+    expect(d.trucksList).to.be.an("array");
+    expect(d.trucksList.length).to.be.at.most(200);
+  });
+
+  test("lean card drops the unread truck keys", function () {
+    res.body.data.trucksList.forEach(function (t) {
+      ["id", "registrationNumber", "make", "model", "capacityTons", "status", "source", "displayTripType", "alerts", "updatedAt", "mileage"].forEach(function (k) {
+        expect(t, k).to.have.property(k);
+      });
+      ["year", "fuelType", "torgId", "createdAt", "truckManagerId", "primaryTruckManagerId", "truckManagerIds",
+       "fundManagerId", "unladedWeight", "containerLength", "fuelTankCapacity", "highestAlertLevel",
+       "isFuelCardLowBalance", "axleCount", "netcVehicleClass", "truckMaster", "truckMasterId"].forEach(function (k) { expect(t, k).to.not.have.property(k); });
+      (t.alerts || []).forEach(function (a) {
+        expect(a).to.have.property("alertType");
+        expect(a).to.not.have.property("triggeredAt");
+        expect(a).to.not.have.property("metadata");
+      });
+      if (t.driver) {
+        ["licenseNumber", "dateOfBirth", "contactNumber"].forEach(function (k) { expect(t.driver, k).to.not.have.property(k); });
+      }
+      if (t.trip) {
+        ["createdById", "createdByName", "vtsOdometerStartReading", "vtsOdometerEndReading"].forEach(function (k) {
+          expect(t.trip, k).to.not.have.property(k);
+        });
+      }
+    });
+  });
+
+  test("trip cards carry the ENG-1335 additive keys", function () {
+    const trips = (res.body.data.trucksList).filter(function (t) { return t.trip; }).map(function (t) { return t.trip; });
+    expect(trips.length).to.be.greaterThan(0);
+    trips.forEach(function (trip) {
+      // POST /trucks/v2 omits null keys, so a trip without distance data has none of the four;
+      // routes that keep nulls send them as null. Either way the four travel together.
+      ["totalDistance", "calculatedDistance", "distanceRemaining", "distanceCovered"].forEach(function (k) {
+        if (trip.totalDistance !== undefined) { expect(trip, k).to.have.property(k); }
+      });
+      // 0 rather than null when the trip has no visible transactions
+      expect(trip.totalTransactionAmount, "totalTransactionAmount").to.be.a("number");
+      if (trip.source === "MARKET") {
+        expect(trip.canCreateLoadingAdvice, "MARKET canCreateLoadingAdvice").to.be.a("boolean");
+        expect(trip.requestingTorgName, "MARKET requestingTorgName").to.be.a("string");
+        if (trip.loadingAdviceId !== undefined && trip.loadingAdviceId !== null) {
+          expect(trip.loadingAdviceId).to.be.a("number");
+        }
+      } else {
+        expect(trip.loadingAdviceId === undefined || trip.loadingAdviceId === null, "OWNED loadingAdviceId").to.equal(true);
+        expect(trip.requestingTorgName === undefined || trip.requestingTorgName === null, "OWNED requestingTorgName").to.equal(true);
+      }
+      if (trip.lastStatusChangedAt !== undefined && trip.lastStatusChangedAt !== null) {
+        expect(trip.lastStatusChangedAt).to.be.a("string");
+      }
+    });
+  });
+
+  test("multi-stop stops carry arrivedAt once reached", function () {
+    const stops = [];
+    (res.body.data.trucksList).forEach(function (t) {
+      if (t.trip && t.trip.stops) { t.trip.stops.forEach(function (s) { stops.push(s); }); }
+    });
+    expect(stops.length).to.be.greaterThan(0);
+    // null (routes that keep nulls) or absent (POST /trucks/v2) until the truck has arrived
+    stops.forEach(function (s) {
+      if (s.arrivedAt !== undefined && s.arrivedAt !== null) {
+        expect(s.arrivedAt).to.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+      }
+    });
+    expect(stops.some(function (s) { return typeof s.arrivedAt === "string"; }), "some stop has arrivedAt").to.equal(true);
+  });
+}
+
+docs {
+  ENG-1335 lean Home truck cards: the POST /api/trucks/v2 card without the keys no client reads.
+  Same filters, scope and order as v2, plus an id tie-break. itemsPerPage defaults to 50 and is
+  capped at 200 (see "Trucks v3 home cards - itemsPerPage over cap"). Roles: VAHN_ADMIN,
+  TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT (no DRIVER).
+
+  Trip-card additive keys asserted: totalDistance, calculatedDistance, distanceRemaining,
+  distanceCovered, totalTransactionAmount (0 rather than null), canCreateLoadingAdvice and
+  requestingTorgName on MARKET trips, and stops[].arrivedAt on multi-stop trips. Runs with the
+  static VAHN_ADMIN token in {{adminStaticToken}}. Assertions on MARKET and multi-stop trips need
+  such trips in the first 200 trucks (staging data).
+}

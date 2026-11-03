@@ -1,0 +1,50 @@
+meta {
+  name: Get upcoming trips for truck
+  type: http
+  seq: 115
+}
+
+get {
+  url: {{baseUrl}}/api/trips/truck/{{plutusApiTruckIdUpcoming}}/upcoming-trips
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("every upcoming trip carries the additive keys", function () {
+    const trips = res.body.data;
+    expect(trips).to.be.an("array").that.is.not.empty;
+    trips.forEach(function (t) {
+      ["totalDistance", "calculatedDistance", "distanceRemaining", "distanceCovered"].forEach(function (k) {
+        expect(t, k).to.have.property(k);
+      });
+      expect(t.totalTransactionAmount).to.be.a("number");
+      expect(t).to.not.have.property("lastStatusChangedAt");
+    });
+  });
+
+  test("arrivedAt is null until reached, a timestamp after", function () {
+    res.body.data.forEach(function (t) {
+      if (t.stops) {
+        t.stops.forEach(function (s) {
+          if (s.arrivedAt !== undefined && s.arrivedAt !== null) {
+            expect(s.arrivedAt).to.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+          }
+        });
+      }
+    });
+  });
+}
+
+docs {
+  All planned trips of a truck. Same ENG-1335 additive keys as "Get upcoming trip for truck".
+}

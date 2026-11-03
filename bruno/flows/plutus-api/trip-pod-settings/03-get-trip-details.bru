@@ -13,6 +13,19 @@ auth:bearer {
   token: {{accessToken}}
 }
 
+tests {
+  test("multi-stop stops tolerate the arrivedAt key (ENG-1335)", function () {
+    const stops = res.body.data.stops;
+    if (stops) {
+      stops.forEach(function (s) {
+        if (s.arrivedAt !== undefined && s.arrivedAt !== null) {
+          expect(s.arrivedAt).to.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+        }
+      });
+    }
+  });
+}
+
 docs {
   Full trip details for the driver's own trip. As of PR #932 (open against develop, not yet
   merged/promoted to staging as of 2026-09-10), `data.podSettings` carries the owner torg's POD

@@ -1,0 +1,39 @@
+meta {
+  name: Trucks v2 light list (lean)
+  type: http
+  seq: 209
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v2/light-list
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("lean picker rows", function () {
+    expect(res.body.data).to.be.an("array").that.is.not.empty;
+    res.body.data.forEach(function (r) {
+      ["truckId", "registrationNumber", "make", "capacityTons", "driverId", "driverName", "driverPhone",
+       "driverProfilePictureUrl", "mileage", "driverCompensationDetails", "truckManagerIds", "truckManagerId"].forEach(function (k) {
+        expect(r, k).to.have.property(k);
+      });
+      ["primaryTruckManagerId", "ownerName", "verificationStatus"].forEach(function (k) { expect(r, k).to.not.have.property(k); });
+    });
+  });
+}
+
+docs {
+  ENG-1335: GET /api/trucks/light-list without primaryTruckManagerId, ownerName and
+  verificationStatus. Same scope, trucks and order; unpaged. Roles: VAHN_ADMIN, TORG_ADMIN,
+  TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+}
