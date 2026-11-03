@@ -1,0 +1,40 @@
+meta {
+  name: Get upcoming trip for truck
+  type: http
+  seq: 114
+}
+
+get {
+  url: {{baseUrl}}/api/trips/truck/{{plutusApiTruckIdUpcoming}}/upcoming-trip
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("upcoming trip carries the additive keys", function () {
+    const t = res.body.data;
+    expect(t).to.be.an("object");
+    ["totalDistance", "calculatedDistance", "distanceRemaining", "distanceCovered"].forEach(function (k) {
+      expect(t, k).to.have.property(k);
+    });
+    expect(t.totalTransactionAmount).to.be.a("number");
+    expect(t.source).to.equal("OWNED");
+    expect(t.requestingTorgName === undefined || t.requestingTorgName === null).to.equal(true);
+  });
+}
+
+docs {
+  The next planned trip of a truck. ENG-1335 adds the Home trip-card keys (distances,
+  totalTransactionAmount with 0 default, loading-advice keys on MARKET trips, requestingTorgName).
+  lastStatusChangedAt is not sent here. {{plutusApiTruckIdUpcoming}} needs at least one PLANNED trip
+  (staging data); with none, the body statusCode is 204.
+}

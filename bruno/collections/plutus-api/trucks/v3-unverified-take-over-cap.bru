@@ -1,0 +1,24 @@
+meta {
+  name: Trucks v3 unverified - take over cap
+  type: http
+  seq: 211
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v3/unverified?take=201
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Boundary case: take must be 1-200, so take=201 returns body statusCode 400 (HTTP status stays 200).
+}

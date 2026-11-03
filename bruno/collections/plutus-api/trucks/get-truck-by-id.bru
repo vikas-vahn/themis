@@ -1,0 +1,52 @@
+meta {
+  name: Get Truck By ID
+  type: http
+  seq: 203
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{plutusApiTruckIdWithBank}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("trip card has the additive keys and the multi-stop block", function () {
+    const trip = res.body.data.trip;
+    expect(trip).to.be.an("object");
+    ["totalDistance", "calculatedDistance", "distanceRemaining", "distanceCovered"].forEach(function (k) {
+      expect(trip, k).to.have.property(k);
+    });
+    expect(trip.totalTransactionAmount).to.be.a("number");
+    expect(trip, "lastStatusChangedAt").to.have.property("lastStatusChangedAt");
+    expect(trip.stops).to.be.an("array");
+    expect(trip.progress).to.be.an("object");
+    expect(trip.customerNames).to.be.an("array");
+    trip.stops.forEach(function (s) {
+      if (s.status === "COMPLETED") { expect(s.arrivedAt).to.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/); }
+    });
+  });
+
+  test("driver carries verifiedBankAccountId", function () {
+    const driver = res.body.data.driver;
+    expect(driver).to.be.an("object");
+    expect(driver.verifiedBankAccountId).to.be.a("number");
+  });
+}
+
+docs {
+  Full truck detail (the lean copy is "Trucks v2 get by id"). ENG-1335 adds, in place:
+  the trip-card keys of the Home cards, trip.stops/progress/customerNames for multi-stop trips,
+  and driver.verifiedBankAccountId (first VERIFIED bank account of the driver).
+  Uses {{plutusApiTruckIdWithBank}}: a truck on staging with a multi-stop trip whose driver has a
+  verified bank account. Update the variable if that staging data goes stale.
+}

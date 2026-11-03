@@ -1,0 +1,45 @@
+meta {
+  name: Trips v2 get by id (market)
+  type: http
+  seq: 111
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/{{plutusApiTripIdMarket}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("market trip keeps customerId and drops the nested copies", function () {
+    const t = res.body.data;
+    expect(t.source).to.equal("MARKET");
+    expect(t).to.have.property("customerId");
+    expect(t.canCreateLoadingAdvice).to.be.a("boolean");
+    expect(t).to.not.have.property("createdById");
+    if (t.lorryReceipts) {
+      t.lorryReceipts.forEach(function (lr) { expect(lr).to.not.have.property("lrUrl"); });
+    }
+    expect(t.truck).to.not.have.property("trip");
+    if (t.truck && t.truck.fuelCards) {
+      t.truck.fuelCards.forEach(function (c) {
+        expect(c).to.not.have.property("pin");
+        expect(c).to.not.have.property("cardNumber");
+      });
+    }
+  });
+}
+
+docs {
+  Market-trip variant of "Trips v2 get by id (multi-stop, owned)". {{plutusApiTripIdMarket}} must be
+  a MARKET trip (staging data).
+}
