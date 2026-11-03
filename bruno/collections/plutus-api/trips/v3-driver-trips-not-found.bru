@@ -1,0 +1,24 @@
+meta {
+  name: Trips v3 by driver - unknown driver
+  type: http
+  seq: 129
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v3/driver/99999999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 404
+}
+
+docs {
+  Unknown driver: body statusCode 404 "Driver not found".
+}

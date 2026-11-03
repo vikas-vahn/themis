@@ -1,0 +1,24 @@
+meta {
+  name: Drivers v2 get by id - not found
+  type: http
+  seq: 118
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/v2/99999999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 404
+}
+
+docs {
+  Unknown driver: body statusCode 404.
+}

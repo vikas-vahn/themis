@@ -1,0 +1,47 @@
+meta {
+  name: Drivers v2 get by id (lean)
+  type: http
+  seq: 117
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/v2/{{plutusApiDriverIdWithTrips}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("driver with a trimmed truck", function () {
+    const d = res.body.data;
+    ["id", "name", "status", "ownerId", "vpas"].forEach(function (k) { expect(d, k).to.have.property(k); });
+    (d.vpas || []).forEach(function (v) { expect(v).to.not.have.property("requiresIdProof"); });
+    expect(d).to.not.have.property("dlVerificationDate");
+    const t = d.truckDTO;
+    if (t) {
+      ["otherDocuments", "axleCount", "netcVehicleClass", "highestAlertLevel", "truckMaster", "fundManagerId",
+       "lastMaintenanceDate", "nextMaintenanceDate", "isFuelCardLowBalance"].forEach(function (k) { expect(t, k).to.not.have.property(k); });
+      if (t.trip) { expect(Object.keys(t.trip)).to.eql(["id"]); }
+      ["truckManager", "fundManager"].forEach(function (k) {
+        if (t[k]) { Object.keys(t[k]).forEach(function (f) { expect(["id", "phone", "name", "image", "email", "role", "lastLoginAt"]).to.include(f); }); }
+      });
+      (t.fuelCards || []).forEach(function (c) {
+        ["pin", "cardNumber", "last_changed_by_name"].forEach(function (k) { expect(c, k).to.not.have.property(k); });
+      });
+    }
+  });
+}
+
+docs {
+  ENG-1335 R11: GET /api/drivers/{id} with its truckDTO trimmed: trip as {id}, managers as summaries,
+  no fuel-card pin or full number, no other documents. A DRIVER may only read their own record (403);
+  others only a driver of their torg (403).
+}

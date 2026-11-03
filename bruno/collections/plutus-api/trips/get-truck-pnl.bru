@@ -19,6 +19,13 @@ assert {
   res.body.statusCode: eq 200
 }
 
+script:post-response {
+  // remembered for "Trips v2 truck PnL (lean)", which must report the same totals
+  bru.setVar("plutusApiPnlV1", JSON.stringify({
+    totalRevenue: res.body.data.totalRevenue, totalExpenses: res.body.data.totalExpenses,
+    pnl: res.body.data.pnl, rows: res.body.data.trips.length }));
+}
+
 tests {
   test("totals and rows", function () {
     const d = res.body.data;

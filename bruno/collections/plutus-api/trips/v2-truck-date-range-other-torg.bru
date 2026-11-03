@@ -1,0 +1,29 @@
+meta {
+  name: Trips v2 by truck - date range, another torg refused
+  type: http
+  seq: 124
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/truck/{{plutusApiTruckIdMultiStop}}/date-range?startDate=2026-01-01&endDate=2026-12-31
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiOtherTorgToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiOtherTorgToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  A TORG_ADMIN of a torg that does NOT own {{plutusApiTruckIdMultiStop}} is refused: body statusCode 400
+  "Not authorized to view this vehicle". Needs {{plutusApiOtherTorgToken}}; skipped when it is empty.
+}

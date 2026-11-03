@@ -1,0 +1,28 @@
+meta {
+  name: Drivers v2 get by id - another torg refused
+  type: http
+  seq: 119
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/v2/{{plutusApiDriverIdWithTrips}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiOtherTorgToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiOtherTorgToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 403
+}
+
+docs {
+  A TORG_ADMIN of another torg: body statusCode 403. Needs {{plutusApiOtherTorgToken}}; skipped when empty.
+}

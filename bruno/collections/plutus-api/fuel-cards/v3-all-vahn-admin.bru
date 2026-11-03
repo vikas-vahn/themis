@@ -1,0 +1,26 @@
+meta {
+  name: Fuel cards v3 all - VAHN_ADMIN not supported (parity with v2)
+  type: http
+  seq: 111
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-cards/v3/all?skip=0&take=2
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  The static VAHN_ADMIN user is refused with body statusCode 400 "User role not supported", exactly as
+  GET /api/fuel-cards/v2/all and /all are (the listing scope has no VAHN_ADMIN branch). Documents the
+  parity so a later change to either route is noticed.
+}

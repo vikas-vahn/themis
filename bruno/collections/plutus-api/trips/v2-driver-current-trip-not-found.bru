@@ -1,0 +1,24 @@
+meta {
+  name: Trips v2 driver current trip - unknown driver
+  type: http
+  seq: 137
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/driver/99999999/current
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 404
+}
+
+docs {
+  Unknown driver: body statusCode 404.
+}

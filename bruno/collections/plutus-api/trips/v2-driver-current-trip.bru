@@ -1,0 +1,35 @@
+meta {
+  name: Trips v2 driver current trip (lean)
+  type: http
+  seq: 136
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/driver/{{plutusApiDriverIdWithTrips}}/current
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("lean current trip with driver {id, name, phone}", function () {
+    const r = res.body.data;
+    ["truck", "truckManager", "fundManager", "tripExpenses", "expenseSummary"].forEach(function (k) { expect(r, k).to.not.have.property(k); });
+    expect(r.driver).to.be.an("object");
+    expect(Object.keys(r.driver).sort()).to.eql(["id", "name", "phone"]);
+    expect(r.driver.id).to.equal(parseInt(bru.getEnvVar("plutusApiDriverIdWithTrips"), 10));
+  });
+}
+
+docs {
+  ENG-1335 R9: GET /api/trips/driver/{driverId}/current without the truck/driver graph, plus
+  driver.{id, name, phone}. Needs {{plutusApiDriverIdWithTrips}} to have a current trip, else body statusCode 404.
+}

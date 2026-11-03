@@ -1,0 +1,24 @@
+meta {
+  name: Trips v2 truck trip at timestamp - none found
+  type: http
+  seq: 139
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/truck/{{plutusApiTruckIdMultiStop}}/at-timestamp?timestamp=2000-01-01T00:00:00
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 404
+}
+
+docs {
+  No trip then: body statusCode 404 (HTTP status stays 200).
+}

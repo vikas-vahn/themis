@@ -1,0 +1,50 @@
+meta {
+  name: Drivers v2 by torg (lean)
+  type: http
+  seq: 115
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/v2/torg/{{plutusApiTorgIdWithDrivers}}?skip=0&take=2
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("skip/take envelope", function () {
+    const e = res.body.data;
+    expect(e.data).to.be.an("array");
+    expect(e.skip).to.equal(0);
+    expect(e.take).to.equal(2);
+    expect(e.total).to.be.a("number");
+    expect(e.data.length).to.be.at.most(e.take);
+    expect(e.hasMore).to.equal(e.skip + e.data.length < e.total);
+  });
+
+  test("every driver field, without the nested truckDTO", function () {
+    const rows = res.body.data.data;
+    expect(rows).to.be.an("array").that.is.not.empty;
+    rows.forEach(function (d) {
+      ["id", "name", "phone", "status", "ownerId", "licenseNumber", "vpas"].forEach(function (k) { expect(d, k).to.have.property(k); });
+      expect(d).to.not.have.property("truckDTO");
+    });
+  });
+
+  test("only the torg's drivers", function () {
+    res.body.data.data.forEach(function (d) { expect(String(d.ownerId)).to.equal(String(bru.getEnvVar("plutusApiTorgIdWithDrivers"))); });
+  });
+}
+
+docs {
+  ENG-1335 R10: GET /api/drivers/torg/{torgId} as a skip/take page (same torg check and assignment filter).
+  VAHN_ADMIN may name any torg; others only their own (body statusCode 400 otherwise).
+}

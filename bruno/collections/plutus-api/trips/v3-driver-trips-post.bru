@@ -1,0 +1,66 @@
+meta {
+  name: Trips v3 by driver (POST date range, lean)
+  type: http
+  seq: 128
+}
+
+post {
+  url: {{baseUrl}}/api/trips/v3/driver/{{plutusApiDriverIdWithTrips}}?skip=0&take=2
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "startDate": "2020-01-01",
+    "endDate": "2030-12-31"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("skip/take envelope", function () {
+    const e = res.body.data;
+    expect(e.data).to.be.an("array");
+    expect(e.skip).to.equal(0);
+    expect(e.take).to.equal(2);
+    expect(e.total).to.be.a("number");
+    expect(e.data.length).to.be.at.most(e.take);
+    expect(e.hasMore).to.equal(e.skip + e.data.length < e.total);
+  });
+
+  test("lean driver trip rows", function () {
+    expect(res.body.data.data.length).to.be.greaterThan(0);
+    res.body.data.data.forEach(function (r) {
+      ["id", "tripNumber", "status", "tripSheetStatus", "tripTruckStatus", "totalTripExpenses", "expenseSummary", "truck"].forEach(function (k) {
+        expect(r, k).to.have.property(k);
+      });
+      ["driver", "truckManagers", "fundManagers", "createdById", "createdByName", "vtsOdometerStartReading"].forEach(function (k) {
+        expect(r, k).to.not.have.property(k);
+      });
+      expect(r.truck).to.not.have.property("trip");
+      expect(r.truck).to.not.have.property("otherDocuments");
+      (r.truck.fuelCards || []).forEach(function (c) {
+        expect(c).to.not.have.property("pin");
+        expect(c).to.not.have.property("cardNumber");
+      });
+      (r.lorryReceipts || []).forEach(function (lr) { expect(lr).to.not.have.property("lrUrl"); });
+    });
+  });
+}
+
+docs {
+  Same as the GET variant with a date-range body (rows overlapping the range).
+}
