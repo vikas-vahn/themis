@@ -1,0 +1,47 @@
+meta {
+  name: 110. Cancel FULL, subscription goes into TRIAL until tomorrow
+  type: http
+  seq: 110
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "refundMode": "FULL",
+    "trialEndDate": "{{subRevampPlus1}}",
+    "reason": "ENG-690 staging test: full refund and trial"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("billing CANCELLED, refund equals the preview, items written", function() {
+    const d = res.body.data;
+    expect(d.preview).to.equal(false);
+    expect(d.billing.status).to.equal("CANCELLED");
+    expect(Number(d.refund.amount)).to.equal(Number(bru.getEnvVar("subRevampPreviewRefund")));
+    const items = d.billing.lineItems || [];
+    expect(items.filter(i => i.itemType === "CANCELLATION_CREDIT").length).to.equal(1);
+    const refunds = items.filter(i => i.itemType === "REFUND");
+    expect(refunds.length).to.be.greaterThan(0);
+    expect(Math.abs(refunds.reduce((s, i) => s + Number(i.amount), 0))).to.be.closeTo(Number(d.refund.amount), 0.011);
+    expect(Number(d.billing.refundedAmount)).to.be.closeTo(Number(d.refund.amount), 0.011);
+    expect(d.subscription.status).to.equal("TRIAL");
+  });
+}

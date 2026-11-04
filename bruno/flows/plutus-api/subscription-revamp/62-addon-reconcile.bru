@@ -1,0 +1,23 @@
+meta {
+  name: 62. Reconcile after the truck addition
+  type: http
+  seq: 62
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billing/reconcile?isTruckAddition=true&reason=ENG-690%20test
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  What the app calls after a truck is verified. Charges trucks above the billed count for the days left.
+}

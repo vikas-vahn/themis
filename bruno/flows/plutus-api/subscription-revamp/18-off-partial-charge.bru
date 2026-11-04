@@ -1,0 +1,35 @@
+meta {
+  name: 18. Flags off: partial-charge refused
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "AMOUNT",
+    "amount": 1,
+    "expectedDueAmount": 1
+  }
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  With the flag off the route refuses with a body statusCode of 403 (HTTP is 200 through the response filter).
+}

@@ -1,0 +1,33 @@
+meta {
+  name: 47. List the torg's external payments
+  type: http
+  seq: 47
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("P1 is listed once, as recorded", function() {
+    const d = res.body.data;
+    const p = d.items.filter(x => String(x.id) === bru.getEnvVar("subRevampPayment1Id"));
+    expect(p.length).to.equal(1);
+    expect(Number(p[0].amount)).to.equal(1000);
+    expect(d.total).to.equal(1);
+  });
+}
+
+docs {
+  Duplicates did not create rows.
+}

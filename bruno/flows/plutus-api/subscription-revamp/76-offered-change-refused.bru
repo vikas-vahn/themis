@@ -1,0 +1,30 @@
+meta {
+  name: 76. Choosing an OFFERED plan is refused for a torg user
+  type: http
+  seq: 76
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 9,
+    "expectedNetPayable": 0
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

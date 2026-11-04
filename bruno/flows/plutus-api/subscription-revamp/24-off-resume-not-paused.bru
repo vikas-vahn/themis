@@ -1,0 +1,23 @@
+meta {
+  name: 24. Flags off: resume is a 400 unless PAUSED
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/resume?reason=flag%20off%20check
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  The subscription is ACTIVE, so resume is refused (it used to reactivate from any state).
+}

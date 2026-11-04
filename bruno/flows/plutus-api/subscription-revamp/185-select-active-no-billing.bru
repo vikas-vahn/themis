@@ -1,0 +1,39 @@
+meta {
+  name: 185. SELECTION on an ACTIVE subscription with no current billing
+  type: http
+  seq: 185
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 8
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("SELECTION, no money, billing dates untouched", function() {
+    const d = res.body.data;
+    expect(d.changeType).to.equal("SELECTION");
+    expect(d.subscription.plan.id).to.equal(8);
+    expect(d.subscription.status).to.equal("ACTIVE");
+    expect(d.subscription.nextBillingDate).to.equal(bru.getEnvVar("subRevampPlus10"));
+  });
+}

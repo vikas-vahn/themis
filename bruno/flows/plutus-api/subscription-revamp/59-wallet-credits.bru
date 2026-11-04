@@ -1,0 +1,31 @@
+meta {
+  name: 59. Finance list shows the advance move
+  type: http
+  seq: 59
+}
+
+get {
+  url: {{baseUrl}}/api/external-payments/wallet-credits?from={{subRevampToday}}&to={{subRevampToday}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("an ADVANCE_MOVE of 100 for this torg is listed", function() {
+    const rows = res.body.data.filter(r => String(r.torgId) === bru.getEnvVar("subRevampTorgId") && r.type === "ADVANCE_MOVE");
+    expect(rows.length).to.be.greaterThan(0);
+    expect(rows.some(r => Number(r.amount) === 100)).to.equal(true);
+  });
+}
+
+docs {
+  Wallet credits funded by outside money, for finance: refunds of external payments and advance moves.
+}

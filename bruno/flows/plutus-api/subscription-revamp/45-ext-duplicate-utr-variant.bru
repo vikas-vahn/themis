@@ -1,0 +1,46 @@
+meta {
+  name: 45. Same UTR typed differently (new requestId) is a duplicate
+  type: http
+  seq: 45
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 1000,
+    "mode": "UPI",
+    "referenceNumber": "utr 690 {{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-p1-variant-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("returns P1 again: references are compared upper-cased with non-alphanumerics stripped", function() {
+    const d = res.body.data;
+    expect(d.duplicate).to.equal(true);
+    expect(String(d.externalPayment.id)).to.equal(bru.getEnvVar("subRevampPayment1Id"));
+  });
+}
+
+docs {
+  `UTR-690-123` and `utr 690 123` normalise to the same reference. Same torg, amount and mode, so it is the same payment.
+}

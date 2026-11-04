@@ -1,0 +1,50 @@
+meta {
+  name: 156. VAHN_ADMIN may leave the shortfall as a due (allowDue)
+  type: http
+  seq: 156
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 11,
+    "expectedNetPayable": {{subRevampQuoteNet}},
+    "allowDue": true,
+    "reason": "ENG-690 test: leave a due for partial-charge checks"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampOldBillingId", bru.getEnvVar("subRevampBillingId"));
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingId", String(res.body.data.billing.id));
+}
+
+tests {
+  test("new billing on plan 11 with the shortfall as its due", function() {
+    const d = res.body.data;
+    expect(d.changeType).to.equal("CYCLE_CHANGE");
+    expect(d.billing.subscriptionPlan.id).to.equal(11);
+    expect(Number(d.billing.dueAmount)).to.be.closeTo(Number(bru.getEnvVar("subRevampQuoteShortfall")), 0.011);
+    expect(d.billing.status).to.equal("PARTIAL");
+  });
+}

@@ -1,0 +1,44 @@
+meta {
+  name: 170. Partial charge by AMOUNT (100.50), remainder stays due
+  type: http
+  seq: 170
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "AMOUNT",
+    "amount": 100.50,
+    "createDue": true,
+    "expectedDueAmount": {{subRevampBillingDue}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampDueBefore", bru.getEnvVar("subRevampBillingDue"));
+}
+
+tests {
+  test("100.50 charged, due reduced by it", function() {
+    const d = res.body.data;
+    expect(Number(d.chargedAmount)).to.be.closeTo(100.5, 0.011);
+    expect(Number(d.billing.dueAmount)).to.be.closeTo(Number(bru.getEnvVar("subRevampDueBefore")) - 100.5, 0.011);
+  });
+}

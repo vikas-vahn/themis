@@ -1,0 +1,38 @@
+meta {
+  name: 46. Same UTR with a different amount is a 409
+  type: http
+  seq: 46
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 1001,
+    "mode": "UPI",
+    "referenceNumber": "UTR-690-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-p1-conflict-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 409
+}
+
+docs {
+  The same reference with different details is refused.
+}

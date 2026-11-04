@@ -1,0 +1,33 @@
+meta {
+  name: 61. Mark the truck verified (manual, no vendor call)
+  type: http
+  seq: 61
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/mark-as-verified?remarks=ENG-690%20test%20truck&panCardId={{subRevampPanId}}&isConsentGiven=false
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "entityIds": [{{subRevampTruck3Id}}]
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  Admin manual verification; the torg needs a PAN row (subRevampPanId).
+}

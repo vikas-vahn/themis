@@ -1,0 +1,33 @@
+meta {
+  name: 114. Same billing as TORG_ADMIN hides cancelledBy and cancellationReason
+  type: http
+  seq: 114
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("status visible, who and why hidden", function() {
+    const b = res.body.data;
+    expect(b.status).to.equal("CANCELLED");
+    expect(b.cancelledBy == null).to.equal(true);
+    expect(b.cancellationReason == null).to.equal(true);
+    (b.lineItems || []).forEach(i => { expect(i.createdBy == null, "createdBy on " + i.itemType).to.equal(true); expect(i.reason == null, "reason on " + i.itemType).to.equal(true); });
+  });
+}
+
+docs {
+  cancelledBy / cancellationReason (and line item createdBy / reason) are VAHN_ADMIN-only.
+}

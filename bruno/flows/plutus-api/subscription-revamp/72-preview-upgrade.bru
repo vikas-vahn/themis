@@ -1,0 +1,44 @@
+meta {
+  name: 72. Preview the upgrade 7 -> 5 (TORG_ADMIN)
+  type: http
+  seq: 72
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change/preview?planId=5
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampQuoteNet", String(res.body.data.netPayable));
+  bru.setEnvVar("subRevampQuoteCharge", String(res.body.data.charge));
+}
+
+tests {
+  const dayMs = 86400000;
+  const parse = s => Date.UTC(Number(s.slice(0,4)), Number(s.slice(5,7)) - 1, Number(s.slice(8,10)));
+  const bs = parse(bru.getEnvVar("subRevampBillingStart")), be = parse(bru.getEnvVar("subRevampBillingEnd")), td = parse(bru.getEnvVar("subRevampToday"));
+  const daysInPeriod = Math.round((be - bs) / dayMs);
+  const daysLeft = Math.round((be - Math.min(Math.max(td, bs), be)) / dayMs);
+  const round2 = x => Math.round((x + Number.EPSILON) * 100) / 100;
+  test("UPGRADE charged for the difference x trucks x days left", function() {
+    const q = res.body.data;
+    expect(q.changeType).to.equal("UPGRADE");
+    expect(Number(q.charge)).to.be.closeTo(round2((352.82 - 116.82) * 3 * daysLeft / daysInPeriod), 0.011);
+    expect(Number(q.netPayable)).to.be.closeTo(Number(q.charge) + Number(q.carriedForward) - Number(q.credit) - Number(q.creditToAdvance), 0.011);
+    expect(Number(q.shortfall)).to.equal(0);
+  });
+}
+
+docs {
+  3 verified trucks, all within the billed count. 299 + 18% = 352.82 vs 116.82 per truck.
+}

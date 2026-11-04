@@ -1,0 +1,32 @@
+meta {
+  name: 161. Partial charge with a stale expectedDueAmount is a 409
+  type: http
+  seq: 161
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "TRUCKS",
+    "noOfTrucks": 1,
+    "createDue": true,
+    "expectedDueAmount": 1.00
+  }
+}
+
+assert {
+  res.body.statusCode: eq 409
+}

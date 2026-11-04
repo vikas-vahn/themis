@@ -1,0 +1,42 @@
+meta {
+  name: 52. Reverse P2
+  type: http
+  seq: 52
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments/{{subRevampPayment2Id}}/reverse
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "ENG-690 test: recorded by mistake"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("P2 is REVERSED and nothing reopens", function() {
+    const d = res.body.data;
+    expect(d.externalPayment.status).to.equal("REVERSED");
+    expect(Number(d.externalPayment.unallocatedAmount)).to.equal(0);
+    expect(d.reopenedBillingIds.length).to.equal(0);
+  });
+}
+
+docs {
+  P2 was only held as advance, so nothing reopens; the advance it held is zeroed.
+}

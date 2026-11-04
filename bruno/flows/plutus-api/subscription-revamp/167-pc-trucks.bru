@@ -1,0 +1,46 @@
+meta {
+  name: 167. Partial charge by TRUCKS (1 truck), remainder stays due
+  type: http
+  seq: 167
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "TRUCKS",
+    "noOfTrucks": 1,
+    "createDue": true,
+    "expectedDueAmount": {{subRevampBillingDue}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampDueBefore", bru.getEnvVar("subRevampBillingDue"));
+}
+
+tests {
+  test("1 truck charged at the plan price, from the wallet, due reduced by it", function() {
+    const d = res.body.data;
+    expect(Number(d.chargedAmount)).to.be.closeTo(1621.32, 0.011);
+    expect(Number(d.fromWallet) + Number(d.fromAdvance)).to.be.closeTo(Number(d.chargedAmount), 0.011);
+    expect(Number(d.billing.dueAmount)).to.be.closeTo(Number(bru.getEnvVar("subRevampDueBefore")) - 1621.32, 0.011);
+    expect(d.billing.status).to.equal("PARTIAL");
+  });
+}

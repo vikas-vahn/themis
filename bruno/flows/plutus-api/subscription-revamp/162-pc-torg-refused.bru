@@ -1,0 +1,32 @@
+meta {
+  name: 162. Partial charge as TORG_ADMIN is refused
+  type: http
+  seq: 162
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "TRUCKS",
+    "noOfTrucks": 1,
+    "createDue": true,
+    "expectedDueAmount": {{subRevampBillingDue}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 403
+}

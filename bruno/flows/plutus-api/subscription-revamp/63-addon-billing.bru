@@ -1,0 +1,57 @@
+meta {
+  name: 63. Billing now has exactly one TRUCK_ADDON, priced pro-rata
+  type: http
+  seq: 63
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingStart", String(res.body.data.billingStartDate));
+  bru.setEnvVar("subRevampBillingEnd", String(res.body.data.billingEndDate));
+  bru.setEnvVar("subRevampBillingTrucks", String(res.body.data.noOfTrucks));
+  bru.setEnvVar("subRevampBillingStatus", String(res.body.data.status));
+  bru.setEnvVar("subRevampBillingDue", String(res.body.data.dueAmount));
+  bru.setEnvVar("subRevampBillingPaid", String(res.body.data.paidAmount));
+  bru.setEnvVar("subRevampBillingTotal", String(res.body.data.totalAmount));
+}
+
+tests {
+  const b = res.body.data;
+  const items = b.lineItems || [];
+  const of = t => items.filter(i => i.itemType === t);
+
+  const dayMs = 86400000;
+  const parse = s => Date.UTC(Number(s.slice(0,4)), Number(s.slice(5,7)) - 1, Number(s.slice(8,10)));
+  const bs = parse(bru.getEnvVar("subRevampBillingStart")), be = parse(bru.getEnvVar("subRevampBillingEnd")), td = parse(bru.getEnvVar("subRevampToday"));
+  const daysInPeriod = Math.round((be - bs) / dayMs);
+  const daysLeft = Math.round((be - Math.min(Math.max(td, bs), be)) / dayMs);
+  const round2 = x => Math.round((x + Number.EPSILON) * 100) / 100;
+  test("one TRUCK_ADDON for the third truck", function() {
+    expect(of("TRUCK_ADDON").length).to.equal(1);
+    const a = of("TRUCK_ADDON")[0];
+    expect(a.quantity).to.equal(1);
+    expect(Number(a.amount)).to.be.closeTo(round2(116.82 * daysLeft / daysInPeriod), 0.011);
+  });test("the total is the sum of its charge items and it is paid in full", function() {
+    const sum = items.filter(i => i.nature === "CHARGE" || i.nature === "CREDIT").reduce((s, i) => s + Number(i.amount), 0);
+    expect(Number(b.totalAmount)).to.be.closeTo(sum, 0.011);
+    expect(Number(b.dueAmount)).to.equal(0);
+    expect(b.status).to.equal("PAID");
+  });
+}
+
+docs {
+  Plan 7: 99 + 18% GST = 116.82 per truck. Captures billing dates for later pro-rata checks.
+}

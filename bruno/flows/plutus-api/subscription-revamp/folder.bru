@@ -1,0 +1,74 @@
+meta {
+  name: subscription-revamp
+}
+
+docs {
+  # Subscription revamp: cancel and refund (ENG-355), external payments and partial billing (ENG-1134),
+  # plan selection and change (ENG-690)
+
+  A staging journey over one throw-away test torg. It checks the contract (statuses, role rules, flag
+  gating) and that **the money reconciles**: previews match what is actually charged or refunded, wallet and
+  advance move by exactly the expected amounts, and a billing's total is always the sum of its line items.
+
+  Errors come back as HTTP 200 with the real code in the body `statusCode`, so every request asserts on the body.
+
+  ## The flags (read this first)
+
+  Everything new sits behind DynamicConfig flags in namespace `subscription-billing`, which are **global to the
+  environment**. `PUT /api/v1/config/{namespace}` REPLACES the whole namespace config.
+
+  - Steps 10-26 run with the flags OFF (every flagged route must refuse with 403; legacy routes keep working).
+  - Step 30 turns them on (dueSweep stays off: it auto-debits wallets every hour). Steps 31-190 run in the window.
+  - Step 200 turns them off again. **Always run 200**, even if something failed. 201-204 prove it.
+  - 205-208 end the test torg's subscription and check the flag-off refusal of a CANCELLED subscription.
+
+  ## Status of this flow (run on staging 2026-11-04 against deployed build 381ca2174, plutus-java topic/ENG-690-plan-selection-change)
+
+  **Blocked by a backend bug**: every new `subscription_billings` insert fails with `null value in column
+  "refunded_amount" ... violates not-null constraint` (see "Known blocker" below), so no billing could be created and
+  the money cases could not run. Verified and passing: steps 01-24 (flags off), 30-59 (flag window: external payments,
+  advance, duplicates, reverse, move-to-wallet, wallet-credits), 75-76, 103-105, 109, 120-122, 125-126, 162-163,
+  186-190 and the flag restore 200-204. **Written from the plutus-java code but never run against a real billing**:
+  25-26, 60-89 (add-on, plan change), 100-115 (cancel), 123-124 (TRIAL-only), 130-185 (B2/B3/B4 money cases),
+  205-208. Expect to adjust field names or amounts in those on the first real run.
+
+  ## Known blocker (fix before re-running)
+
+  `SubscriptionBilling.refundedAmount` (`@Column(name = "refunded_amount")`, no default) is inserted as NULL for any
+  billing built with the builder, while V94 made the column `NOT NULL DEFAULT 0`. The hourly scheduler, `POST /billings`
+  and (from the code) a cycle change, which creates a billing, would hit it too. Torg 685 is left ACTIVE with 2 verified trucks, wallet 3100 and
+  advance 900, due for billing today, so once the mapping is fixed and deployed the next tick (or `POST
+  /api/subscription-billing/trigger-today`, which queues every due torg) creates its billing and steps 25 onward can run.
+
+  ## Needs
+
+  - A real VAHN_ADMIN login (OTP `776677`): money writes refuse the static token with 403. Pass the phone at run
+    time: `--env-var subRevampAdminPhone=<phone>`. Never commit it. For steps 41 and 163 also pass
+    `--env-var subRevampStaticToken=<VAHN_ADMIN static token>` (not stored anywhere).
+  - A test torg. `subRevampTorgId`, `subRevampWalletId` (the torg admin's wallet), `subRevampPanId`, and
+    `subRevampTorgAdminPhone` (a made-up number with no email, so no real person is contacted).
+    Create it with admin calls (no DB access needed):
+    1. `verify-otp` for a fresh phone, `POST /api/torgs` (name, torgAdminId = any user id), then
+       `POST /api/users/torg/{torgId}` (role TORG_ADMIN, fresh phone: creates the admin AND its wallet) and
+       `PUT /api/torgs/{torgId}` with `torgAdminId` = that new user.
+    2. `POST /api/pan/without-verification` with `torgId` (PAN row; trucks need it to be verified manually).
+    3. `POST /api/subscriptions/start?torgId=&planId=7&trialDays=0`, then `POST /api/subscriptions/trial?torgId=`
+       and `POST /api/subscriptions/{torgId}/trial/extend?trialEndDate=<today>`. Plan 7 is monthly 99 + GST.
+    4. `POST /api/trucks` x2 (`{registrationNumber, torgId}`, plates like MH69AB6901) and
+       `PUT /api/trucks/mark-as-verified?panCardId=` for them: 2 verified trucks.
+    5. `PUT /api/wallets/{walletId}/balance?amount=3000` (admin adjustment; there is no gateway-free deposit).
+  - The hourly billing scheduler must create the first billing (nothing else creates it: `POST /billings/start`
+    is broken for this, it reads `currentBillingDate`). Run 25-26 once it has.
+  - Step 135 waits for the scheduler again (up to an hour) after the trial is ended.
+
+  ## Order and state
+
+  The flow is stateful and single-use per torg: B1 (plan 7, monthly) takes the external payments, a truck add-on,
+  an upgrade and the first cancel. Steps 120-124 select a plan while no billing exists (TRIAL). B2 (half-yearly) is
+  created by the scheduler and paid from advance only. A cycle change turns it into B3 (monthly) and back into
+  advance, then B4 (half-yearly) is left short on purpose for the partial-charge cases and the PRO_RATA cancel.
+  Plans on staging: 5 monthly 299 OPEN, 7 monthly 99 OFFERED, 8 annual 2028 OPEN, 11 half-yearly 1374 OPEN,
+  9 annual 4800 OFFERED, 10 monthly 500 OFFERED and inactive. All prices exclude 18% GST.
+
+  Variables are prefixed `subRevamp` because every plutus-api flow shares one environment file.
+}

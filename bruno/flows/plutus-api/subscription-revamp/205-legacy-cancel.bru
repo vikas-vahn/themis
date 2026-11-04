@@ -1,0 +1,29 @@
+meta {
+  name: 205. Legacy cancel of the (test) subscription
+  type: http
+  seq: 205
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/cancel?reason=ENG-690%20test%20end
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("CANCELLED", function() {
+    expect(res.body.data.status).to.equal("CANCELLED");
+  });
+}
+
+docs {
+  Run last: it ends the test torg's subscription so the flag-off checks below can see a CANCELLED one.
+}

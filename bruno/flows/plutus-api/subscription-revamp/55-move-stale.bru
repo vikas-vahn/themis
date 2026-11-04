@@ -1,0 +1,31 @@
+meta {
+  name: 55. Move to wallet with a stale expectedAdvanceBalance is a 409
+  type: http
+  seq: 55
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance/move-to-wallet
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 100,
+    "expectedAdvanceBalance": 999,
+    "reason": "ENG-690 test"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 409
+}

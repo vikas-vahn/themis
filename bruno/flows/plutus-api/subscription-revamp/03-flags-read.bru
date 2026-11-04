@@ -1,0 +1,26 @@
+meta {
+  name: 03. Read subscription-billing flags
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/config/subscription-billing
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: isDefined
+}
+
+docs {
+  Record this before changing anything. On 2026-11-04 the namespace did not exist on staging
+  (statusCode 404), i.e. every flag was at its code default (lineItemMaths off, lineItemWrites on,
+  the rest off). `PUT /api/v1/config/{namespace}` REPLACES the whole namespace config, so the
+  enable and restore bodies below carry every key.
+}

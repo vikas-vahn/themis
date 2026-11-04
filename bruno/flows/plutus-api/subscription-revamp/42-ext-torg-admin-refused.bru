@@ -1,0 +1,38 @@
+meta {
+  name: 42. External payment as TORG_ADMIN is refused
+  type: http
+  seq: 42
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 100,
+    "mode": "UPI",
+    "referenceNumber": "UTR-TORG-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-torg-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  VAHN_ADMIN only.
+}

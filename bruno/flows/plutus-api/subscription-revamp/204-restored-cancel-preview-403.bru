@@ -1,0 +1,19 @@
+meta {
+  name: 204. Restored: cancel preview refuses again
+  type: http
+  seq: 204
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel-preview?refundMode=FULL
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}

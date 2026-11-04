@@ -1,0 +1,53 @@
+meta {
+  name: 43. Record external payment P1 (billing is PAID, so all of it becomes advance)
+  type: http
+  seq: 43
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 1000,
+    "mode": "UPI",
+    "referenceNumber": "UTR-690-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "remarks": "ENG-690 staging test payment",
+    "requestId": "subrevamp-p1-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampPayment1Id", String(res.body.data.externalPayment.id));
+}
+
+tests {
+  test("new payment, no allocation, whole amount is advance", function() {
+    const d = res.body.data;
+    expect(d.duplicate).to.equal(false);
+    expect(d.allocations.length).to.equal(0);
+    expect(Number(d.externalPayment.unallocatedAmount)).to.equal(1000);
+    expect(Number(d.advanceBalance)).to.equal(1000);
+  });
+}
+
+docs {
+  The current billing has nothing due, so the payment is held as advance. Captures subRevampPayment1Id.
+}

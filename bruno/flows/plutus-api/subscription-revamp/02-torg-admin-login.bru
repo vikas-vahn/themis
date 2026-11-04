@@ -1,0 +1,36 @@
+meta {
+  name: 02. Login (TORG_ADMIN of the test torg)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{subRevampTorgAdminPhone}}",
+    "otp": "{{subRevampOtp}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.user.role: eq TORG_ADMIN
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampTorgToken", res.body.data.accessToken);
+}
+
+docs {
+  The test torg's own admin (a made-up number with no email). Used for the torg-user cases:
+  own-torg reads, plan self-service, cross-torg refusals.
+}

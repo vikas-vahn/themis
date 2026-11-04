@@ -1,0 +1,23 @@
+meta {
+  name: 23. Flags off: PUT /{torgId} refuses OFFERED for TORG_ADMIN
+  type: http
+  seq: 23
+}
+
+put {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}?planId=9&reason=flag%20off%20check
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  The other legacy plan route behaves the same.
+}

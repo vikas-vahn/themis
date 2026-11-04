@@ -1,0 +1,32 @@
+meta {
+  name: 149. Closed billing: PLAN_CHANGE_CREDIT, REFUND without a wallet transaction
+  type: http
+  seq: 149
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampOldBillingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("credit and external-funded refund items", function() {
+    const b = res.body.data;
+    expect(b.status).to.equal("CANCELLED");
+    const items = b.lineItems || [];
+    expect(items.filter(i => i.itemType === "PLAN_CHANGE_CREDIT").length).to.equal(1);
+    const refunds = items.filter(i => i.itemType === "REFUND");
+    expect(refunds.length).to.be.greaterThan(0);
+    refunds.forEach(r => expect(r.walletTransactionId == null, "refund must not touch the wallet").to.equal(true));
+    expect(b.cancellationReason).to.contain("Plan change to");
+  });
+}

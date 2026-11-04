@@ -1,0 +1,47 @@
+meta {
+  name: 79. Upgrade 7 -> 5 with the previewed price
+  type: http
+  seq: 79
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 5,
+    "expectedNetPayable": {{subRevampQuoteNet}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("UPGRADE applied at the previewed charge, billing stays paid", function() {
+    const d = res.body.data;
+    expect(d.changeType).to.equal("UPGRADE");
+    expect(Number(d.charge)).to.equal(Number(bru.getEnvVar("subRevampQuoteCharge")));
+    const c = (d.billing.lineItems || []).filter(i => i.itemType === "PLAN_CHANGE_CHARGE");
+    expect(c.length).to.equal(1);
+    expect(Number(c[0].amount)).to.equal(Number(d.charge));
+    expect(Number(d.billing.dueAmount)).to.equal(0);
+    expect(d.billing.status).to.equal("PAID");
+  });
+}
+
+docs {
+  The charge is collected at once, advance first.
+}

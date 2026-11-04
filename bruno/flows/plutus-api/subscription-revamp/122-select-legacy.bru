@@ -1,0 +1,23 @@
+meta {
+  name: 122. Legacy PUT /{torgId}/plan for a selection goes through
+  type: http
+  seq: 122
+}
+
+put {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan?planId=5&reason=ENG-690%20legacy%20selection
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  Returns an empty 200; step 126 reads the plan back.
+}

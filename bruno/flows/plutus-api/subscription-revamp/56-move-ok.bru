@@ -1,0 +1,38 @@
+meta {
+  name: 56. Move 100 of the advance to the torg admin wallet
+  type: http
+  seq: 56
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance/move-to-wallet
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 100,
+    "expectedAdvanceBalance": 1000,
+    "reason": "ENG-690 test: torg asked for 100 back"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("100 moved, 900 left", function() {
+    expect(Number(res.body.data.movedAmount)).to.equal(100);
+    expect(Number(res.body.data.advanceBalance)).to.equal(900);
+  });
+}

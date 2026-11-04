@@ -1,0 +1,35 @@
+meta {
+  name: 16. Flags off: move-to-wallet refused
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance/move-to-wallet
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 1,
+    "expectedAdvanceBalance": 1,
+    "reason": "flag off check"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  With the flag off the route refuses with a body statusCode of 403 (HTTP is 200 through the response filter).
+}
