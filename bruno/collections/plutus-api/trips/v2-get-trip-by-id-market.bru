@@ -43,9 +43,11 @@ tests {
     if (!v1) { return; }
     const o = JSON.parse(v1);
     const d = res.body.data.driver;
-    ["address", "dateOfBirth", "email", "aadhaarNumber", "aadhaarId"].forEach(function (k) {
-      expect(d[k] === undefined ? null : d[k], k).to.equal(o[k] === undefined ? null : o[k]);
+    ["address", "dateOfBirth", "email", "aadhaarNumber", "aadhaarId", "alternatePhone", "licenseUrl", "licenseFrontUrl", "licenseBackUrl", "bankAccountId", "compensationDetails"].forEach(function (k) {
+      expect(d[k] === undefined ? null : d[k], k).to.eql(o[k]);
     });
+    const vpas = (d.vpas || []).map(function (v) { return { vpa: v.vpa, vpaAddress: v.vpaAddress }; });
+    expect(vpas, "vpas[].vpa / vpaAddress").to.eql(o.vpas);
   });
 }
 

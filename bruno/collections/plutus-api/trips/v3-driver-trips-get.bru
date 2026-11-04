@@ -30,6 +30,10 @@ tests {
     expect(e.hasMore).to.equal(e.skip + e.data.length < e.total);
   });
 
+  test("some row names its truck driver as exactly {id, phone}", function () {
+    expect(res.body.data.data.some(function (r) { return r.truck && r.truck.driver; })).to.equal(true);
+  });
+
   test("lean driver trip rows", function () {
     expect(res.body.data.data.length).to.be.greaterThan(0);
     res.body.data.data.forEach(function (r) {
@@ -39,6 +43,7 @@ tests {
       ["driver", "truckManagers", "fundManagers", "createdById", "createdByName", "vtsOdometerStartReading"].forEach(function (k) {
         expect(r, k).to.not.have.property(k);
       });
+      if (r.truck.driver) { expect(Object.keys(r.truck.driver).sort(), "truck.driver").to.eql(["id", "phone"]); }
       expect(r.truck).to.not.have.property("trip");
       expect(r.truck).to.not.have.property("otherDocuments");
       (r.truck.fuelCards || []).forEach(function (c) {

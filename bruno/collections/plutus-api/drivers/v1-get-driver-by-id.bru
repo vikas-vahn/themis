@@ -1,0 +1,29 @@
+meta {
+  name: Drivers v1 get by id (fastag reference)
+  type: http
+  seq: 130
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/{{plutusApiDriverIdWithTrips}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const f = res.body.data.truckDTO && res.body.data.truckDTO.fastag;
+  bru.setVar("plutusApiDriverV1Fastag", JSON.stringify(f ? { id: f.id, balance: f.balance } : null));
+}
+
+docs {
+  v1 driver detail. Remembers truckDTO.fastag {id, balance} in a runtime variable for "Drivers v2 get by id (lean)".
+}

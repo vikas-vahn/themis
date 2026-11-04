@@ -38,6 +38,15 @@ tests {
       });
     }
   });
+
+  test("truckDTO.fastag is exactly {id, balance}, with the v1 values (run the v1 reference request first)", function () {
+    const f = res.body.data.truckDTO && res.body.data.truckDTO.fastag;
+    if (f) { expect(Object.keys(f).sort()).to.eql(["balance", "id"]); }
+    const v1 = bru.getVar("plutusApiDriverV1Fastag");
+    if (v1 === undefined) { return; }
+    expect(f ? { id: f.id, balance: f.balance } : null).to.eql(JSON.parse(v1));
+    expect(f, "fastag present").to.be.an("object");
+  });
 }
 
 docs {

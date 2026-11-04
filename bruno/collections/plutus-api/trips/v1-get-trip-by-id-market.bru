@@ -21,8 +21,10 @@ assert {
 
 script:post-response {
   const d = res.body.data.driver || (res.body.data.truck && res.body.data.truck.driver) || {};
-  bru.setVar("plutusApiTripV1DriverPii", JSON.stringify({
-    address: d.address, dateOfBirth: d.dateOfBirth, email: d.email, aadhaarNumber: d.aadhaarNumber, aadhaarId: d.aadhaarId }));
+  const o = {};
+  ["address", "dateOfBirth", "email", "aadhaarNumber", "aadhaarId", "alternatePhone", "licenseUrl", "licenseFrontUrl", "licenseBackUrl", "bankAccountId", "compensationDetails"].forEach(function (k) { o[k] = d[k] === undefined ? null : d[k]; });
+  o.vpas = (d.vpas || []).map(function (v) { return { vpa: v.vpa, vpaAddress: v.vpaAddress }; });
+  bru.setVar("plutusApiTripV1DriverPii", JSON.stringify(o));
 }
 
 docs {
