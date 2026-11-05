@@ -1,0 +1,55 @@
+meta {
+  name: Trips v2 get by id (market, hirer)
+  type: http
+  seq: 117
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/{{plutusApiTripIdMarket}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiHirerToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiHirerToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("hirer sees the driver's personal keys masked", function () {
+    const d = res.body.data.driver;
+    expect(d).to.be.an("object");
+    if (d.address) { expect(d.address).to.equal("****"); }
+    if (d.dateOfBirth) { expect(d.dateOfBirth).to.equal("****-**-**"); }
+    if (d.email) { expect(d.email).to.match(/^.\*\*\*@/); }
+    if (d.aadhaarNumber) { expect(d.aadhaarNumber).to.match(/^X*\d{0,4}$/); }
+    expect(d.aadhaarId === undefined || d.aadhaarId === null, "aadhaarId").to.equal(true);
+    if (d.alternatePhone) { expect(d.alternatePhone).to.match(/^\*{6,}\d{0,4}$/); }
+    ["licenseUrl", "licenseFrontUrl", "licenseBackUrl", "bankAccountId", "compensationDetails"].forEach(function (k) {
+      expect(d[k] === undefined || d[k] === null, k).to.equal(true);
+    });
+    (d.vpas || []).forEach(function (v) {
+      [v.vpa, v.vpaAddress].forEach(function (x) {
+        if (x) { expect(x).to.match(/^(.\*\*\*@.*|\*\*\*)$/); }
+      });
+      expect(v).to.have.property("id");
+      expect(v).to.have.property("status");
+    });
+  });
+}
+
+docs {
+  ENG-1335: a hirer (Atorg) viewing a MARKET trip gets the driver's address ("****"), dateOfBirth
+  ("****-**-**"), email (first character + "***" + domain) and aadhaarNumber (all but the last four
+  characters as X) masked, aadhaarId null, alternatePhone masked (stars then the last four digits), licence URLs, bankAccountId and compensationDetails null, and vpas[].vpa/vpaAddress masked like an email (DriverPiiMask). The owner and VAHN_ADMIN see full values.
+  Needs {{plutusApiHirerToken}}: a login of the Atorg that requested {{plutusApiTripIdMarket}}; skipped
+  when empty.
+}

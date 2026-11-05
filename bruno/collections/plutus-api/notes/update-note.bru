@@ -35,7 +35,12 @@ docs {
 
   200 with the note; `edited` becomes true and `editedAt` is set.
 
+  After "Delete Note" an edit gets 404 "Note not found". An edit that races with a delete of the same
+  note ends one way or the other, never with a half-deleted note (BUG-717); the sequential case is
+  checked in the "vehicle-remarks-attachment-delete" flow.
+
   403 "Only the author can edit a note", or "A note can only be edited within 15 minutes of being added".
-  404 "Note not found" for an unknown, other-torg or deleted note. 400 if `content` is blank or over 2000
-  characters, or for invalid attachments.
+  404 "Note not found" for an unknown, other-torg or deleted note. 400 if `content` is blank (or only invisible
+  characters, see "Update Note With Invisible Content"), over 2000 characters, or for invalid attachments.
+  NUL characters in `content` are dropped before saving.
 }

@@ -1,0 +1,33 @@
+meta {
+  name: Trucks v3 unverified - remember ids
+  type: http
+  seq: 216
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v3/unverified?skip=0&take=200
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("ids remembered", function () {
+    const ids = res.body.data.data.map(function (r) { return r.truckId; });
+    expect(ids.length).to.be.greaterThan(0);
+    bru.setVar("plutusApiUnverifiedV3Ids", JSON.stringify({ total: res.body.data.total, ids: ids }));
+  });
+}
+
+docs {
+  Stores the first 200 ids and the total of /trucks/v3/unverified in a runtime variable for
+  "Trucks v2 unverified matches v3". Run it just before that request.
+}

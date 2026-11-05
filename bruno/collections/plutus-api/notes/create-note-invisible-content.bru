@@ -1,0 +1,42 @@
+meta {
+  name: Create Note With Invisible Content
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "entityId": {{truckId}},
+    "categoryId": {{categoryId}},
+    "content": "​​​"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+  res.body.message: eq content is required
+}
+
+docs {
+  Negative case for "Create Note" (BUG-718): `content` made only of invisible characters (here three
+  zero-width spaces, U+200B) is refused like blank text: body `statusCode` 400, "content is required".
+  Whitespace, no-break spaces, control and format characters (zero-width space/joiner, word joiner,
+  BOM) and the blank-looking Braille/Hangul fillers all count as invisible. No note is created.
+
+  The same check applies to "Update Note"; see "Update Note With Invisible Content".
+}

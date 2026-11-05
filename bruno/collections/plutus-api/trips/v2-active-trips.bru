@@ -1,0 +1,45 @@
+meta {
+  name: Trips v2 active (lean)
+  type: http
+  seq: 134
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/active?truckId={{plutusApiTruckIdMultiStop}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("array of lean rows, running first", function () {
+    expect(res.body.data).to.be.an("array");
+  });
+
+  test("lean rows: no truck/driver graph, managers or expense list", function () {
+    res.body.data.forEach(function (r) {
+      ["truck", "truckManager", "fundManager", "truckManagers", "fundManagers", "tripExpenses", "expenseSummary",
+       "createdById", "createdByName", "vtsOdometerStartReading", "vtsOdometerEndReading"].forEach(function (k) {
+        expect(r, k).to.not.have.property(k);
+      });
+      ["id", "tripNumber", "status", "freightCharge", "totalTripExpenses"].forEach(function (k) { expect(r, k).to.have.property(k); });
+      (r.lorryReceipts || []).forEach(function (lr) { expect(lr).to.not.have.property("lrUrl"); });
+      if (r.driver) {
+        Object.keys(r.driver).forEach(function (k) { expect(["id", "name", "phone"]).to.include(k); });
+      }
+    });
+  });
+}
+
+docs {
+  ENG-1335 R9: the trips of GET /api/trips/active?truckId= (running first, then planned), lean.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER. Not paged.
+}

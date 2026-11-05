@@ -20,10 +20,33 @@ auth:bearer {
   token: {{accessToken}}
 }
 
+script:pre-request {
+  // The caller's user id is the JWT `sub`; used by the author check below.
+  const payload = JSON.parse(Buffer.from(bru.getEnvVar("accessToken").split(".")[1], "base64").toString());
+  bru.setVar("plutusApiCallerUserId", Number(payload.sub));
+}
+
+tests {
+  test("every returned note was written by someone else (BUG-709)", function () {
+    const callerId = bru.getVar("plutusApiCallerUserId");
+    expect(res.body.statusCode).to.equal(200);
+    expect(res.body.data).to.be.an("array");
+    res.body.data.forEach(function (n) {
+      expect(n.author.id).to.not.equal(callerId);
+    });
+  });
+}
+
 docs {
   For the Home banner (`NoteResource.getLatestIfUnread`). When the caller has unread notes on the entity
   (someone else added a live note since they last listed or dismissed), returns the newest `n` live notes
   (1 to 20, default 1), newest first, replies included but not nested. Otherwise `data` is `[]`.
+
+  Only notes written by other users are returned: the caller's own notes (top-level or replies) never
+  appear, even when they are the newest (BUG-709; before the fix the banner could show your own note).
+  The test block checks `author.id` of every returned note against the caller's user id (the token's
+  `sub`). With a single user, run "Create Note" and then this request: the new note's id must not be in
+  `data` (the "vehicle-remarks-attachment-delete" flow does exactly that).
 
   Doesn't mark anything read. To dismiss the banner, call "Mark Notes Read".
 

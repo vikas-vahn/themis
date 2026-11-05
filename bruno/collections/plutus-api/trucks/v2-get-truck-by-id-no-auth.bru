@@ -1,0 +1,20 @@
+meta {
+  name: Trucks v2 get by id - no credentials
+  type: http
+  seq: 207
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v2/{{plutusApiTruckIdMultiStop}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+  res.body.statusCode: eq 401
+}
+
+docs {
+  No Authorization header: rejected with HTTP 401.
+}

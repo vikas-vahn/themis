@@ -1,0 +1,20 @@
+meta {
+  name: Open Attachment Link Before Delete
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{plutusApiNotesAttachmentUrl}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Opens the signed storage link from step 4 (no Authorization header; the signature is in the URL). The
+  file is there: 200.
+}

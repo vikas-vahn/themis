@@ -1,0 +1,42 @@
+meta {
+  name: Latest Unread Excludes Own Note
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/notes/latest-unread?entityType=TRUCK&entityId={{plutusApiNotesTruckId}}&n=20
+  body: none
+  auth: bearer
+}
+
+params:query {
+  entityType: TRUCK
+  entityId: {{plutusApiNotesTruckId}}
+  n: 20
+}
+
+auth:bearer {
+  token: {{plutusApiNotesToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("the note just written by the caller is not returned (BUG-709)", function () {
+    const ids = res.body.data.map(function (n) { return n.id; });
+    expect(ids).to.not.include(bru.getVar("plutusApiNotesNoteId"));
+  });
+  test("no returned note is authored by the caller (BUG-709)", function () {
+    res.body.data.forEach(function (n) {
+      expect(n.author.id).to.not.equal(bru.getVar("plutusApiNotesUserId"));
+    });
+  });
+}
+
+docs {
+  BUG-709: "latest unread" returns only notes written by other users. The caller just created a note in
+  step 4, so with a single user the answer must not contain it (`data` is usually `[]`).
+}

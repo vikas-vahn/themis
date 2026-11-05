@@ -1,0 +1,34 @@
+meta {
+  name: vehicle-remarks-attachment-delete
+}
+
+docs {
+  # Vehicle remark: attachment removed when the note is deleted
+
+  Pins the vehicle-remark (truck note) QA fixes from the ENG-1000 notes feature on staging:
+
+  - BUG-691: deleting a note removes its attachment files from storage, so a signed link issued
+    earlier stops opening (S3 answers 403 or 404 instead of 200).
+  - BUG-709: "latest unread" never returns the caller's own notes.
+  - BUG-717: after a delete, an edit gets 404 "Note not found". The concurrent edit-vs-delete race
+    itself is not reproduced here.
+
+  Run requests 1-9 in order (use the "staging" environment):
+
+  - 1-2: a dummy fleet owner (TORG_ADMIN of torg 593) logs in; OTP `667766` on staging. Captured as runtime var `plutusApiNotesToken`.
+  - 3: upload the sample file under `notes/<torgId>`.
+  - 4: create a note on the truck with that file; the signed link `attachments[0].url` is kept.
+  - 5: "latest unread" must not contain the note just written by the same user.
+  - 6: open the signed link: 200.
+  - 7: delete the note.
+  - 8: open the same signed link again: 403 or 404. File deletion runs right after the commit, so the
+    request waits 3 seconds first; if it still sees 200, re-run it.
+  - 9: edit the deleted note: 404 "Note not found".
+
+  Test data: `plutusApiNotesPhone`, `plutusApiNotesTorgId`, `plutusApiNotesTruckId` and
+  `plutusApiNotesCategoryId` in the environment. All captured values (token, note id, key, link) are
+  runtime vars (`bru.setVar`), so nothing is written to the environment file.
+
+  Each run leaves one soft-deleted note on the truck. Truck notes can be deleted only by their author
+  within 15 minutes, which the flow does immediately.
+}

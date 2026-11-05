@@ -1,0 +1,41 @@
+meta {
+  name: Trucks v2 get by id (non-owner)
+  type: http
+  seq: 215
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v2/{{plutusApiTruckIdMultiStop}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiNonOwnerToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiNonOwnerToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("a viewer outside the owner torg gets a masked card number and no pin", function () {
+    const cards = res.body.data.fuelCards;
+    expect(cards).to.be.an("array").that.is.not.empty;
+    cards.forEach(function (c) {
+      expect(c.pin === undefined || c.pin === null, "pin").to.equal(true);
+      expect(String(c.cardNumber), "cardNumber").to.match(/[Xx*]/);
+    });
+  });
+}
+
+docs {
+  The masked case of "Trucks v2 get by id (lean, VAHN_ADMIN)". Needs {{plutusApiNonOwnerToken}}: a login of a
+  user in a torg other than the truck's owner who may still see the truck (for example the Atorg of a
+  hired trip on it). Skipped when empty.
+}

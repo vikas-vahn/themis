@@ -1,0 +1,28 @@
+meta {
+  name: Drivers v2 all - non-admin refused
+  type: http
+  seq: 112
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/v2?skip=0&take=2
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTorgAdminToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiTorgAdminToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 403
+}
+
+docs {
+  VAHN_ADMIN only. A TORG_ADMIN token is refused (expected HTTP 403 from @RolesAllowed; not yet
+  exercised, because it needs a login). Needs {{plutusApiTorgAdminToken}}; skipped when empty.
+}

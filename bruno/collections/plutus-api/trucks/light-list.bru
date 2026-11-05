@@ -1,0 +1,36 @@
+meta {
+  name: Truck light list
+  type: http
+  seq: 208
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/light-list
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("rows carry driverProfilePictureUrl", function () {
+    expect(res.body.data).to.be.an("array").that.is.not.empty;
+    res.body.data.forEach(function (r) {
+      expect(r).to.have.property("driverProfilePictureUrl");
+      expect(r).to.have.property("truckId");
+    });
+  });
+}
+
+docs {
+  Truck picker rows. ENG-1335 adds driverProfilePictureUrl (the driver's picture, null when there
+  is none). The same key was added to /trucks/unverified, /no-manager, /unassigned and the
+  manager-restructure lists, which share the DTO. The lean copy is "Trucks v2 light list".
+}

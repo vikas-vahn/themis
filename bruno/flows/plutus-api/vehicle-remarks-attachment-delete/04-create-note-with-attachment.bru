@@ -1,0 +1,55 @@
+meta {
+  name: Create Note With Attachment
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusApiNotesToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "entityId": {{plutusApiNotesTruckId}},
+    "categoryId": {{plutusApiNotesCategoryId}},
+    "content": "QA attachment-delete flow",
+    "attachments": [
+      {
+        "key": "{{plutusApiNotesAttachmentKey}}",
+        "fileName": "sample-attachment.txt",
+        "contentType": "text/plain",
+        "size": 59
+      }
+    ]
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setVar("plutusApiNotesNoteId", res.body.data.id);
+    bru.setVar("plutusApiNotesAttachmentUrl", res.body.data.attachments[0].url);
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.attachments.length: eq 1
+  res.body.data.canDelete: eq true
+}
+
+docs {
+  Creates a truck note carrying the uploaded file. Keeps the note id (`plutusApiNotesNoteId`) and the
+  signed link `attachments[0].url` (`plutusApiNotesAttachmentUrl`); the link is short-lived but outlives
+  this flow's few seconds. Truck notes can be edited or deleted by their author for 15 minutes.
+}

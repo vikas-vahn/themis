@@ -1,0 +1,35 @@
+meta {
+  name: Edit Deleted Note
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/notes/{{plutusApiNotesNoteId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusApiNotesToken}}
+}
+
+body:json {
+  {
+    "content": "edit after delete"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 404
+  res.body.message: eq Note not found
+}
+
+docs {
+  BUG-717 (sequential case): editing a note after it was deleted is refused with 404 "Note not found".
+  The concurrent edit-vs-delete race is not reproduced.
+}

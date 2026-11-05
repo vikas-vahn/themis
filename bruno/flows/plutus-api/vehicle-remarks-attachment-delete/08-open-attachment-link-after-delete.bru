@@ -1,0 +1,26 @@
+meta {
+  name: Open Attachment Link After Delete
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{plutusApiNotesAttachmentUrl}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  // The file is removed right after the delete commits; give storage a moment.
+  await bru.sleep(3000);
+}
+
+assert {
+  res.status: in 403,404
+}
+
+docs {
+  BUG-691: the same signed link as step 6, after the note was deleted. The file is gone, so S3 answers 403
+  or 404 instead of 200 (the link was valid, so before the fix this stayed 200 until it expired). The
+  request waits 3 seconds first; if it still sees 200, re-run this step.
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Client config v2 all torgs - no credentials rejected
+  type: http
+  seq: 103
+}
+
+get {
+  url: {{baseUrl}}/api/v2/client/torg/all?skip=0&take=2
+  body: none
+  auth: none
+}
+
+tests {
+  test("anonymous caller is refused", function () {
+    const httpRefused = res.status === 401 || res.status === 403;
+    const bodyRefused = res.body && (res.body.statusCode === 401 || res.body.statusCode === 403);
+    expect(httpRefused || bodyRefused).to.equal(true);
+    expect(res.body && res.body.data && res.body.data.data).to.equal(undefined);
+  });
+}
+
+docs {
+  ENG-1335 security fix: GET /api/v2/client/torg/all requires VAHN_ADMIN. Without credentials it must not return any torg config.
+}

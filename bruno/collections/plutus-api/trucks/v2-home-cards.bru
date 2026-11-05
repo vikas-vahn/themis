@@ -1,0 +1,88 @@
+meta {
+  name: Trucks v2 home cards
+  type: http
+  seq: 202
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/v2
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "pageNumber": 1,
+    "itemsPerPage": 200
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("page envelope", function () {
+    const d = res.body.data;
+    expect(d.trucksList).to.be.an("array");
+    expect(d.itemsPerPage).to.equal(200);
+  });
+
+  test("trip cards carry the ENG-1335 additive keys", function () {
+    const trips = (res.body.data.trucksList).filter(function (t) { return t.trip; }).map(function (t) { return t.trip; });
+    expect(trips.length).to.be.greaterThan(0);
+    trips.forEach(function (trip) {
+      // POST /trucks/v2 omits null keys, so a trip without distance data has none of the four;
+      // routes that keep nulls send them as null. Either way the four travel together.
+      ["totalDistance", "calculatedDistance", "distanceRemaining", "distanceCovered"].forEach(function (k) {
+        if (trip.totalDistance !== undefined) { expect(trip, k).to.have.property(k); }
+      });
+      // 0 rather than null when the trip has no visible transactions
+      expect(trip.totalTransactionAmount, "totalTransactionAmount").to.be.a("number");
+      if (trip.source === "MARKET") {
+        expect(trip.canCreateLoadingAdvice, "MARKET canCreateLoadingAdvice").to.be.a("boolean");
+        expect(trip.requestingTorgName, "MARKET requestingTorgName").to.be.a("string");
+        if (trip.loadingAdviceId !== undefined && trip.loadingAdviceId !== null) {
+          expect(trip.loadingAdviceId).to.be.a("number");
+        }
+      } else {
+        expect(trip.loadingAdviceId === undefined || trip.loadingAdviceId === null, "OWNED loadingAdviceId").to.equal(true);
+        expect(trip.requestingTorgName === undefined || trip.requestingTorgName === null, "OWNED requestingTorgName").to.equal(true);
+      }
+      if (trip.lastStatusChangedAt !== undefined && trip.lastStatusChangedAt !== null) {
+        expect(trip.lastStatusChangedAt).to.be.a("string");
+      }
+    });
+  });
+
+  test("multi-stop stops carry arrivedAt once reached", function () {
+    const stops = [];
+    (res.body.data.trucksList).forEach(function (t) {
+      if (t.trip && t.trip.stops) { t.trip.stops.forEach(function (s) { stops.push(s); }); }
+    });
+    expect(stops.length).to.be.greaterThan(0);
+    // null (routes that keep nulls) or absent (POST /trucks/v2) until the truck has arrived
+    stops.forEach(function (s) {
+      if (s.arrivedAt !== undefined && s.arrivedAt !== null) {
+        expect(s.arrivedAt).to.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+      }
+    });
+    expect(stops.some(function (s) { return typeof s.arrivedAt === "string"; }), "some stop has arrivedAt").to.equal(true);
+  });
+}
+
+docs {
+  The existing Home truck cards route (v3 is its lean copy). ENG-1335 adds trip-card keys here:
+  totalDistance, calculatedDistance, distanceRemaining, distanceCovered, totalTransactionAmount
+  (0 rather than null), loadingAdviceId/Number and canCreateLoadingAdvice (MARKET trips only),
+  requestingTorgName and lastStatusChangedAt, plus stops[].arrivedAt on multi-stop trips.
+}

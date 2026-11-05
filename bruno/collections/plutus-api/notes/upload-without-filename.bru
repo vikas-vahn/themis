@@ -1,0 +1,38 @@
+meta {
+  name: Upload Attachment Without fileName
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/storage/upload
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:multipart-form {
+  file: @file(notes/sample-attachment.txt)
+  fileSize: 59
+  folder: notes/{{torgId}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+  res.body.success: eq false
+  res.body.data.error: eq fileName is required
+}
+
+docs {
+  Negative case for "Upload Attachment" (BUG-715): the same upload with the `fileName` form field left
+  out. The stored key and content type are built from `fileName`, so the upload is refused: the resource
+  answers 400 with `{"error":"fileName is required"}`, and the API wrapper turns that into HTTP 200 with
+  the envelope `{"data":{"error":"fileName is required"},"message":"{error=fileName is required}",
+  "statusCode":400,"success":false}` (like every other error here, check the body). Nothing is stored. Before the fix this came back as a 500.
+
+  An upload that fails inside storage now returns only "Failed to upload file" in the 500 body (no
+  internal detail); that is not provoked here.
+}

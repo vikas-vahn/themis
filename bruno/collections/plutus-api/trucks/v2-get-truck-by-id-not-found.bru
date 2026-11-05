@@ -1,0 +1,24 @@
+meta {
+  name: Trucks v2 get by id - not found
+  type: http
+  seq: 206
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v2/99999999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 404
+}
+
+docs {
+  Unknown truck id: body statusCode 404 "Vehicle not found" (HTTP status stays 200).
+}

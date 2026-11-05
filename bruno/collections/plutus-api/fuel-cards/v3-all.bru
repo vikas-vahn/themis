@@ -1,0 +1,51 @@
+meta {
+  name: Fuel cards v3 all (owner-scoped, lean truck)
+  type: http
+  seq: 110
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-cards/v3/all?skip=0&take=2
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTorgAdminToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiTorgAdminToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("skip/take envelope", function () {
+    const e = res.body.data;
+    expect(e.data).to.be.an("array");
+    expect(e.skip).to.equal(0);
+    expect(e.take).to.equal(2);
+    expect(e.total).to.be.a("number");
+    expect(e.data.length).to.be.at.most(e.take);
+    expect(e.hasMore).to.equal(e.skip + e.data.length < e.total);
+  });
+
+  test("each card's truck is {id, registrationNumber, make, capacityTons, source}", function () {
+    expect(res.body.data.data).to.be.an("array").that.is.not.empty;
+    res.body.data.data.forEach(function (c) {
+      if (c.truck) {
+        Object.keys(c.truck).forEach(function (k) { expect(["id", "registrationNumber", "make", "capacityTons", "source"]).to.include(k); });
+      }
+    });
+  });
+}
+
+docs {
+  ENG-1335 R12: same cards, filters, order and paging as GET /api/fuel-cards/v2/all, with each card's truck
+  reduced to {id, registrationNumber, make, capacityTons, source}. Needs a torg-scoped login in
+  {{plutusApiTorgAdminToken}} (TORG_ADMIN, FUND_MANAGER, ACCOUNTANT or a manager); skipped when empty.
+}

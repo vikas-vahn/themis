@@ -1,0 +1,54 @@
+meta {
+  name: Get truck PnL
+  type: http
+  seq: 116
+}
+
+get {
+  url: {{baseUrl}}/api/trips/truck/{{plutusApiTruckIdMultiStop}}/pnl?startDate=2026-01-01&endDate=2026-12-31
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  // remembered for "Trips v2 truck PnL (lean)", which must report the same totals
+  bru.setVar("plutusApiPnlV1", JSON.stringify({
+    totalRevenue: res.body.data.totalRevenue, totalExpenses: res.body.data.totalExpenses,
+    pnl: res.body.data.pnl, rows: res.body.data.trips.length }));
+}
+
+tests {
+  test("totals and rows", function () {
+    const d = res.body.data;
+    ["pnl", "totalExpenses", "totalRevenue", "trips"].forEach(function (k) { expect(d, k).to.have.property(k); });
+    expect(d.trips).to.be.an("array").that.is.not.empty;
+  });
+
+  test("customerNames is an array of strings wherever it is sent", function () {
+    let seen = 0;
+    res.body.data.trips.forEach(function (t) {
+      if (t.customerNames !== undefined && t.customerNames !== null) {
+        seen++;
+        expect(t.customerNames).to.be.an("array");
+        t.customerNames.forEach(function (n) { expect(n).to.be.a("string"); });
+      }
+    });
+    expect(seen, "rows with customerNames").to.be.greaterThan(0);
+  });
+}
+
+docs {
+  Trip profit and loss for a truck over a date range. ENG-1335 adds trips[].customerNames on
+  multi-stop rows (the caller's own trips only). With the static VAHN_ADMIN token the "own trips"
+  rule is not exercised; the assertion only checks the shape wherever the key is present and that
+  at least one row has it (staging data for {{plutusApiTruckIdMultiStop}}).
+}

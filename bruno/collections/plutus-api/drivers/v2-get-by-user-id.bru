@@ -1,0 +1,55 @@
+meta {
+  name: Drivers v2 get by user id (lean)
+  type: http
+  seq: 120
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/v2/user/{{plutusApiDriverUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("driver with a trimmed truck", function () {
+    const d = res.body.data;
+    ["id", "name", "status", "ownerId", "vpas"].forEach(function (k) { expect(d, k).to.have.property(k); });
+    (d.vpas || []).forEach(function (v) { expect(v).to.not.have.property("requiresIdProof"); });
+    expect(d).to.not.have.property("dlVerificationDate");
+    const t = d.truckDTO;
+    if (t) {
+      ["otherDocuments", "axleCount", "netcVehicleClass", "highestAlertLevel", "truckMaster", "fundManagerId",
+       "lastMaintenanceDate", "nextMaintenanceDate", "isFuelCardLowBalance"].forEach(function (k) { expect(t, k).to.not.have.property(k); });
+      if (t.trip) { expect(Object.keys(t.trip)).to.eql(["id"]); }
+      ["truckManager", "fundManager"].forEach(function (k) {
+        if (t[k]) { Object.keys(t[k]).forEach(function (f) { expect(["id", "phone", "name", "image", "email", "role", "lastLoginAt"]).to.include(f); }); }
+      });
+      (t.fuelCards || []).forEach(function (c) {
+        ["pin", "cardNumber", "last_changed_by_name"].forEach(function (k) { expect(c, k).to.not.have.property(k); });
+      });
+    }
+  });
+
+  test("truckDTO.fastag is exactly {id, balance}, with the v1 values (run the v1 reference request first)", function () {
+    const f = res.body.data.truckDTO && res.body.data.truckDTO.fastag;
+    if (f) { expect(Object.keys(f).sort()).to.eql(["balance", "id"]); }
+    const v1 = bru.getVar("plutusApiDriverUserV1Fastag");
+    if (v1 === undefined) { return; }
+    expect(f ? { id: f.id, balance: f.balance } : null).to.eql(JSON.parse(v1));
+    
+  });
+}
+
+docs {
+  ENG-1335 R11: GET /api/drivers/user/{userId}, trimmed as GET /api/drivers/v2/{id}. A DRIVER only their
+  own user, others only a driver of their torg.
+}

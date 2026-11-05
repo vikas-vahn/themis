@@ -1,0 +1,36 @@
+meta {
+  name: Trucks v2 unverified matches v3
+  type: http
+  seq: 217
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v2/unverified?skip=0&take=200
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("same slice and total as /trucks/v3/unverified (NULL verification status included)", function () {
+    const v3 = bru.getVar("plutusApiUnverifiedV3Ids");
+    expect(v3, "run the remember-ids request first").to.be.a("string");
+    const o = JSON.parse(v3);
+    const e = res.body.data;
+    expect(e.total).to.equal(o.total);
+    expect(e.data.map(function (r) { return r.truckId; })).to.eql(o.ids);
+  });
+}
+
+docs {
+  ENG-1335: GET /api/trucks/v2/unverified now includes trucks with a NULL verification status, so its
+  set agrees with /trucks/v3/unverified for the same slice (ordered by id).
+}

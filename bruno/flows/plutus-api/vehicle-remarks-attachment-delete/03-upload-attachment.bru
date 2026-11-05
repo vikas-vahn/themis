@@ -1,0 +1,36 @@
+meta {
+  name: Upload Attachment
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/storage/upload
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiNotesToken}}
+}
+
+body:multipart-form {
+  file: @file(vehicle-remarks-attachment-delete/sample-attachment.txt)
+  fileName: sample-attachment.txt
+  fileSize: 59
+  folder: notes/{{plutusApiNotesTorgId}}
+}
+
+script:post-response {
+  bru.setVar("plutusApiNotesAttachmentKey", res.body.data.key);
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.key: startsWith notes/{{plutusApiNotesTorgId}}/
+}
+
+docs {
+  Uploads the 59-byte sample file to `notes/<torgId>` (the only folder notes accept). The storage key is
+  kept in `plutusApiNotesAttachmentKey`. Same call as collections/plutus-api/notes/upload-attachment.bru.
+}

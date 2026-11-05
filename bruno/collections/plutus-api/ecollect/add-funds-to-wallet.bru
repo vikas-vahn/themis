@@ -1,0 +1,74 @@
+meta {
+  name: Add Funds to Wallet (bank credit webhook)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/ecollect/notify
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{process.env.PLUTUS_API_ECOLLECT_BEARER_TOKEN}}
+}
+
+body:json {
+  {
+    "notify": {
+      "customer_code": "VAHN",
+      "bene_account_no": "{{plutusApiEcollectAccountNumber}}",
+      "bene_account_ifsc": "YESB0CMSNOC",
+      "bene_full_name": "Themis Test",
+      "transfer_type": "IMPS",
+      "transfer_unique_no": "{{plutusApiEcollectTransferNo}}",
+      "transfer_timestamp": "{{plutusApiEcollectTimestamp}}",
+      "transfer_ccy": "INR",
+      "transfer_amt": {{plutusApiEcollectAmount}},
+      "attempt_no": 1,
+      "status": "CREDITED",
+      "credited_at": "{{plutusApiEcollectTimestamp}}"
+    }
+  }
+}
+
+script:pre-request {
+  // Each run needs a new transfer number: a repeated one credits nothing and returns 500.
+  const now = Date.now();
+  const ist = new Date(now + 5.5 * 60 * 60 * 1000).toISOString().slice(0, 19).replace("T", " ");
+  bru.setVar("plutusApiEcollectTransferNo", "THEMIS" + now);
+  bru.setVar("plutusApiEcollectTimestamp", ist);
+}
+
+assert {
+  res.status: eq 200
+  res.body.notifyResult.result: eq ok
+}
+
+docs {
+  Pretends to be the bank reporting a deposit into a virtual account. plutus credits the wallet of the admin of the
+  torg that owns `bene_account_no`, so you pick the wallet by picking the account (`virtual_accounts.account_number`,
+  usually `11VAHN<phone>`).
+
+  Set `plutusApiEcollectAccountNumber` and `plutusApiEcollectAmount` in the environment, or pass `--env-var`. The
+  default account is torg 315 (QA user 9999996000).
+
+  **Each successful run really changes that torg's data:**
+  - adds the amount to the wallet, with a transaction whose reference is `transfer_unique_no`
+  - starts a pending subscription trial
+  - auto-charges any due subscription bill from the new balance
+  - sends the `VIRTUAL_ACCOUNT_CREDIT` alert
+
+  This is a staging tool. Don't point it at production: there it would create money that no bank received.
+
+  Success: `{ "notifyResult": { "result": "ok" } }`
+
+  Errors:
+  - 401: missing or wrong bearer token
+  - 403: caller's IP isn't in `whitelistedIps`
+  - 500 with `result: error`: unknown or inactive account, or a repeated `transfer_unique_no`. The response doesn't say
+    which; check the plutus logs.
+
+  `status: RETURNED` returns ok but changes nothing.
+}

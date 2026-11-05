@@ -1,0 +1,49 @@
+meta {
+  name: Trucks v3 unverified (lean)
+  type: http
+  seq: 210
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v3/unverified?skip=0&take=3
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("envelope shape and hasMore", function () {
+    const e = res.body.data;
+    expect(e.data).to.be.an("array");
+    expect(e.skip).to.equal(0);
+    expect(e.take).to.equal(3);
+    expect(e.total).to.be.a("number");
+    expect(e.data.length).to.be.at.most(e.take);
+    expect(e.hasMore).to.equal(e.skip + e.data.length < e.total);
+  });
+
+  test("lean rows keep the check-first keys and drop the rest", function () {
+    res.body.data.data.forEach(function (r) {
+      ["truckId", "registrationNumber", "make", "capacityTons", "truckManagerIds", "driverProfilePictureUrl"].forEach(function (k) {
+        expect(r, k).to.have.property(k);
+      });
+      ["driverId", "mileage", "truckManagerId", "primaryTruckManagerId", "driverCompensationDetails"].forEach(function (k) {
+        expect(r, k).to.not.have.property(k);
+      });
+    });
+  });
+}
+
+docs {
+  ENG-1335: lean unverified trucks (a NULL verification status counts as unverified), one page at a
+  time by id. Roles: VAHN_ADMIN, TORG_ADMIN. Asserts the skip/take envelope and that driverId,
+  mileage, truckManagerId, primaryTruckManagerId and driverCompensationDetails are gone.
+}

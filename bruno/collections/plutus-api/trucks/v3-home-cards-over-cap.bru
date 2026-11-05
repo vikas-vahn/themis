@@ -1,0 +1,35 @@
+meta {
+  name: Trucks v3 home cards - itemsPerPage over cap
+  type: http
+  seq: 201
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/v3
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "pageNumber": 1,
+    "itemsPerPage": 201
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Boundary case: itemsPerPage is capped at 200, so 201 returns body statusCode 400 (HTTP status stays 200).
+}

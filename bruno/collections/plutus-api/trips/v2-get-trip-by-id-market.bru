@@ -1,0 +1,57 @@
+meta {
+  name: Trips v2 get by id (market)
+  type: http
+  seq: 111
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/{{plutusApiTripIdMarket}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("market trip keeps customerId and drops the nested copies", function () {
+    const t = res.body.data;
+    expect(t.source).to.equal("MARKET");
+    expect(t).to.have.property("customerId");
+    expect(t.canCreateLoadingAdvice).to.be.a("boolean");
+    expect(t).to.not.have.property("createdById");
+    if (t.lorryReceipts) {
+      t.lorryReceipts.forEach(function (lr) { expect(lr).to.not.have.property("lrUrl"); });
+    }
+    expect(t.truck).to.not.have.property("trip");
+    if (t.truck && t.truck.fuelCards) {
+      t.truck.fuelCards.forEach(function (c) {
+        expect(c).to.not.have.property("pin");
+        expect(c).to.not.have.property("cardNumber");
+      });
+    }
+  });
+
+  test("VAHN_ADMIN sees the same driver personal keys as /trips/v1/{id} (run the v1 request first)", function () {
+    const v1 = bru.getVar("plutusApiTripV1DriverPii");
+    if (!v1) { return; }
+    const o = JSON.parse(v1);
+    const d = res.body.data.driver;
+    ["address", "dateOfBirth", "email", "aadhaarNumber", "aadhaarId", "alternatePhone", "licenseUrl", "licenseFrontUrl", "licenseBackUrl", "bankAccountId", "compensationDetails"].forEach(function (k) {
+      expect(d[k] === undefined ? null : d[k], k).to.eql(o[k]);
+    });
+    const vpas = (d.vpas || []).map(function (v) { return { vpa: v.vpa, vpaAddress: v.vpaAddress }; });
+    expect(vpas, "vpas[].vpa / vpaAddress").to.eql(o.vpas);
+  });
+}
+
+docs {
+  Market-trip variant of "Trips v2 get by id (multi-stop, owned)". {{plutusApiTripIdMarket}} must be
+  a MARKET trip (staging data).
+}

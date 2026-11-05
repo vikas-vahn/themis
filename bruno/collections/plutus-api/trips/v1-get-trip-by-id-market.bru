@@ -1,0 +1,33 @@
+meta {
+  name: Trips v1 get by id (market)
+  type: http
+  seq: 109
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v1/{{plutusApiTripIdMarket}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const d = res.body.data.driver || (res.body.data.truck && res.body.data.truck.driver) || {};
+  const o = {};
+  ["address", "dateOfBirth", "email", "aadhaarNumber", "aadhaarId", "alternatePhone", "licenseUrl", "licenseFrontUrl", "licenseBackUrl", "bankAccountId", "compensationDetails"].forEach(function (k) { o[k] = d[k] === undefined ? null : d[k]; });
+  o.vpas = (d.vpas || []).map(function (v) { return { vpa: v.vpa, vpaAddress: v.vpaAddress }; });
+  bru.setVar("plutusApiTripV1DriverPii", JSON.stringify(o));
+}
+
+docs {
+  v1 detail of the MARKET trip. Remembers the driver's personal keys in a runtime variable so that
+  "Trips v2 get by id (market)" can check VAHN_ADMIN sees the same values on v2.
+}

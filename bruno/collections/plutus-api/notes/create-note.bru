@@ -67,7 +67,8 @@ docs {
   400 if `entityType`/`entityId` is missing, the truck isn't visible to the caller, or VAHN_ADMIN sent no
   `torgId`, or `categoryId` is missing ("categoryId is required for a TRUCK note") or not a live truck
   category ("Unknown category for TRUCK: <id>"). 404 "Vehicle not found" for an unknown truck. 400 "content is required" or "content must be at
-  most 2000 characters" for blank or over-long `content`. 400 for more than 10 attachments, a key outside
+  most 2000 characters" for blank, invisible-only (zero-width spaces etc., BUG-718) or over-long `content`. NUL characters are dropped
+  before saving (BUG-720). 400 for more than 10 attachments, a key outside
   `notes/<torgId>/`, a file missing from storage, or the same file twice. Success is body `statusCode`
   200, not 201.
 }

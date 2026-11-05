@@ -1,0 +1,34 @@
+meta {
+  name: Trips v2 truck trip at timestamp (lean)
+  type: http
+  seq: 138
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/truck/{{plutusApiTruckIdMultiStop}}/at-timestamp?timestamp=2026-11-02T15:57:00
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("the trip running at that moment, lean, with driver", function () {
+    const r = res.body.data;
+    expect(r.id).to.equal(parseInt(bru.getEnvVar("plutusApiTripIdMultiStop"), 10));
+    ["truck", "truckManager", "fundManager", "tripExpenses", "expenseSummary"].forEach(function (k) { expect(r, k).to.not.have.property(k); });
+    if (r.driver) { Object.keys(r.driver).forEach(function (k) { expect(["id", "name", "phone"]).to.include(k); }); }
+  });
+}
+
+docs {
+  ENG-1335 R9: GET /api/trips/truck/{truckId}/at-timestamp, lean. The timestamp is inside the run of
+  {{plutusApiTripIdMultiStop}} on {{plutusApiTruckIdMultiStop}} (staging data).
+}

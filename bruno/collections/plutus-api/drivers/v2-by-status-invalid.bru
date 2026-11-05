@@ -1,0 +1,24 @@
+meta {
+  name: Drivers v2 by status - invalid status
+  type: http
+  seq: 114
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/v2/status/NOPE
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Unknown status: body statusCode 400.
+}

@@ -7,7 +7,11 @@ meta {
 get {
   url: {{baseUrl}}/api/v2/client/torg/all?skip=0&take=2
   body: none
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
 }
 
 assert {
@@ -28,5 +32,5 @@ tests {
 }
 
 docs {
-  No auth annotation, same as v1. ENG-1335 skip/take envelope: asserts skip=0, take=2, hasMore == skip + data.length < total.
+  VAHN_ADMIN only on v2 (v1 /torg/all still has no auth; security ticket). ENG-1335 skip/take envelope: asserts skip=0, take=2, hasMore == skip + data.length < total.
 }
