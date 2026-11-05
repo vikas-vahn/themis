@@ -1,0 +1,23 @@
+meta {
+  name: Delete Note A
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/api/notes/{{plutusApiRemarksNoteA}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+assert {
+  res.body.statusCode: eq 204
+}
+
+docs {
+  Soft-deletes top-level note A. Its reply was already deleted in step 7.
+}

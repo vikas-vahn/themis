@@ -1,0 +1,43 @@
+meta {
+  name: Create Live Control Note C
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/notes
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "entityId": {{plutusApiRemarksTruckId}},
+    "categoryId": {{plutusApiRemarksCategoryId}},
+    "content": "ENG-1000 deleted-info flow control note C"
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setVar("plutusApiRemarksNoteC", res.body.data.id);
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.deleted: eq false
+}
+
+docs {
+  A second top-level note that stays live until cleanup, so the list shows a live and a deleted note side by side.
+}

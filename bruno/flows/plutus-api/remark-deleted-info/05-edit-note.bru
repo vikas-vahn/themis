@@ -1,0 +1,37 @@
+meta {
+  name: Edit Note A
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/notes/{{plutusApiRemarksNoteA}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusApiRemarksToken}}
+}
+
+body:json {
+  {
+    "content": "ENG-1000 deleted-info flow note A (edited)"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.edited: eq true
+  res.body.data.editedAt: isString
+  res.body.data.deletedAt: isNull
+  res.body.data.deletedBy: isNull
+}
+
+docs {
+  Edits note A (author, within 15 minutes). An edited live note has `edited: true` and a non-null `editedAt`.
+}

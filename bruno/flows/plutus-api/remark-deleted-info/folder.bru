@@ -1,0 +1,33 @@
+meta {
+  name: remark-deleted-info
+}
+
+docs {
+  # Vehicle remark: deletedAt / deletedBy on deleted remarks (ENG-1000, PR #1076)
+
+  Pins the response change on `GET /api/notes` and `GET /api/notes/{id}`: a deleted remark is a
+  placeholder that now also says when and by whom it was deleted.
+
+  - deleted note: `deleted: true`, `content` "This remark was deleted", `deletedAt` (string
+    `yyyy-MM-dd'T'HH:mm:ss`), `deletedBy {id, name}` with a non-empty name (looked up by the new
+    native query `NoteDAO.findUserNames`), and `author`, `category`, `attachments` null.
+  - live note: `deletedAt` and `deletedBy` null. An edited live note has `edited: true` and `editedAt` set.
+  - `includeDeleted=false` or `q` drops deleted notes from the list.
+
+  Run requests 1-14 in order (use the "staging" environment). A dummy fleet owner of torg 315 logs in
+  (OTP `776677` on staging); the token is the runtime var `plutusApiRemarksToken`.
+
+  - 3-5: create a top-level note A, a reply R under it, edit A.
+  - 6: a second live note C as the control.
+  - 7-8: delete R, then A (author, within 15 minutes).
+  - 9: list (default includeDeleted) shows A as a deleted placeholder next to live C.
+  - 10-11: with `includeDeleted=false`, and with `q`, A is gone.
+  - 12-13: GET A shows R as a deleted reply inside `replies`; GET R directly.
+  - 14: delete C (cleanup).
+
+  Not covered: a remark deleted by a since-removed user (needs existing data; no user is removed here).
+
+  Variables `plutusApiRemarks*` are in the environment (phone, OTP, torg, truck). All captured values are
+  runtime vars (`bru.setVar`), so nothing is written to the environment file. Each run leaves three
+  soft-deleted notes on the truck. Nothing is sent to users.
+}
