@@ -1,0 +1,41 @@
+meta {
+  name: Trips v2 by driver (POST) - another driver refused
+  type: http
+  seq: 105
+}
+
+post {
+  url: {{baseUrl}}/api/trips/v2/driver/{{plutusApiDriverIdWithTrips}}?skip=0&take=2
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusApiDriverToken}}
+}
+
+body:json {
+  {
+    "startDate": "2020-01-01",
+    "endDate": "2030-12-31"
+  }
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("plutusApiDriverToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 403
+}
+
+docs {
+  A DRIVER-role user reading ANOTHER driver's trips is refused: body statusCode 403 (HTTP status stays 200).
+  Uses {{plutusApiDriverToken}} (the login of driver {{plutusApiPaginationDriverId}}) against
+  {{plutusApiDriverIdWithTrips}}, which must be a different driver. Skipped when the token is empty.
+}
