@@ -30,12 +30,13 @@ npm run smoke                        # e2e check against local; `npm run smoke -
 ```
 Deploys from `main` via `.github/workflows/deploy-mock-server.yml`. The hostname lives only in `mock-server/wrangler.toml` (`routes`) — never hardcode it in code.
 
-**Tunnel** (Cloudflare Tunnel from `https://<sub>.<domain>` to a local port — see `tunnel/README.md`):
+**Tunnel** (Cloudflare Tunnel: `https://hook.<domain>` → a developer's laptop — see `tunnel/README.md`):
 ```bash
-tunnel/tunnel.sh up 8080             # first run: installs cloudflared, browser login, creates tunnel + DNS
-tunnel/tunnel.sh provision <sub>     # tunnel + token for a colleague without Cloudflare access
+tunnel/tunnel.sh listen              # print every request sent to https://hook.<domain>
+tunnel/tunnel.sh up 8080             # forward it to a local app instead
+tunnel/tunnel.sh token               # TUNNEL_TOKEN line for colleagues without Cloudflare access
 ```
-The zone is read from `mock-server/wrangler.toml` unless `TUNNEL_DOMAIN` is set. Per-dev settings and tokens go in the gitignored `tunnel/.env`.
+Runs on developer laptops only. One shared tunnel (`themis-hook`); `listen`/`up` refuse to start if someone else is connected, since Cloudflare would split requests between them. The zone is read from `mock-server/wrangler.toml` unless `TUNNEL_DOMAIN` is set. Tokens go in the gitignored `tunnel/.env`.
 
 ## Architecture
 

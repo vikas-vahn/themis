@@ -1,77 +1,100 @@
-# tunnel: expose your local server on our domain
+# tunnel: receive webhooks on your laptop
 
-A Cloudflare Tunnel on our own domain gives each of us a fixed public URL, `https://<you>.<domain>`,
-that forwards to a local port. Everyone uses the same domain, each on their own subdomain. Use it
-to point a third-party webhook (Gupshup, Razorpay, ...) at code running on your laptop, with
-breakpoints and logs.
+`https://hook.<domain>` is a fixed URL on our own domain (the zone in `mock-server/wrangler.toml`),
+routed through a Cloudflare Tunnel to whoever on the team is listening. Anything a provider sends
+to it is printed in that person's terminal:
 
-`<domain>` is the zone from `mock-server/wrangler.toml` (`routes`) unless you set
-`TUNNEL_DOMAIN`. Your hostname is `<TUNNEL_SUBDOMAIN>.<domain>`, and the subdomain defaults to
-your macOS username.
+```
+$ tunnel/tunnel.sh listen
+tunnel: listening on https://hook.<domain> — every request is printed below (Ctrl-C to stop)
 
-> **Tunnel or mock-server?** If you only need to *see* what a provider sends, use
-> [`mock-server/`](../mock-server/README.md). It needs no setup and stays up. Use a tunnel when the
-> webhook must hit *your running code*.
+────────────────────────────────────────────────────────────────────────
+#1 12:47:52  POST /gupshup/dlr?x=1  from 203.0.113.7
+  content-type: application/json
+  x-signature: abc
+  (+6 Cloudflare headers; TUNNEL_VERBOSE=1 shows them)
 
-## Quick start (you have access to the domain in Cloudflare)
-
-```bash
-tunnel/tunnel.sh up 8080          # forward https://<you>.<domain> -> http://localhost:8080
+{
+  "event": "delivered",
+  "n": 1
+}
 ```
 
-The first run installs `cloudflared` with Homebrew if it's missing. It then opens a browser for
-`cloudflared tunnel login`, where you pick the domain's zone. After that it creates your tunnel
-(`themis-<you>`) and its DNS record. Later runs start in a couple of seconds. The hostname stays
-the same, so you configure the provider's webhook URL once.
+Every request gets `200 {"ok":true}`. Any path works, so you can mirror the real route
+(`https://hook.<domain>/api/webhooks/gupshup`). Query params on the webhook URL change the reply:
 
-Press Ctrl-C to stop. While the tunnel is down, the URL returns a Cloudflare error (530).
+| Param | Effect |
+|---|---|
+| `_status=500` | Respond with that status. Use it to test the provider's retries. |
+| `_delay=3000` | Wait that many ms before replying (max 10000). Use it to test timeouts. |
+| `hub.challenge=...` (GET) | Echoed back, for Meta/WhatsApp subscription checks. |
 
-## Colleagues without Cloudflare access
+To send the webhook into your running app instead of printing it, run
+`tunnel/tunnel.sh up 8080`. The same URL then forwards to `localhost:8080`.
 
-Someone with access provisions a tunnel for them:
+## One-time setup per laptop
+
+You need `cloudflared` and Node. The script installs `cloudflared` with Homebrew if it's missing.
+Then use **one** of these:
+
+- **You have access to the domain in Cloudflare:** just run `tunnel/tunnel.sh listen`. The first
+  time, a browser opens: sign in and pick the domain. The script creates the `themis-hook` tunnel
+  and the `hook` DNS record if they don't exist yet.
+- **You don't:** ask someone who does to run `tunnel/tunnel.sh token` and send you the line it
+  prints. Put it in `tunnel/.env`, which is gitignored:
+  ```bash
+  TUNNEL_TOKEN=eyJh...
+  ```
+  This must be the tunnel token from that command. A Cloudflare API token (`cfut_...`) doesn't
+  work here.
+
+**The tunnel token lets anyone receive the team's webhooks.** Share it in a DM or password
+manager. Never put it in a public channel, a commit or a notification.
+
+## One listener at a time
+
+Everyone shares `hook.<domain>`. If two laptops are connected, Cloudflare splits requests between
+them, so each person sees only some. So `listen` and `up` check first and refuse to start if
+someone is already connected. The error names that person's user and machine. Your options:
+
+- ask them to stop;
+- use your own URL: `TUNNEL_SUBDOMAIN=priya tunnel/tunnel.sh listen` gives
+  `https://priya.<domain>`, and needs `token` for `priya` or a Cloudflare login;
+- `TUNNEL_FORCE=1` to connect anyway.
+
+`tunnel/tunnel.sh status` shows who is listening right now.
+
+## Settings: `tunnel/.env` (gitignored, all optional)
 
 ```bash
-tunnel/tunnel.sh provision priya  # creates themis-priya + priya.<domain>, prints two lines
+TUNNEL_TOKEN=eyJh...             # from `tunnel/tunnel.sh token`; skips the Cloudflare login
+TUNNEL_SUBDOMAIN=hook            # default: hook. One label only (a.b.<domain> fails TLS)
+TUNNEL_PORT=8080                 # default app port for `up`
+TUNNEL_RECEIVER_PORT=9876        # local port `listen` uses for the printer
+TUNNEL_VERBOSE=1                 # also print Cloudflare's headers (cf-ray, x-forwarded-for, ...)
 ```
 
-The colleague pastes those two lines (`TUNNEL_SUBDOMAIN`, `TUNNEL_TOKEN`) into `tunnel/.env`
-and runs `tunnel/tunnel.sh up 8080`. They need no login. **The token lets anyone run that
-tunnel.** Share it in a DM, never in a public channel, commit or notification.
-
-## Settings: `tunnel/.env` (gitignored, optional)
-
-```bash
-TUNNEL_SUBDOMAIN=vikas           # hostname label; one level only (a.b.<domain> fails TLS)
-TUNNEL_PORT=8080                 # default port for `up`
-TUNNEL_DOMAIN=example.com        # override the zone read from mock-server/wrangler.toml
-TUNNEL_TOKEN=...                 # from `provision`; skips login entirely
-TUNNEL_VERBOSE=1                 # log each request's method, URL and headers
-TUNNEL_ORIGIN_CERT=~/.cloudflared/other.pem   # if your default login is for another zone
-```
-
-Variables set in your shell override the file.
+Variables set in your shell override the file. Rarely needed: `TUNNEL_DOMAIN` overrides the zone,
+and `TUNNEL_ORIGIN_CERT` points at a Cloudflare login for this zone if your default
+`~/.cloudflared/cert.pem` is for another one.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `up [port]` | Runs your tunnel, and sets it up the first time. |
-| `status [sub]` | Shows the hostname, tunnel name, and whether you're logged in. |
-| `provision <sub>` | (Needs Cloudflare access.) Creates a tunnel for someone else and prints its token. |
-| `delete [sub]` | Deletes a tunnel. Remove its DNS record in the dashboard afterwards. |
+| `listen` | Prints every request sent to the URL. |
+| `up [port]` | Forwards the URL to your app on `localhost:<port>`. |
+| `status` | Shows the URL, your auth, and who is listening. |
+| `token` | (Needs Cloudflare access.) Prints the `TUNNEL_TOKEN` line for colleagues. |
+| `delete` | Deletes the tunnel. Remove its DNS record in the Cloudflare dashboard afterwards. |
 
 ## Things to know
 
-- **Your port is public while the tunnel runs.** Anyone who knows the URL can call your local
-  server. Stop the tunnel when you're done, and point only test/staging integrations at it.
-- **Verbose logs contain secrets.** `TUNNEL_VERBOSE=1` logs request headers, including auth
-  headers and signatures. Don't paste those logs anywhere.
-- **The script never overwrites DNS.** If `<sub>.<domain>` already has a record (for example
-  another service, or the mock-server itself on the apex), `up` stops and asks you to pick another
-  `TUNNEL_SUBDOMAIN`.
-- **A login for another zone creates the record in the wrong place.** `cloudflared` keeps one
-  login certificate at `~/.cloudflared/cert.pem`. If it belongs to another domain, the record is
-  created as `<sub>.<domain>.<other-domain>` and the script stops. Log in again with
-  `TUNNEL_ORIGIN_CERT` pointing at a new file.
-- **One tunnel serves one port at a time.** Restart `up` with another port to switch. Don't run two
-  `up` processes for the same tunnel: Cloudflare load-balances between them.
+- **Point only test/staging integrations here.** Payloads can contain phone numbers, signatures
+  and auth headers, and they're printed in plain text.
+- **The URL returns a Cloudflare error (530) when nobody is connected.** Providers treat that as
+  a failed delivery and may retry or disable the webhook. If you want every request kept even
+  when nobody is at their laptop, use [`mock-server/`](../mock-server/README.md). It is always
+  up and stores requests for 72 hours.
+- **The script never overwrites DNS.** If `hook.<domain>` already has a record that isn't this
+  tunnel's, it stops and tells you.

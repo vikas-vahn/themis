@@ -13,7 +13,7 @@ themis/
 │   ├── collections/  # full API reference — one Bruno collection per backend service
 │   └── flows/        # curated, ordered request sequences for a real user journey
 ├── mock-server/      # webhook inspector (Cloudflare Worker) — see mock-server/README.md
-└── tunnel/           # expose a local port on <you>.<domain> via Cloudflare Tunnel — see tunnel/README.md
+└── tunnel/           # receive webhooks on https://hook.<domain> in your terminal — see tunnel/README.md
 ```
 
 ## Why two things live under `bruno/`
