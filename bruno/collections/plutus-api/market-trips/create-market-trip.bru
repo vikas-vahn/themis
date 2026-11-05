@@ -1,0 +1,46 @@
+meta {
+  name: Create Market Trip Request
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/market-trips
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{torgAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "truckRegistrationNumber": "{{marketTruckRegistration}}",
+    "ownerPhoneNumber": "{{marketOwnerPhone}}",
+    "ownerName": "Themis Test Owner",
+    "pickupLocation": "Hyderabad",
+    "dropLocation": "Pune",
+    "freightDetails": "themis ENG-1309 check",
+    "plannedStartDate": "2026-12-01T09:00:00"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  `MarketTripResource.createRequest`, roles TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER. WARNING: for a
+  truck that is not registered on VAHN this verifies the RC with Surepass and then sends an invite
+  SMS to `marketOwnerPhone`. Only run it with a phone that is a known test number.
+  `pin` is needed only when the MARKET_TRIP_PIN_REQUIRED flag is on (off on staging).
+
+  ENG-1309: if the RC check hits a Surepass outage the response is body `statusCode: 503`
+  (ServiceUnavailable) and the transaction is rolled back, instead of the old 400
+  "Invalid truck registration number: ...". A genuinely invalid registration still gives 400.
+}

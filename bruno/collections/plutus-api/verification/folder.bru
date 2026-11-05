@@ -1,0 +1,14 @@
+meta {
+  name: verification
+}
+
+docs {
+  Surepass-backed verification endpoints (`VerificationResource`, `/api/verification/*`).
+  ENG-1309: Surepass 5xx/timeouts are retried and, when the outage persists, surfaced as 503 or
+  a `provider_unavailable` marker. Staging's Surepass is normally up, so these requests assert the
+  normal contract; the outage branches are described in each request's docs.
+
+  Admin requests use `{{vahnAdminToken}}` (the static VAHN_ADMIN token). It is deliberately blank in
+  environments/staging.bru; pass it at run time and never commit it:
+    npx @usebruno/cli run <request> --env staging --env-var vahnAdminToken=<token>
+}

@@ -1,32 +1,41 @@
 meta {
-  name: Vendor Lookup
+  name: Vendor Lookup (VPA by mobile or UPI)
   type: http
   seq: 2
 }
 
 get {
-  url: {{baseUrl}}/api/vpas/vendor-lookup?identifier={{vendorUpiId}}
+  url: {{baseUrl}}/api/vpas/vendor-lookup?identifier={{vendorLookupIdentifier}}
+  body: none
   auth: bearer
 }
 
+params:query {
+  identifier: {{vendorLookupIdentifier}}
+}
+
 auth:bearer {
-  token: {{accessToken}}
+  token: {{torgAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.upiId: isString
+  res.body.data.id: isNumber
 }
 
 docs {
-  Resolves a vendor's UPI ID (or mobile number) to a VPA row a vendor payout can target
-  (`VPAService.getVPAForVendorPayout`). An unknown UPI ID is looked up at the bank and saved as a
-  driver-less VPA with a mapping to the caller's torg. A UPI ID that is verified and linked to a
-  driver of the same torg is refused. Not open to DRIVER.
+  `VPAResource.getVPAForVendorPayout`. Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER,
+  ACCOUNTANT, OPERATOR; it uses the caller's torgId, so use a TORG_ADMIN token (the static
+  VAHN_ADMIN has no torg). Creates a driver-less VPA plus a torg mapping when the identifier is new
+  and Surepass resolves it, so it writes staging data and bills a Surepass call.
 
-  Response (staging 2026-10-06; staging's mock lookup names every UPI ID "Test User"):
+  Outcomes: blank identifier -> 400; `error: NOT_FOUND` -> 404; ENG-1309: Surepass outage ->
+  `error: SERVICE_DOWN` -> a real HTTP 503 (was 404). Not reproducible on staging.
 
-  {
-    "success": true,
-    "message": "Success",
-    "statusCode": 200,
-    "data": { "id": 401, "name": "Test User", ... }
-  }
+  Set `torgAdminToken` by running auth/send-otp + verify-otp for a torg admin phone, or pass it
+  with --env-var. It is blank in environments/staging.bru.
 
   Use `data.id` as `vpaId` in `payment-gateway/vendor-payout`.
 }

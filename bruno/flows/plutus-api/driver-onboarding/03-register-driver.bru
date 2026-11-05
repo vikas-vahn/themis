@@ -26,6 +26,12 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.dlVerificationOutcome: isString
+}
+
 script:post-response {
   bru.setEnvVar("driverId", res.body.data.id);
   bru.setEnvVar("dlVerificationOutcome", res.body.data.dlVerificationOutcome);
@@ -41,6 +47,10 @@ docs {
                 corrected values (attempt count is tracked server-side by phone number).
   - SERVICE_ERROR — verification provider unavailable; does NOT count against the cap,
                 just retry.
+
+  ENG-1309: on a Surepass outage (5xx after retries) the driver is saved as PENDING with
+  onboardingStatus DL_NUMBER_ADDED and re-verified in the background. Not reproducible on
+  staging, where Surepass is up.
 
   After 3 RETRY outcomes, this returns 409 DL_ATTEMPTS_EXHAUSTED — switch to step 4
   (manual upload) instead of retrying again.
