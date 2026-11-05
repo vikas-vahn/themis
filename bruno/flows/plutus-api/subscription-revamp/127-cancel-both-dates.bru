@@ -1,0 +1,32 @@
+meta {
+  name: 127. Cancel with both newBillingStartDate and trialEndDate is refused
+  type: http
+  seq: 127
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "refundMode": "FULL",
+    "newBillingStartDate": "{{subRevampPlus10}}",
+    "trialEndDate": "{{subRevampPlus1}}",
+    "reason": "both dates"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

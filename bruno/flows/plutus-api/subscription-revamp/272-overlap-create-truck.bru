@@ -1,0 +1,38 @@
+meta {
+  name: 272. Add a truck
+  type: http
+  seq: 272
+}
+
+post {
+  url: {{baseUrl}}/api/trucks
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "registrationNumber": "{{subRevampTruck7Reg}}",
+    "torgId": {{subRevampTorgId}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampTruck7Reg", "MH69AG" + String(Date.now()).slice(-4));
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampTruck7Id", String(res.body.data.id));
+}

@@ -1,0 +1,28 @@
+meta {
+  name: 140. Preview a plan selection in trial (no current billing)
+  type: http
+  seq: 140
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change/preview?planId=8
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("SELECTION moves no money", function() {
+    const q = res.body.data;
+    expect(q.changeType).to.equal("SELECTION");
+    expect(Number(q.netPayable)).to.equal(0);
+    expect(Number(q.charge)).to.equal(0);
+  });
+}

@@ -1,0 +1,35 @@
+meta {
+  name: 223. Preview HALFY -> YEAR (plan 11 -> 8) with too little money
+  type: http
+  seq: 223
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change/preview?planId=8
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampQuoteNet", String(res.body.data.netPayable));
+  bru.setEnvVar("subRevampQuoteShortfall", String(res.body.data.shortfall));
+}
+
+tests {
+  test("shortfall = what is needed less advance, wallet and the refund of the closed billing", function() {
+    const q = res.body.data;
+    expect(q.changeType).to.equal("CYCLE_CHANGE");
+    expect(Number(q.charge)).to.be.closeTo(Number(bru.getEnvVar("subRevampBillingTrucks")) * 2393.04, 0.011);
+    const available = Number(q.advanceAvailable) + Number(q.walletAvailable) + Number(q.credit) + Number(q.creditToAdvance);
+    expect(Number(q.shortfall)).to.be.closeTo(Number(q.charge) + Number(q.carriedForward) - available, 0.011);
+    expect(Number(q.shortfall)).to.be.greaterThan(0);
+  });
+}

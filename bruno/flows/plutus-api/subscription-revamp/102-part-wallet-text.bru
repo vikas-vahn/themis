@@ -1,0 +1,32 @@
+meta {
+  name: 102. Wallet statement keeps the plain text here: the billing holds a plan change item
+  type: http
+  seq: 102
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("newest subscription debit is the 50 part payment, with the fallback text", function() {
+    const rows = res.body.data.filter(t => /^Subscription (add-on|payment)/.test(t.description || ""));
+    rows.sort((a, b) => b.id - a.id);
+    expect(Number(rows[0].amount)).to.be.closeTo(50, 0.011);
+    expect(rows[0].description).to.equal("Subscription payment for billing period " + bru.getEnvVar("subRevampBillingStart") + " to " + bru.getEnvVar("subRevampBillingEnd"));
+  });
+}
+
+docs {
+  Documented fallback: a PLAN_CHANGE_CHARGE (from the upgrade) makes the payment order unclear, so the text stays plain rather than claim something wrong. The genuine part-payment text is checked on a billing without plan change items.
+}

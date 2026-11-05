@@ -1,0 +1,47 @@
+meta {
+  name: 121. Cancel preview PRO_RATA with a billing restart 10 days out
+  type: http
+  seq: 121
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel-preview?refundMode=PRO_RATA&newBillingStartDate={{subRevampPlus10}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  const addDays = (iso, n) => new Date(Date.UTC(Number(iso.slice(0,4)), Number(iso.slice(5,7)) - 1, Number(iso.slice(8,10)) + n)).toISOString().slice(0, 10);
+  bru.setEnvVar("subRevampPlus10", addDays(bru.getEnvVar("subRevampToday"), 10));
+  bru.setEnvVar("subRevampPlus1", addDays(bru.getEnvVar("subRevampToday"), 1));
+}
+
+tests {
+  const dayMs = 86400000;
+  const parse = s => Date.UTC(Number(s.slice(0,4)), Number(s.slice(5,7)) - 1, Number(s.slice(8,10)));
+  const bs = parse(bru.getEnvVar("subRevampBillingStart")), be = parse(bru.getEnvVar("subRevampBillingEnd")), td = parse(bru.getEnvVar("subRevampToday"));
+  const daysInPeriod = Math.round((be - bs) / dayMs);
+  const daysLeft = Math.round((be - Math.min(Math.max(td, bs), be)) / dayMs);
+  const round2 = x => Math.round((x + Number.EPSILON) * 100) / 100;
+  test("PRO_RATA refunds the unused share of what was paid and writes nothing", function() {
+    const d = res.body.data;
+    expect(d.preview).to.equal(true);
+    expect(d.refund.mode).to.equal("PRO_RATA");
+    expect(Number(d.refund.netPaid)).to.be.closeTo(Number(bru.getEnvVar("subRevampBillingPaid")), 0.011);
+    expect(d.refund.daysUnused).to.equal(daysInPeriod - 10);
+    expect(Number(d.refund.amount)).to.be.closeTo(round2(Number(d.refund.netPaid) * (daysInPeriod - 10) / daysInPeriod), 0.03);
+    expect(d.billing.status).to.not.equal("CANCELLED");
+  });
+}
+
+docs {
+  Items all cover the same period as the billing here, so the add-on weighted formula collapses to netPaid x unused days / days in period.
+}

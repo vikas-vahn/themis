@@ -1,0 +1,40 @@
+meta {
+  name: 196. New billing: half-yearly, 5 trucks, paid in full
+  type: http
+  seq: 196
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingStart", String(res.body.data.billingStartDate));
+  bru.setEnvVar("subRevampBillingEnd", String(res.body.data.billingEndDate));
+  bru.setEnvVar("subRevampBillingTrucks", String(res.body.data.noOfTrucks));
+  bru.setEnvVar("subRevampBillingStatus", String(res.body.data.status));
+  bru.setEnvVar("subRevampBillingDue", String(res.body.data.dueAmount));
+  bru.setEnvVar("subRevampBillingPaid", String(res.body.data.paidAmount));
+  bru.setEnvVar("subRevampBillingTotal", String(res.body.data.totalAmount));
+}
+
+tests {
+  const b = res.body.data;
+  const items = b.lineItems || [];
+  const of = t => items.filter(i => i.itemType === t);
+  test("BASE only, no wallet money in it", function() {
+    expect(of("BASE").length).to.equal(1);
+    expect(b.status).to.equal("PAID");
+    expect(Number(b.totalAmount)).to.be.closeTo(5 * 1621.32, 0.011);
+  });
+}

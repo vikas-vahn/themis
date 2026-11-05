@@ -1,0 +1,29 @@
+meta {
+  name: 209. Mark it verified
+  type: http
+  seq: 209
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/mark-as-verified?remarks=ENG-690%20test%20truck&panCardId={{subRevampPanId}}&isConsentGiven=false
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "entityIds": [{{subRevampTruck6Id}}]
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}

@@ -1,0 +1,36 @@
+meta {
+  name: 224. A torg user cannot proceed on short funds
+  type: http
+  seq: 224
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 8,
+    "expectedNetPayable": {{subRevampQuoteNet}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+tests {
+  test("the message gives the shortfall", function() {
+    expect(JSON.stringify(res.body)).to.contain("Insufficient balance");
+  });
+}

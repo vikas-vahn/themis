@@ -1,0 +1,31 @@
+meta {
+  name: 225. allowDue from a torg user is ignored
+  type: http
+  seq: 225
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 8,
+    "expectedNetPayable": {{subRevampQuoteNet}},
+    "allowDue": true
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

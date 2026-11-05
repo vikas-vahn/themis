@@ -1,0 +1,19 @@
+meta {
+  name: 69. Reconcile again: no second charge
+  type: http
+  seq: 69
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billing/reconcile?isTruckAddition=true&reason=ENG-690%20test%20again
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}

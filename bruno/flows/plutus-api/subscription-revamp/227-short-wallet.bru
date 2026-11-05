@@ -1,0 +1,37 @@
+meta {
+  name: 227. Wallet was fully used by the new billing
+  type: http
+  seq: 227
+}
+
+get {
+  url: {{baseUrl}}/api/wallets/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const cur = Number(res.body.data[0].balance);
+  bru.setEnvVar("subRevampWalletPrev", String(bru.getEnvVar("subRevampWalletBalance") || cur));
+  bru.setEnvVar("subRevampWalletBalance", String(cur));
+}
+
+tests {
+  const cur = Number(bru.getEnvVar("subRevampWalletBalance"));
+  const prev = Number(bru.getEnvVar("subRevampWalletPrev"));
+  test("0", function() {
+    expect(cur).to.be.closeTo(0, 0.011);
+  });
+}
+
+docs {
+  Reads the test torg admin wallet balance. subRevampWalletPrev is the previous reading.
+}

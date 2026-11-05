@@ -1,0 +1,55 @@
+meta {
+  name: 186. Cycle change HALFY -> MONTH at the previewed price
+  type: http
+  seq: 186
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 5,
+    "expectedNetPayable": {{subRevampQuoteNet}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampOldBillingId", bru.getEnvVar("subRevampBillingId"));
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingId", String(res.body.data.billing.id));
+}
+
+tests {
+  test("old billing closed, new billing on plan 5 paid in full", function() {
+    const d = res.body.data;
+    expect(d.changeType).to.equal("CYCLE_CHANGE");
+    expect(d.closedBilling.status).to.equal("CANCELLED");
+    expect(d.billing.subscriptionPlan.id).to.equal(5);
+    expect(Number(d.billing.totalAmount)).to.be.closeTo(5 * 352.82, 0.011);
+    expect(Number(d.billing.dueAmount)).to.equal(0);
+    expect(d.billing.status).to.equal("PAID");
+    expect(String(d.billing.id)).to.not.equal(bru.getEnvVar("subRevampOldBillingId"));
+  });
+}
+
+docs {
+  Captures the new billing id as subRevampBillingId.
+}

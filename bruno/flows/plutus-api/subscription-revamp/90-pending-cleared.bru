@@ -1,0 +1,42 @@
+meta {
+  name: 90. Asking for the billed plan again clears the pending downgrade
+  type: http
+  seq: 90
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 5
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("PENDING_CLEARED", function() {
+    const d = res.body.data;
+    expect(d.changeType).to.equal("PENDING_CLEARED");
+    expect(Number(d.netPayable)).to.equal(0);
+    expect(d.pendingPlan).to.equal(null);
+  });
+}
+
+docs {
+  No expectedNetPayable needed: no money moves.
+}

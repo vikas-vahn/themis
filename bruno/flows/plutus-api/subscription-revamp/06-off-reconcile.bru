@@ -1,0 +1,23 @@
+meta {
+  name: 06. Flags off: verifying the truck already reconciled and charged it, so a second reconcile has nothing to do
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billing/reconcile?isTruckAddition=true&reason=ENG-690%20flag%20off
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Legacy behaviour: mark-as-verified raises the due at the full cycle price for the new truck and charges it at once (no add-on line item), so the billing is already paid.
+}

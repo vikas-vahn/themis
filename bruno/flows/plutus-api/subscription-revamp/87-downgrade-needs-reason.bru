@@ -1,0 +1,29 @@
+meta {
+  name: 87. VAHN_ADMIN must give a reason
+  type: http
+  seq: 87
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 7
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

@@ -1,0 +1,47 @@
+meta {
+  name: 101. Second add-on exists, only part paid, the rest is due
+  type: http
+  seq: 101
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingStart", String(res.body.data.billingStartDate));
+  bru.setEnvVar("subRevampBillingEnd", String(res.body.data.billingEndDate));
+  bru.setEnvVar("subRevampBillingTrucks", String(res.body.data.noOfTrucks));
+  bru.setEnvVar("subRevampBillingStatus", String(res.body.data.status));
+  bru.setEnvVar("subRevampBillingDue", String(res.body.data.dueAmount));
+  bru.setEnvVar("subRevampBillingPaid", String(res.body.data.paidAmount));
+  bru.setEnvVar("subRevampBillingTotal", String(res.body.data.totalAmount));
+}
+
+tests {
+  const b = res.body.data;
+  const items = b.lineItems || [];
+  const of = t => items.filter(i => i.itemType === t);
+  test("two TRUCK_ADDON items, a due equal to the shortfall", function() {
+    expect(of("TRUCK_ADDON").length).to.equal(2);
+    const a = of("TRUCK_ADDON")[1];
+    expect(Number(b.dueAmount)).to.be.closeTo(Number(a.amount) - 50, 0.011);
+    expect(Number(b.dueAmount)).to.be.greaterThan(0);
+    expect(b.status).to.equal("PARTIAL");
+    expect(Number(b.paidAmount) + Number(b.dueAmount)).to.be.closeTo(Number(b.totalAmount), 0.011);
+  });
+}
+
+docs {
+  The wallet held 50 and the add-on costs more, so 50 was collected and the remainder stays due (no FAILED row, billing PARTIAL).
+}

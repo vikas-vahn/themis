@@ -1,0 +1,19 @@
+meta {
+  name: 308. Flags off: resume of a CANCELLED subscription is a 400
+  type: http
+  seq: 308
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/resume?reason=ENG-690%20test
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

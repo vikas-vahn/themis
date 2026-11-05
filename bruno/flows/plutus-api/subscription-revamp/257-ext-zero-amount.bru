@@ -1,0 +1,34 @@
+meta {
+  name: 257. External payment of 0 is refused
+  type: http
+  seq: 257
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 0,
+    "mode": "UPI",
+    "referenceNumber": "UTR-ZERO-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-zero-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

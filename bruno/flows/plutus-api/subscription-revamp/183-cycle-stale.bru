@@ -1,0 +1,30 @@
+meta {
+  name: 183. Cycle change with a stale expectedNetPayable is a 409
+  type: http
+  seq: 183
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 5,
+    "expectedNetPayable": 1.00
+  }
+}
+
+assert {
+  res.body.statusCode: eq 409
+}

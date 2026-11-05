@@ -1,0 +1,30 @@
+meta {
+  name: 254. Second cancel of the same billing is refused
+  type: http
+  seq: 254
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "refundMode": "PRO_RATA",
+    "reason": "again"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

@@ -1,0 +1,41 @@
+meta {
+  name: 95. Move what is left of the advance to the wallet
+  type: http
+  seq: 95
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance/move-to-wallet
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": {{subRevampAdvanceToMove}},
+    "expectedAdvanceBalance": {{subRevampAdvanceToMove}},
+    "reason": "ENG-690 test set-up"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampAdvanceToMove", bru.getEnvVar("subRevampAdvanceBalance"));
+}
+
+tests {
+  test("advance is 0", function() {
+    expect(Number(res.body.data.advanceBalance)).to.equal(0);
+  });
+}

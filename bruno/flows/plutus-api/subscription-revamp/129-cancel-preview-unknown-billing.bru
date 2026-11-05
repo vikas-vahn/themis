@@ -1,0 +1,23 @@
+meta {
+  name: 129. Cancel preview of a billing that does not exist
+  type: http
+  seq: 129
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/999999999/cancel-preview?refundMode=FULL
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 404
+}
+
+docs {
+  Read only.
+}

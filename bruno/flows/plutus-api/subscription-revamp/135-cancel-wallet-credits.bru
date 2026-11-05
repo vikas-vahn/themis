@@ -1,0 +1,32 @@
+meta {
+  name: 135. Finance list shows the externally funded refund slices
+  type: http
+  seq: 135
+}
+
+get {
+  url: {{baseUrl}}/api/external-payments/wallet-credits?from={{subRevampToday}}&to={{subRevampToday}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("REFUND rows for this billing add up to the advance-funded part (the upgrade charge)", function() {
+    const rows = res.body.data.filter(r => String(r.torgId) === bru.getEnvVar("subRevampTorgId") && r.type === "REFUND" && String(r.billingId) === bru.getEnvVar("subRevampBillingId"));
+    expect(rows.length).to.be.greaterThan(0);
+    const sum = rows.reduce((s, r) => s + Number(r.amount), 0);
+    expect(sum).to.be.closeTo(Number(bru.getEnvVar("subRevampQuoteCharge")), 0.011);
+  });
+}
+
+docs {
+  Only the slices paid from outside money are listed (the BASE and the add-ons were paid from the wallet).
+}

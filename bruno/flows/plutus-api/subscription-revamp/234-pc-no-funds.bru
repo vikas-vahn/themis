@@ -1,0 +1,32 @@
+meta {
+  name: 234. Partial charge with no money available is refused
+  type: http
+  seq: 234
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "TRUCKS",
+    "noOfTrucks": 1,
+    "createDue": true,
+    "expectedDueAmount": {{subRevampBillingDue}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

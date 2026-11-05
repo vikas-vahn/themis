@@ -1,0 +1,27 @@
+meta {
+  name: 301. Flags read back
+  type: http
+  seq: 301
+}
+
+get {
+  url: {{baseUrl}}/api/v1/config/subscription-billing
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("only lineItemWrites is on", function() {
+    const c = res.body.data.config || res.body.data;
+    expect(c.lineItemWrites.enabled).to.equal(true);
+    ["lineItemMaths","cancelRefund","externalPayments","truckAddon","partialBilling","planChange","dueSweep"].forEach(k => expect(c[k].enabled, k).to.equal(false));
+  });
+}

@@ -1,0 +1,19 @@
+meta {
+  name: 123. Cancel preview as TORG_ADMIN is refused
+  type: http
+  seq: 123
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel-preview?refundMode=FULL
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}

@@ -1,0 +1,29 @@
+meta {
+  name: 154. End the trial today so the scheduler bills now
+  type: http
+  seq: 154
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/trial/extend?trialEndDate={{subRevampToday}}&reason=ENG-690%20test
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("next billing is today", function() {
+    expect(res.body.data.nextBillingDate).to.equal(bru.getEnvVar("subRevampToday"));
+  });
+}
+
+docs {
+  After this the hourly scheduler creates the next billing. WAIT for it (up to an hour), then run 155. Whatever flags are on at that tick decide how it is made: with them off (as on 2026-11-04) it is a legacy-maths billing charged from the wallet only, with advance untouched.
+}

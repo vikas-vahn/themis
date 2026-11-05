@@ -1,0 +1,38 @@
+meta {
+  name: 205. Wallet statement says Subscription add-on: 1 truck, d days, start to end
+  type: http
+  seq: 205
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  const dayMs = 86400000;
+  const parse = s => Date.UTC(Number(s.slice(0,4)), Number(s.slice(5,7)) - 1, Number(s.slice(8,10)));
+  const bs = parse(bru.getEnvVar("subRevampBillingStart")), be = parse(bru.getEnvVar("subRevampBillingEnd")), td = parse(bru.getEnvVar("subRevampToday"));
+  const daysInPeriod = Math.round((be - bs) / dayMs);
+  const daysLeft = Math.round((be - Math.min(Math.max(td, bs), be)) / dayMs);
+  const round2 = x => Math.round((x + Number.EPSILON) * 100) / 100;
+  test("add-on text on a billing with only BASE and add-on items", function() {
+    const rows = res.body.data.filter(t => /^Subscription (add-on|payment)/.test(t.description || ""));
+    rows.sort((a, b) => b.id - a.id);
+
+        expect(rows[0].description).to.equal("Subscription add-on: 1 truck, " + daysLeft + (daysLeft === 1 ? " day, " : " days, ") + bru.getEnvVar("subRevampBillingStart") + " to " + bru.getEnvVar("subRevampBillingEnd"));
+  });
+}
+
+docs {
+  Commit bf477da1b. Clean billing (no credit or plan change item), so the text may claim an add-on.
+}

@@ -31,6 +31,9 @@ script:post-response {
   // server dates are IST; the run id keeps requestId / UTR values unique per run
   bru.setEnvVar("subRevampToday", new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10));
   bru.setEnvVar("subRevampRun", String(Date.now()));
+  const day = n => new Date(Date.UTC(Number(bru.getEnvVar("subRevampToday").slice(0,4)), Number(bru.getEnvVar("subRevampToday").slice(5,7)) - 1, Number(bru.getEnvVar("subRevampToday").slice(8,10)) + n)).toISOString().slice(0, 10);
+  bru.setEnvVar("subRevampPlus1", day(1));
+  bru.setEnvVar("subRevampPlus10", day(10));
 }
 
 docs {

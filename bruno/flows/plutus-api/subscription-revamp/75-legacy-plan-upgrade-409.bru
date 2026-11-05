@@ -1,0 +1,25 @@
+meta {
+  name: 75. Legacy PUT /{torgId}/plan for an upgrade returns 409 with the quote
+  type: http
+  seq: 75
+}
+
+put {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan?planId=5&reason=ENG-690%20legacy
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 409
+}
+
+tests {
+  test("quote in data", function() {
+    expect(res.body.data.changeType).to.equal("UPGRADE");
+  });
+}

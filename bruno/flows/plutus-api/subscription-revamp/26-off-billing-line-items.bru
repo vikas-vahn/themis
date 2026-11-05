@@ -22,6 +22,8 @@ script:post-response {
   const b = res.body.data;
   bru.setEnvVar("subRevampBillingTotal", String(b.totalAmount));
   bru.setEnvVar("subRevampBillingTrucks", String(b.noOfTrucks));
+  bru.setEnvVar("subRevampBillingStart", String(b.billingStartDate));
+  bru.setEnvVar("subRevampBillingEnd", String(b.billingEndDate));
 }
 
 tests {
@@ -30,6 +32,9 @@ tests {
     const base = (b.lineItems || []).filter(i => i.itemType === "BASE");
     expect(base.length).to.equal(1);
     expect(Number(base[0].amount)).to.be.closeTo(Number(b.totalAmount), 0.011);
+  });
+  test("refunded_amount is stored as 0 (build d7a31e277 fix)", function() {
+    expect(Number(res.body.data.refundedAmount)).to.equal(0);
   });
   test("cancellation notes are visible to VAHN_ADMIN", function() {
     expect(res.body.data).to.have.property("cancelledAt");

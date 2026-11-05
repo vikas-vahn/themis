@@ -1,0 +1,51 @@
+meta {
+  name: 150. Record external payment P3 (9000) to fund the next billing from advance
+  type: http
+  seq: 150
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 9000,
+    "mode": "BANK_TRANSFER",
+    "referenceNumber": "NEFT-690-P3-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-p3-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampPayment3Id", String(res.body.data.externalPayment.id));
+}
+
+tests {
+  test("held as advance (no billing is current)", function() {
+    const d = res.body.data;
+    expect(d.duplicate).to.equal(false);
+    expect(d.allocations.length).to.equal(0);
+    expect(Number(d.advanceBalance)).to.be.at.least(9000);
+  });
+}
+
+docs {
+  No billing is current (the last one was cancelled), so the whole amount is advance.
+}

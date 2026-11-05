@@ -1,0 +1,43 @@
+meta {
+  name: 27. Flags off: the remainder payment names the trucks it paid for
+  type: http
+  seq: 27
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBase0", bru.getEnvVar("subRevampBillingTotal"));
+}
+
+tests {
+  test("a payment that clears exactly the whole trucks left reads Subscription payment: n truck, d days, start to end", function() {
+    const rows = res.body.data.filter(t => /^Subscription payment/.test(t.description || ""));
+    rows.sort((a, b) => b.id - a.id);
+    expect(rows.length).to.be.greaterThan(1);
+    expect(rows[0].description).to.equal("Subscription payment: 1 truck, 30 days, " + bru.getEnvVar("subRevampBillingStart") + " to " + bru.getEnvVar("subRevampBillingEnd"));
+  });
+  test("the first payment of the billing keeps the plain text (nothing was paid before it)", function() {
+    const rows = res.body.data.filter(t => /^Subscription payment/.test(t.description || ""));
+    rows.sort((a, b) => b.id - a.id);
+    expect(rows[1].description).to.equal("Subscription payment for billing period " + bru.getEnvVar("subRevampBillingStart") + " to " + bru.getEnvVar("subRevampBillingEnd"));
+  });
+}
+
+docs {
+  Commit 948a47b97: with the flags off, a payment that clears exactly the whole trucks left (total is trucks x plan price, whole
+  trucks already paid) gets the truck text; anything else keeps the plain "Subscription payment for billing period X to Y".
+  Captures subRevampBase0 (the billing total before any add-on).
+}

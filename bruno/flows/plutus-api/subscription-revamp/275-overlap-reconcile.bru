@@ -1,0 +1,19 @@
+meta {
+  name: 275. Reconcile after the truck addition
+  type: http
+  seq: 275
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billing/reconcile?isTruckAddition=true&reason=ENG-690%20overlap
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}

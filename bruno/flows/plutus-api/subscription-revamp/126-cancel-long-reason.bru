@@ -1,0 +1,35 @@
+meta {
+  name: 126. Cancel with a reason over 500 characters is refused
+  type: http
+  seq: 126
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "refundMode": "FULL",
+    "trialEndDate": "{{subRevampPlus1}}",
+    "reason": "{{subRevampLongReason}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampLongReason", "x".repeat(501));
+}

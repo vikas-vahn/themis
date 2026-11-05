@@ -1,0 +1,36 @@
+meta {
+  name: 192. Preview MONTH -> HALFY (plan 5 -> 11) on a billing paid only from advance
+  type: http
+  seq: 192
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change/preview?planId=11
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampQuoteNet", String(res.body.data.netPayable));
+  bru.setEnvVar("subRevampQuoteCharge", String(res.body.data.charge));
+  bru.setEnvVar("subRevampQuoteCreditAdv", String(res.body.data.creditToAdvance));
+  bru.setEnvVar("subRevampQuoteCredit", String(res.body.data.credit));
+}
+
+tests {
+  test("no wallet credit, the whole refund goes to advance", function() {
+    const q = res.body.data;
+    expect(Number(q.credit)).to.equal(0);
+    expect(Number(q.creditToAdvance)).to.be.closeTo(5 * 352.82, 0.011);
+    expect(Number(q.charge)).to.be.closeTo(5 * 1621.32, 0.011);
+    expect(Number(q.shortfall)).to.equal(0);
+  });
+}

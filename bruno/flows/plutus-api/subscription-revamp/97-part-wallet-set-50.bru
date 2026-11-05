@@ -1,0 +1,29 @@
+meta {
+  name: 97. Set the test wallet to 50 so the next add-on can only be part paid
+  type: http
+  seq: 97
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/{{subRevampWalletId}}/balance?amount={{subRevampWalletAdjust}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampWalletAdjust", (50 - Number(bru.getEnvVar("subRevampWalletBalance"))).toFixed(2));
+}
+
+tests {
+  test("50", function() {
+    expect(Number(res.body.data.balance)).to.be.closeTo(50, 0.011);
+  });
+}

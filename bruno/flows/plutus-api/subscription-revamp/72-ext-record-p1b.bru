@@ -1,0 +1,46 @@
+meta {
+  name: 72. Record external payment (1000): nothing is due, so all of it is advance
+  type: http
+  seq: 72
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 1000,
+    "mode": "UPI",
+    "referenceNumber": "UTR-690-B-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-p1b-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampPayment1Id", String(res.body.data.externalPayment.id));
+}
+
+tests {
+  test("held as advance", function() {
+    const d = res.body.data;
+    expect(d.allocations.length).to.equal(0);
+    expect(Number(d.advanceBalance)).to.equal(1000);
+  });
+}
