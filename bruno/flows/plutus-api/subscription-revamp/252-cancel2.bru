@@ -1,5 +1,5 @@
 meta {
-  name: 252. Cancel PRO_RATA, billing restarts in 10 days
+  name: 252. Cancel PRO_RATA, billing restarts in 10 days (static admin token)
   type: http
   seq: 252
 }
@@ -11,7 +11,7 @@ post {
 }
 
 auth:bearer {
-  token: {{subRevampAdminToken}}
+  token: {{subRevampStaticToken}}
 }
 
 headers {
@@ -39,4 +39,12 @@ tests {
     expect(d.subscription.nextBillingDate).to.equal(bru.getEnvVar("subRevampPlus10"));
     expect((d.billing.lineItems || []).filter(i => i.itemType === "REFUND").length).to.be.greaterThan(0);
   });
+  test("static token: cancelledBy is null and every line item created_by is null", function() {
+    expect(res.body.data.billing.cancelledBy).to.equal(null);
+    (res.body.data.billing.lineItems || []).filter(i => i.itemType === "REFUND").forEach(i => expect(i.createdBy).to.equal(null));
+  });
+}
+
+docs {
+  Sent with the static VAHN_ADMIN token: allowed, stored with no user id (billing.cancelled_by null). Needs `subRevampStaticToken` at run time.
 }

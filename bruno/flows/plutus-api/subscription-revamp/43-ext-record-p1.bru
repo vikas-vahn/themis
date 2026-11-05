@@ -46,6 +46,9 @@ tests {
     expect(Number(d.externalPayment.unallocatedAmount)).to.equal(1000);
     expect(Number(d.advanceBalance)).to.equal(1000);
   });
+  test("signed-in admin: recordedBy is that admin's user id", function() {
+    expect(String(res.body.data.externalPayment.recordedBy)).to.equal(bru.getEnvVar("subRevampAdminUserId"));
+  });
 }
 
 docs {

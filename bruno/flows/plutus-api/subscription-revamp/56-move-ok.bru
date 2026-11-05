@@ -1,5 +1,5 @@
 meta {
-  name: 56. Move 100 of the advance to the torg admin wallet
+  name: 56. Move 100 of the advance to the torg admin wallet (static admin token)
   type: http
   seq: 56
 }
@@ -11,7 +11,7 @@ post {
 }
 
 auth:bearer {
-  token: {{subRevampAdminToken}}
+  token: {{subRevampStaticToken}}
 }
 
 headers {
@@ -35,4 +35,8 @@ tests {
     expect(Number(res.body.data.movedAmount)).to.equal(100);
     expect(Number(res.body.data.advanceBalance)).to.equal(900);
   });
+}
+
+docs {
+  Sent with the static VAHN_ADMIN token: allowed. The wallet transaction and audit rows carry no user id (username admin); 57 and 58 account for the 100.
 }

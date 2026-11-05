@@ -1,5 +1,5 @@
 meta {
-  name: 52. Reverse P2
+  name: 52. Reverse P2 with the static admin token
   type: http
   seq: 52
 }
@@ -11,7 +11,7 @@ post {
 }
 
 auth:bearer {
-  token: {{subRevampAdminToken}}
+  token: {{subRevampStaticToken}}
 }
 
 headers {
@@ -39,4 +39,9 @@ tests {
 
 docs {
   P2 was only held as advance, so nothing reopens; the advance it held is zeroed.
+  test("static token: reversedBy is null", function() {
+    expect(res.body.data.externalPayment.reversedBy).to.equal(null);
+  });
+
+  Sent with the static VAHN_ADMIN token: allowed, reversedBy null.
 }

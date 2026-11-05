@@ -28,6 +28,7 @@ assert {
 
 script:post-response {
   bru.setEnvVar("subRevampAdminToken", res.body.data.accessToken);
+  bru.setEnvVar("subRevampAdminUserId", String(res.body.data.user.id));
   // server dates are IST; the run id keeps requestId / UTR values unique per run
   bru.setEnvVar("subRevampToday", new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10));
   bru.setEnvVar("subRevampRun", String(Date.now()));
@@ -37,7 +38,7 @@ script:post-response {
 }
 
 docs {
-  Real VAHN_ADMIN login (OTP 776677 on staging). The money routes (record/reverse external
-  payment, move-to-wallet, partial-charge) refuse the static admin token, so this token is used
-  for everything. Set `subRevampAdminPhone` at run time (`--env-var`), it is not stored.
+  Real VAHN_ADMIN login (OTP 776677 on staging). Most steps use this token, so actions are recorded with this user's id
+  and name. A few money steps (51, 52, 56, 237) use the static VAHN_ADMIN token instead and are recorded as `admin` with
+  no user id. Set `subRevampAdminPhone` at run time (`--env-var`), it is not stored.
 }

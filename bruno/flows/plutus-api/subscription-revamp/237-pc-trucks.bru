@@ -1,5 +1,5 @@
 meta {
-  name: 237. Partial charge by TRUCKS (1 truck), remainder stays due
+  name: 237. Partial charge by TRUCKS (1 truck), remainder stays due (static admin token)
   type: http
   seq: 237
 }
@@ -11,7 +11,7 @@ post {
 }
 
 auth:bearer {
-  token: {{subRevampAdminToken}}
+  token: {{subRevampStaticToken}}
 }
 
 headers {
@@ -43,4 +43,8 @@ tests {
     expect(Number(d.billing.dueAmount)).to.be.closeTo(Number(bru.getEnvVar("subRevampDueBefore")) - 2393.04, 0.011);
     expect(d.billing.status).to.equal("PARTIAL");
   });
+}
+
+docs {
+  Sent with the static VAHN_ADMIN token: allowed, line items created_by null. 238-241 account for the money.
 }

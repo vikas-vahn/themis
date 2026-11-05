@@ -1,5 +1,5 @@
 meta {
-  name: 193. Cycle change MONTH -> HALFY
+  name: 193. Cycle change MONTH -> HALFY (static admin token)
   type: http
   seq: 193
 }
@@ -11,7 +11,7 @@ post {
 }
 
 auth:bearer {
-  token: {{subRevampTorgToken}}
+  token: {{subRevampStaticToken}}
 }
 
 headers {
@@ -21,7 +21,8 @@ headers {
 body:json {
   {
     "planId": 11,
-    "expectedNetPayable": {{subRevampQuoteNet}}
+    "expectedNetPayable": {{subRevampQuoteNet}},
+    "reason": "ENG-690 test: cycle change back as admin"
   }
 }
 
@@ -44,4 +45,11 @@ tests {
     expect(d.billing.status).to.equal("PAID");
     expect(Number(d.billing.dueAmount)).to.equal(0);
   });
+  test("static token: line items created_by is null", function() {
+    (res.body.data.billing.lineItems || []).forEach(i => expect(i.createdBy, i.itemType).to.equal(null));
+  });
+}
+
+docs {
+  Sent with the static VAHN_ADMIN token (acting for the torg): allowed, line items stored with created_by null. An admin-made plan change needs a `reason` (400 "reason is required" without one, as on the 2026-11-05 run). Needs `subRevampStaticToken` at run time.
 }
