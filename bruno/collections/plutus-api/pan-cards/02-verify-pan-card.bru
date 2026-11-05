@@ -1,0 +1,29 @@
+meta {
+  name: Verify PAN card (admin)
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/pan/{{plutusPanCardId}}/verify?notes=manual check
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.status: eq VERIFIED
+}
+
+docs {
+  `PANCardResource.verifyPANCard` (VAHN_ADMIN only) -> `PANCardService.markAsVerified`. Optional `notes`
+  query param. Needs a holder name on the PAN (400 otherwise). Since BUG-108 it recomputes the torg
+  owner's onboarding status (ONBOARDING_COMPLETED once PAN and Aadhaar are both VERIFIED).
+  Uses `adminStaticToken` (config.yml `auth.static_tokens.role_tokens.VAHN_ADMIN`); pass it with
+  `--env-var adminStaticToken=...` rather than saving it.
+}

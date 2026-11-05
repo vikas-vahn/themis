@@ -1,0 +1,28 @@
+meta {
+  name: 10. Admin reads user (ONBOARDING_COMPLETED)
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/users/{{plutusKycUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.id: eq {{plutusKycUserId}}
+  res.body.data.role: eq TORG_ADMIN
+  res.body.data.onboardingStatus: eq ONBOARDING_COMPLETED
+}
+
+docs {
+  The BUG-108 check: both documents are VERIFIED and the owner made no user-update call after the
+  admin verified them, yet the status is ONBOARDING_COMPLETED.
+}

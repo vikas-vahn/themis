@@ -1,0 +1,22 @@
+meta {
+  name: DigiLocker status
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/digilocker/status
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  `DigilockerResource.getDigilockerStatus` (VAHN_ADMIN, TORG_ADMIN) -> `DigilockerService.getDigilockerStatus(user.torgId)`.
+  Reads (and, once a DigiLocker session has completed, saves the verified Aadhaar and, since BUG-108,
+  recomputes the owner's onboarding status). Only meaningful after `POST /api/v1/digilocker/initialize`
+  and a real DigiLocker consent, so it is not run in the themis flows.
+}

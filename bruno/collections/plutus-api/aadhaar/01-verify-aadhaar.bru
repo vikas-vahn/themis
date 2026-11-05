@@ -1,0 +1,27 @@
+meta {
+  name: Verify Aadhaar (admin)
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/aadhaar/{{plutusAadhaarId}}/verify?notes=manual check
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.status: eq VERIFIED
+}
+
+docs {
+  `AadhaarResource.verifyAadhaar` (VAHN_ADMIN only) -> `AadhaarService.updateAadhaar`. Sets VERIFIED and
+  the verification date; optional `notes`. 404 if unknown. Since BUG-108 it recomputes the torg owner's
+  onboarding status. Needs `plutusAadhaarId`.
+}

@@ -1,0 +1,51 @@
+meta {
+  name: 4. Owner adds PAN
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/pan
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusKycOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "panNumber": "{{plutusKycPanNumber}}",
+    "holderName": "BUG108 Fleet Owner"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.id: isNumber
+  res.body.data.panNumber: eq {{plutusKycPanNumber}}
+}
+
+script:pre-request {
+  const L = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const r = () => L[Math.floor(Math.random() * 26)];
+  const pan = r() + r() + r() + r() + r() + String(Math.floor(1000 + Math.random() * 9000)) + r();
+  bru.setVar("plutusKycPanNumber", pan);
+}
+
+script:post-response {
+  bru.setVar("plutusKycPanId", res.body.data.id);
+  bru.setVar("plutusKycPanStatus", res.body.data.status);
+}
+
+docs {
+  `PANCardResource.createPANCard` -> `PANCardService.createPANCard`: tries Surepass first and keeps the
+  PAN PENDING when the check fails. When Surepass verifies it, `advanceOnboardingIfVerified` runs
+  right away (status stays BASIC_DETAILS_ADDED here because there is no Aadhaar yet).
+  Captures `plutusKycPanId` and `plutusKycPanStatus` (VERIFIED or PENDING).
+}

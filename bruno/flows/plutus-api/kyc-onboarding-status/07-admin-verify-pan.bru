@@ -1,0 +1,34 @@
+meta {
+  name: 7. Admin verifies PAN (if still pending)
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/pan/{{plutusKycPanId}}/verify?notes=BUG-108-themis
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.id: eq {{plutusKycPanId}}
+  res.body.data.status: eq VERIFIED
+}
+
+script:pre-request {
+  if (bru.getVar("plutusKycPanStatus") === "VERIFIED") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `PANCardResource.verifyPANCard` (VAHN_ADMIN) -> `PANCardService.markAsVerified` -> `recomputeForTorg`.
+  Skipped when staging's Surepass already verified the PAN in step 4. A refused role comes back as
+  HTTP 200 with `statusCode: 403` in the body.
+}

@@ -1,0 +1,26 @@
+meta {
+  name: 9. Admin verifies Aadhaar
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/aadhaar/{{plutusKycAadhaarId}}/verify?notes=BUG-108-themis
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.id: eq {{plutusKycAadhaarId}}
+  res.body.data.status: eq VERIFIED
+}
+
+docs {
+  `AadhaarResource.verifyAadhaar` (VAHN_ADMIN) -> `AadhaarService.updateAadhaar` -> `recomputeForTorg`.
+}

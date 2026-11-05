@@ -1,0 +1,36 @@
+meta {
+  name: 6. App onboarding update (business details)
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/users/{{plutusKycUserId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusKycOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "onboardingStatus": "BUSINESS_DETAILS_ADDED"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.onboardingStatus: eq BUSINESS_DETAILS_ADDED
+}
+
+docs {
+  The last onboarding call the app makes. PAN and Aadhaar both exist, at least one is not VERIFIED,
+  so the derived status is BUSINESS_DETAILS_ADDED.
+}

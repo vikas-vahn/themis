@@ -1,0 +1,47 @@
+meta {
+  name: Create PAN card (auto-verify)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/pan
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "panNumber": "{{plutusPanNumber}}",
+    "holderName": "Test Owner"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.id: isNumber
+  res.body.data.panNumber: eq {{plutusPanNumber}}
+}
+
+script:post-response {
+  bru.setVar("plutusPanCardId", res.body.data.id);
+}
+
+docs {
+  `PANCardResource.createPANCard` (VAHN_ADMIN, TORG_ADMIN) -> `PANCardService.createPANCard`. Body is
+  `PANCardDTO` (`panNumber` ^[A-Z]{5}[0-9]{4}[A-Z]$ required; `holderName` falls back to the user's name;
+  `phone`, `isSoleProprietor`, `businessName`, `documentUrl` optional). Surepass is tried first; on
+  failure the PAN stays PENDING. statusCode 400 "PAN Card already exists for the torg" in the body (so the asserts below need an owner without a PAN) if the caller's torg already
+  has a primary PAN. Since BUG-108 a VERIFIED result recomputes the owner's onboarding status.
+  The HTTP status is always 200; read `statusCode` in the body. Needs `plutusPanNumber` (a fresh PAN).
+  See flows/plutus-api/kyc-onboarding-status for the full journey.
+}
