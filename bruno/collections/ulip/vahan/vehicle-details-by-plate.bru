@@ -1,0 +1,32 @@
+meta {
+  name: vehicle-details-by-plate
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/VAHAN/04
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "vehiclenumber": "{{ulipProbeVehicleNumber}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  `POST /ulip/v1.0.0/VAHAN/04` for a plate given at run time. Run `auth/login.bru` first, in the same
+  run, and pass `--env-var ulipProbeVehicleNumber=<plate>`. ULIP only accepts commercial vehicles.
+  plutus-java: `ULIPClient.getVahanDetails`.
+}

@@ -1,0 +1,54 @@
+info:
+  name: push-form
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{knowlarityBaseUrl}}/webhooks/knowlarity/call-log"
+  body:
+    type: form-urlencoded
+    data:
+      - name: call_date
+        value: "{{knowlarityCallDate}}"
+      - name: call_time
+        value: "{{knowlarityCallTime}}"
+      - name: call_direction
+        value: incoming
+      - name: customer_number
+        value: "{{knowlarityCustomerNumber}}"
+      - name: called_number
+        value: "{{knowlarityCalledNumber}}"
+      - name: call_duration
+        value: "00:00:20"
+      - name: call_uuid
+        value: "{{knowlarityCallUuid}}"
+      - name: call_status
+        value: Connected
+      - name: call_transfer_status
+        value: Missed
+      - name: agent_list
+        value: "{{knowlarityAgentNumber}}"
+      - name: agent_number
+        value: "False"
+      - name: menu
+        value: None
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("webhook accepted the call log", function () {
+          const body = typeof res.getBody() === "string" ? JSON.parse(res.getBody()) : res.getBody();
+          expect(res.getStatus(), JSON.stringify(body)).to.equal(200);
+          expect(body.status).to.equal("success");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: x-www-form-urlencoded, as a missed agent leg (`agent_number` = `False`, per Knowlarity's spec).

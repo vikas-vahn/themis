@@ -1,0 +1,30 @@
+meta {
+  name: rc-full
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{surepassBaseUrl}}/api/v1/rc/rc-full
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id_number": "{{surepassRcNumber}}"
+  }
+}
+
+docs {
+  `POST /api/v1/rc/rc-full` with `{"id_number"}`, exactly as `SurepassClient.verifyVehicleRc` sends it.
+  RC details are in `data`, including `tax_upto`, `tax_paid_upto`, `permit_*` (state permit) and
+  `national_permit_*`. Pass the plate with `--env-var surepassRcNumber=<plate>`.
+
+  Each call is billed, and the response holds owner data, so don't commit saved responses.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

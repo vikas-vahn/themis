@@ -1,0 +1,48 @@
+info:
+  name: push-json
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{knowlarityBaseUrl}}/webhooks/knowlarity/call-log"
+  body:
+    type: json
+    data: |-
+      {
+        "call_date": "{{knowlarityCallDate}}",
+        "call_time": "{{knowlarityCallTime}}",
+        "call_direction": "incoming",
+        "customer_number": "{{knowlarityCustomerNumber}}",
+        "called_number": "{{knowlarityCalledNumber}}",
+        "call_duration": "00:01:10",
+        "call_transfer_duration": "00:00:55",
+        "call_uuid": "{{knowlarityCallUuid}}",
+        "call_status": "Connected",
+        "call_transfer_status": "Connected",
+        "agent_list": "{{knowlarityAgentNumber}}",
+        "agent_number": "{{knowlarityAgentNumber}}",
+        "menu": "1",
+        "client_variable_1": "themis"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("webhook accepted the call log", function () {
+          // text/plain body holding a JSON string
+          const body = typeof res.getBody() === "string" ? JSON.parse(res.getBody()) : res.getBody();
+          expect(res.getStatus(), JSON.stringify(body)).to.equal(200);
+          expect(body.status).to.equal("success");
+          expect(body.request_id).to.be.a("string");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: The exact request Akul sent Knowlarity on 2026-10-22, with a fresh date, time and `call_uuid`.

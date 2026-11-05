@@ -1,0 +1,10 @@
+name: staging
+variables:
+  - name: knowlarityBaseUrl
+    value: https://crm.vahn.in
+  - name: knowlarityCustomerNumber
+    value: "+919999999999"
+  - name: knowlarityCalledNumber
+    value: "+918000000000"
+  - name: knowlarityAgentNumber
+    value: "+919000000001"

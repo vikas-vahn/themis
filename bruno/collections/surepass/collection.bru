@@ -3,7 +3,7 @@ auth {
 }
 
 auth:bearer {
-  token: {{process.env.SUREPASS_API_KEY}}
+  token: {{surepassBearerToken}}
 }
 
 tests {
@@ -21,21 +21,28 @@ docs {
   `SurepassClient` (`verification.SUREPASS.baseUrl` in plutus-java `config.yml`). It is the second
   source of driving-licence details, next to ULIP's `SARATHI/01` in the `ulip` collection.
 
+  `toll/` holds Surepass's NHAI toll APIs (`/api/v1/nhai/*`), which plutus-java doesn't call yet:
+  - `enroute/`: state list and vehicle types, which feed `toll-enroute` (route, distance and
+    every toll plaza with its cost).
+  - `price/`: toll plaza states → plaza names in a state → one plaza's rates per vehicle class.
+
   ## Credentials and inputs
 
   Read from `bruno/collections/surepass/.env` (gitignored). Create it locally:
 
   ```
-  SUREPASS_API_KEY=<surepass token for the baseUrl's environment>
+  SUREPASS_API_KEY=<surepass token for the surepassBaseUrl's environment>
   SUREPASS_DL_NUMBER=<driving licence number>
   SUREPASS_DOB=<licence holder's date of birth, yyyy-MM-dd>
   ```
 
   The DL number and DOB are personal data, so they live in `.env` rather than the env file.
+  `environments/staging.bru` maps the key to `surepassBearerToken`, the collection's bearer token.
+  The toll inputs (`surepassToll*`) are plain vars there.
 
   ```bash
   npx @usebruno/cli run bruno/collections/surepass --env staging
   ```
 
-  `baseUrl` is the Surepass sandbox. Production Surepass calls are billed per request.
+  `surepassBaseUrl` is the Surepass sandbox. Production Surepass calls are billed per request.
 }

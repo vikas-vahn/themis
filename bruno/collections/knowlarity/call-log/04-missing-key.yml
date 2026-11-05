@@ -1,0 +1,40 @@
+info:
+  name: missing-key
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{knowlarityBaseUrl}}/webhooks/knowlarity/call-log"
+  headers:
+    - name: x-api-key
+      value: ""
+  body:
+    type: json
+    data: |-
+      {
+        "call_date": "{{knowlarityCallDate}}",
+        "call_time": "{{knowlarityCallTime}}",
+        "call_direction": "incoming",
+        "customer_number": "{{knowlarityCustomerNumber}}",
+        "call_duration": "00:00:05",
+        "call_uuid": "{{knowlarityCallUuid}}",
+        "call_status": "Missed"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("webhook rejects a call without the key", function () {
+          expect(res.getStatus()).to.equal(401);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: No `x-api-key`, reproducing the 401 Knowlarity got on 2026-10-22. Stores nothing.

@@ -1,0 +1,28 @@
+meta {
+  name: toll-state-list
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{surepassBaseUrl}}/api/v1/nhai/toll-state-list
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("returns the state list", function () {
+    expect(res.getBody().data.state_list).to.be.an("array").that.is.not.empty;
+  });
+}
+
+docs {
+  `GET /api/v1/nhai/toll-state-list`: every state and union territory as a snake_case id
+  (`karnataka`, `uttar_pradesh`, ...) in `data.state_list`. These are the valid values for
+  `source_state` and `destination_state` in `03-toll-enroute`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

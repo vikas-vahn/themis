@@ -1,0 +1,46 @@
+meta {
+  name: toll-enroute
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{surepassBaseUrl}}/api/v1/nhai/toll-enroute
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "source_state": "{{surepassTollSourceState}}",
+    "source_name": "{{surepassTollSourceName}}",
+    "destination_state": "{{surepassTollDestinationState}}",
+    "destination_name": "{{surepassTollDestinationName}}",
+    "vehicle_type": "{{surepassTollVehicleType}}"
+  }
+}
+
+tests {
+  test("returns the route with its toll plazas", function () {
+    const data = res.getBody().data;
+    expect(data.distance).to.be.a("string");
+    expect(data.duration).to.be.a("string");
+    expect(data.toll_plaza_details).to.be.an("array");
+  });
+}
+
+docs {
+  `POST /api/v1/nhai/toll-enroute` with `{"source_state","source_name","destination_state",
+  "destination_name","vehicle_type"}`. States come from `01-toll-state-list`, vehicle types from
+  `02-vehicle-type`; the names are free-text cities. The inputs are `surepassToll*` vars in
+  `environments/staging.bru`, set to Bengaluru → Hyderabad for a `4_to_6_axle` truck.
+
+  `data` echoes the inputs and adds `duration` ("14 hour 42 mins"), `distance` ("588 km") and
+  `toll_plaza_details[]` with `toll_plaza_name`, `cost`, `toll_plaza_latitude` and
+  `toll_plaza_longitude`, all strings. Same source and destination returns 400.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

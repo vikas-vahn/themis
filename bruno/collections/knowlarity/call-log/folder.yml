@@ -1,0 +1,19 @@
+info:
+  name: call-log
+  type: folder
+
+request:
+  scripts:
+    - type: before-request
+      code: |-
+        // A fresh test call per request: now in IST, and a call_uuid that marks it as a test row.
+        const ist = new Date(Date.now() + 330 * 60 * 1000).toISOString();
+        bru.setVar("knowlarityCallDate", ist.slice(0, 10));
+        bru.setVar("knowlarityCallTime", ist.slice(11, 19));
+        bru.setVar("knowlarityCallUuid", "knowlarity-test-" + ist.slice(0, 19).replace(/\D/g, "") + "-" + Math.floor(Math.random() * 1000));
+
+docs:
+  content: |-
+    `/webhooks/knowlarity/call-log` in each format Knowlarity may send (JSON, form, query string),
+    plus a call without the key. Each accepted call stores a test call log in the live CRM.
+  type: text/markdown

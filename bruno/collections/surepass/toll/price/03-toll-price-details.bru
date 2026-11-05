@@ -1,0 +1,38 @@
+meta {
+  name: toll-price-details
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{surepassBaseUrl}}/api/v1/nhai/toll-price-details
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "state_name": "{{surepassTollPlazaState}}",
+    "toll_plaza_name": "{{surepassTollPlazaName}}"
+  }
+}
+
+tests {
+  test("returns the 4-6 axle rates", function () {
+    expect(res.getBody().data.four_to_six_axle_toll_rate).to.have.property("single_journey");
+  });
+}
+
+docs {
+  `POST /api/v1/nhai/toll-price-details` with `{"state_name","toll_plaza_name"}` (lowercase plaza
+  name works). `data` has one rate object per class: `car_toll_rate`, `lcv_toll_rate`,
+  `bus_toll_rate`, `three_axle_vehicle_toll_rate`, `four_to_six_axle_toll_rate`,
+  `seven_or_more_axle_toll_rate`, `hcm_eme_toll_rate`. Each has `single_journey`,
+  `return_journey`, `monthly_pass` and `commercial_vehicle_reg_in_district`, as INR strings.
+  Unknown plaza/state pair returns 400 `invalid_plaza_state`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

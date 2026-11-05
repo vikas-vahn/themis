@@ -1,0 +1,32 @@
+meta {
+  name: vehicle-details-by-plate
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/ulip/v1.0.0/TGVAHAN/01
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ulipToken}}
+}
+
+body:json {
+  {
+    "vehiclenumber": "{{ulipProbeVehicleNumber}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  `POST /ulip/v1.0.0/TGVAHAN/01` for a plate given at run time. Run `auth/login.bru` first, in the same
+  run, and pass `--env-var ulipProbeVehicleNumber=<plate>`. Each `response[].response` is an XML string.
+  plutus-java: `ULIPClient.getTgvahanDetails`.
+}

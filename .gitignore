@@ -21,3 +21,6 @@ tunnel/.env
 e2e/.run/
 e2e/node_modules/
 e2e/local.env
+
+# Production environments hold live tokens; never commit them
+bruno/**/environments/prod.bru

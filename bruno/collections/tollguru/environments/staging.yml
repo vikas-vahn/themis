@@ -20,3 +20,5 @@ variables:
     value: "76.3869"
   - name: tollguruDepartureTime
     value: 2026-11-02T08:00:00+05:30
+  - name: tollguruBaseUrl
+    value: https://apis.tollguru.com

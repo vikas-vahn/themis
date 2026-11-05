@@ -20,13 +20,13 @@ body:json {
   }
 }
 
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
 docs {
   `POST /ulip/v1.0.0/TGVAHAN/01` with `{"vehiclenumber"}`: Telangana RTO vehicle details. Each
   `response[].response` is an **XML string**, which plutus-java parses (`UlipTgvahanResponse.getParsedData`).
   plutus-java: `ULIPClient.getTgvahanDetails`.
-}
-
-settings {
-  encodeUrl: true
-  timeout: 0
 }

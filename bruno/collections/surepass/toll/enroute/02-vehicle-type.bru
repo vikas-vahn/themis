@@ -1,0 +1,28 @@
+meta {
+  name: vehicle-type
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{surepassBaseUrl}}/api/v1/nhai/get-vehicle-type
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("returns the vehicle types", function () {
+    expect(res.getBody().data.vehicle_type).to.be.an("array").that.is.not.empty;
+  });
+}
+
+docs {
+  `GET /api/v1/nhai/get-vehicle-type`: NHAI vehicle classes in `data.vehicle_type`, the valid
+  values for `vehicle_type` in `03-toll-enroute`: `car/jeep/van`, `lcv`, `bus/truck`, `3_axle`,
+  `4_to_6_axle`, `7_axle`, `hcm/eme`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

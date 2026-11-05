@@ -1,0 +1,28 @@
+meta {
+  name: toll-plaza-states
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{surepassBaseUrl}}/api/v1/nhai/get-toll-plaza-states
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("returns the toll plaza states", function () {
+    expect(res.getBody().data.state_name).to.be.an("array").that.is.not.empty;
+  });
+}
+
+docs {
+  `GET /api/v1/nhai/get-toll-plaza-states`: states with NHAI toll plazas in `data.state_name`.
+  These are the valid `state_name` values for `02-toll-plaza-name` and `03-toll-price-details`.
+  This list differs from enroute's `toll-state-list` (it has `punjab_and_haryana`, for example).
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

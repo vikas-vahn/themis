@@ -1,0 +1,33 @@
+meta {
+  name: toll-plaza-name
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{surepassBaseUrl}}/api/v1/nhai/get-toll-plaza-name
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "state_name": "{{surepassTollPlazaState}}"
+  }
+}
+
+tests {
+  test("returns the state's toll plazas", function () {
+    expect(res.getBody().data.toll_plaza_list).to.be.an("array").that.is.not.empty;
+  });
+}
+
+docs {
+  `POST /api/v1/nhai/get-toll-plaza-name` with `{"state_name"}`: the state's toll plaza names in
+  `data.toll_plaza_list`. Pick one for `surepassTollPlazaName` in `03-toll-price-details`.
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
