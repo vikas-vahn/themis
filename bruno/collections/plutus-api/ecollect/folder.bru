@@ -1,0 +1,14 @@
+meta {
+  name: ecollect
+}
+
+docs {
+  The bank's eCollect callbacks for virtual accounts (`onboarding/controller/VirtualAccountNotificationResource.java`).
+  These are how money comes into a VAHN wallet. Razorpay's own webhooks don't do this: `/webhook/v1/razorpay/payment`
+  is for FASTag recharges and `/webhook/v1/razorpay/payout` is for money going out.
+
+  Auth is a static bearer token from `virtualAccountValidation.validBearerTokens` in plutus-java `config.yml`, not a
+  user token. Put it in the gitignored `.env` next to `bruno.json` as `PLUTUS_API_ECOLLECT_BEARER_TOKEN`.
+
+  Responses aren't wrapped in the usual `{success, data}` envelope.
+}
