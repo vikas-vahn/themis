@@ -1,0 +1,50 @@
+meta {
+  name: 181. Preview HALFY -> MONTH (plan 11 -> 5)
+  type: http
+  seq: 181
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change/preview?planId=5
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampQuoteNet", String(res.body.data.netPayable));
+  bru.setEnvVar("subRevampQuoteCharge", String(res.body.data.charge));
+  bru.setEnvVar("subRevampQuoteCreditAdv", String(res.body.data.creditToAdvance));
+  bru.setEnvVar("subRevampQuoteCredit", String(res.body.data.credit));
+}
+
+tests {
+  const dayMs = 86400000;
+  const parse = s => Date.UTC(Number(s.slice(0,4)), Number(s.slice(5,7)) - 1, Number(s.slice(8,10)));
+  const bs = parse(bru.getEnvVar("subRevampBillingStart")), be = parse(bru.getEnvVar("subRevampBillingEnd")), td = parse(bru.getEnvVar("subRevampToday"));
+  const daysInPeriod = Math.round((be - bs) / dayMs);
+  const daysLeft = Math.round((be - Math.min(Math.max(td, bs), be)) / dayMs);
+  const round2 = x => Math.round((x + Number.EPSILON) * 100) / 100;
+  test("what was not used is refunded: newest (externally funded) slices to advance, the rest to the wallet", function() {
+    const q = res.body.data;
+    expect(q.changeType).to.equal("CYCLE_CHANGE");
+    expect(Number(q.charge)).to.be.closeTo(5 * 352.82, 0.011);
+    const paid = Number(bru.getEnvVar("subRevampBillingPaid"));
+    const unusedTotal = round2(Number(bru.getEnvVar("subRevampBillingTotal")) * daysLeft / daysInPeriod);
+    expect(Number(q.creditToAdvance)).to.be.closeTo(paid - 1000, 0.011);
+    expect(Number(q.credit)).to.be.closeTo(unusedTotal - (paid - 1000), 0.03);
+    expect(Number(q.netPayable)).to.be.closeTo(Number(q.charge) + Number(q.carriedForward) - Number(q.credit) - Number(q.creditToAdvance), 0.011);
+    expect(Number(q.shortfall)).to.equal(0);
+  });
+}
+
+docs {
+  One day of 181 has been used, so the refund is total x unused days / days in period (955.21 returns to the wallet, 7106.60 to advance); the new cycle is billed in full.
+}

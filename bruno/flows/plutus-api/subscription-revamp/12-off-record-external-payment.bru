@@ -1,0 +1,38 @@
+meta {
+  name: 12. Flags off: record-external-payment refused
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 10,
+    "mode": "UPI",
+    "referenceNumber": "FLAGOFF-1",
+    "paymentDate": "2026-11-04",
+    "proofKey": "flag-off-proof",
+    "requestId": "subrevamp-flagoff-1"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  With the flag off the route refuses with a body statusCode of 403 (HTTP is 200 through the response filter).
+}

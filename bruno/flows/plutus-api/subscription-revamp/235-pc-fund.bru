@@ -1,0 +1,19 @@
+meta {
+  name: 235. Put 3000 in the test wallet
+  type: http
+  seq: 235
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/{{subRevampWalletId}}/balance?amount=3000
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}

@@ -1,0 +1,28 @@
+meta {
+  name: 276. The first live billing has no add-on and nothing was charged
+  type: http
+  seq: 276
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampOverlapA}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("no TRUCK_ADDON, same total and due", function() {
+    const b = res.body.data;
+    expect((b.lineItems || []).filter(i => i.itemType === "TRUCK_ADDON").length).to.equal(0);
+    expect(Number(b.totalAmount)).to.be.closeTo(352.82, 0.011);
+    expect(Number(b.dueAmount)).to.equal(0);
+  });
+}

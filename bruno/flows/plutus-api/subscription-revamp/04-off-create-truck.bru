@@ -1,0 +1,42 @@
+meta {
+  name: 04. Flags off: add a truck to a paid billing (legacy maths)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/trucks
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "registrationNumber": "{{subRevampTruck3Reg}}",
+    "torgId": {{subRevampTorgId}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampTruck3Reg", "MH69AD" + String(Date.now()).slice(-4));
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampTruck3Id", String(res.body.data.id));
+}
+
+docs {
+  Set-up for the flag-off wallet text (commit 948a47b97). One RC lookup against the vendor sandbox, answer RC_NOT_VALID.
+}

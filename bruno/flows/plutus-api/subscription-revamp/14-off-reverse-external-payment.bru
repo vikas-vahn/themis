@@ -1,0 +1,33 @@
+meta {
+  name: 14. Flags off: reverse-external-payment refused
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments/1/reverse
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "flag off check"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  With the flag off the route refuses with a body statusCode of 403 (HTTP is 200 through the response filter).
+}

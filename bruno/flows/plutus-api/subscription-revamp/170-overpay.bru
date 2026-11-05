@@ -1,0 +1,56 @@
+meta {
+  name: 170. External payment larger than the due: the due is paid, the rest becomes advance
+  type: http
+  seq: 170
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 6000,
+    "mode": "UPI",
+    "referenceNumber": "UTR-690-OVER-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-over-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampDueBefore", bru.getEnvVar("subRevampBillingDue"));
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampPayment4Id", String(res.body.data.externalPayment.id));
+}
+
+tests {
+  test("the whole due is allocated to the billing, the remainder is unallocated advance", function() {
+    const d = res.body.data;
+    const due = Number(bru.getEnvVar("subRevampDueBefore"));
+    expect(d.allocations.length).to.equal(1);
+    expect(Number(d.allocations[0].amount)).to.be.closeTo(due, 0.011);
+    expect(Number(d.externalPayment.unallocatedAmount)).to.be.closeTo(6000 - due, 0.011);
+  });
+}
+
+docs {
+  Allocation order: the named billings, then the oldest auto-collect billing with money due, then the current billing; the rest is advance.
+}

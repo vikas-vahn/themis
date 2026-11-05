@@ -1,0 +1,72 @@
+meta {
+  name: subscription-revamp
+}
+
+docs {
+  # Subscription revamp: cancel and refund (ENG-355), external payments and partial billing (ENG-1134),
+  # plan selection and change (ENG-690)
+
+  A staging journey over one throw-away test torg. It checks the contract (statuses, role rules, flag
+  gating) and that **the money reconciles**: previews match what is actually charged or refunded, wallet and
+  advance move by exactly the expected amounts, and a billing's total is always the sum of its line items.
+
+  Errors come back as HTTP 200 with the real code in the body `statusCode`, so every request asserts on the body.
+
+  ## The flags (read this first)
+
+  Everything new sits behind DynamicConfig flags in namespace `subscription-billing`, which are **global to the
+  environment**. `PUT /api/v1/config/{namespace}` REPLACES the whole namespace config.
+
+  - Steps 10-26 run with the flags OFF (every flagged route must refuse with 403; legacy routes keep working).
+  - Step 30 turns them on (dueSweep stays off: it auto-debits wallets every hour). Steps 31-281 run in the window.
+  - Step 300 turns them off again. **Always run 300**, even if something failed. 301-304 prove it.
+  - 305-308 end the test torg's subscription and check the flag-off refusal of a CANCELLED subscription.
+
+  ## Status (staging re-run 2026-11-05 on build #1111 / 30d04c6d9, which contains the d7a31e277 billing-insert fix)
+
+  Every group has run on staging against real billings on test torg 685, except the daily `unbilledTruckCheck` pass (no
+  request exists: it only runs from a once-a-day timer, about 7 hours after each restart). Steps 140-145 (TRIAL selection)
+  ran on 2026-11-04, the rest on 2026-11-05. Two expectations (172, 181) were wrong on first run (a stale advance reading,
+  and a refund that is pro-rata after day 1) and were corrected afterwards from the rules; their numbers matched the rules by
+  hand but those two requests were not re-run. The journey is single-use per torg.
+
+  Findings from that run:
+  - Wallet text for an add-on that is paid in full reads "Subscription payment for billing period X to Y" instead of
+    "Subscription add-on: n truck(s), d days, X to Y" (step 205). The part-payment variant works (step 211). The text
+    is built after the payment row is recorded COMPLETED, so the ledger already counts it as paid.
+  - Step 06: with the flags off, mark-as-verified already reconciles and charges the new truck, so a second reconcile is 400.
+  - The scheduler tick that bills a torg whose trial ends decides how the billing is made: with the flags off it is a
+    legacy-maths billing charged from the wallet only (advance untouched). Turn the flags on before the tick (steps 150-156).
+
+  ## Needs
+
+  - A real VAHN_ADMIN login (OTP `776677`): money writes refuse the static token with 403. Pass the phone at run
+    time: `--env-var subRevampAdminPhone=<phone>`. Never commit it. For steps 41 and 163 also pass
+    `--env-var subRevampStaticToken=<VAHN_ADMIN static token>` (not stored anywhere).
+  - A test torg. `subRevampTorgId`, `subRevampWalletId` (the torg admin's wallet), `subRevampPanId`, and
+    `subRevampTorgAdminPhone` (a made-up number with no email, so no real person is contacted).
+    Create it with admin calls (no DB access needed):
+    1. `verify-otp` for a fresh phone, `POST /api/torgs` (name, torgAdminId = any user id), then
+       `POST /api/users/torg/{torgId}` (role TORG_ADMIN, fresh phone: creates the admin AND its wallet) and
+       `PUT /api/torgs/{torgId}` with `torgAdminId` = that new user.
+    2. `POST /api/pan/without-verification` with `torgId` (PAN row; trucks need it to be verified manually).
+    3. `POST /api/subscriptions/start?torgId=&planId=7&trialDays=0`, then `POST /api/subscriptions/trial?torgId=`
+       and `POST /api/subscriptions/{torgId}/trial/extend?trialEndDate=<today>`. Plan 7 is monthly 99 + GST.
+    4. `POST /api/trucks` x2 (`{registrationNumber, torgId}`, plates like MH69AB6901) and
+       `PUT /api/trucks/mark-as-verified?panCardId=` for them: 2 verified trucks.
+    5. `PUT /api/wallets/{walletId}/balance?amount=3000` (admin adjustment; there is no gateway-free deposit).
+  - The hourly billing scheduler must create the first billing (nothing else creates it: `POST /billings/start`
+    is broken for this, it reads `currentBillingDate`). Run 25-26 once it has.
+  - Step 135 waits for the scheduler again (up to an hour) after the trial is ended.
+
+  ## Order and state
+
+  The flow is stateful and single-use per torg: B1 (plan 7, monthly) takes the external payments, a truck add-on,
+  an upgrade and the first cancel. Steps 120-124 select a plan while no billing exists (TRIAL). B2 (half-yearly) is
+  created by the scheduler and paid from advance only. A cycle change turns it into B3 (monthly) and back into
+  advance, then B4 (half-yearly) is left short on purpose for the partial-charge cases and the PRO_RATA cancel.
+  Plans on staging: 5 monthly 299 OPEN, 7 monthly 99 OFFERED, 8 annual 2028 OPEN, 11 half-yearly 1374 OPEN,
+  9 annual 4800 OFFERED, 10 monthly 500 OFFERED and inactive. All prices exclude 18% GST.
+
+  Variables are prefixed `subRevamp` because every plutus-api flow shares one environment file.
+}

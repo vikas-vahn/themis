@@ -1,0 +1,47 @@
+meta {
+  name: 156. The scheduler billing: half-yearly, 5 trucks, refunded_amount 0
+  type: http
+  seq: 156
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingStart", String(res.body.data.billingStartDate));
+  bru.setEnvVar("subRevampBillingEnd", String(res.body.data.billingEndDate));
+  bru.setEnvVar("subRevampBillingTrucks", String(res.body.data.noOfTrucks));
+  bru.setEnvVar("subRevampBillingStatus", String(res.body.data.status));
+  bru.setEnvVar("subRevampBillingDue", String(res.body.data.dueAmount));
+  bru.setEnvVar("subRevampBillingPaid", String(res.body.data.paidAmount));
+  bru.setEnvVar("subRevampBillingTotal", String(res.body.data.totalAmount));
+}
+
+tests {
+  const b = res.body.data;
+  const items = b.lineItems || [];
+  const of = t => items.filter(i => i.itemType === t);
+  test("plan 11, 5 trucks, only the wallet paid", function() {
+    expect(b.subscriptionPlan.id).to.equal(11);
+    expect(b.noOfTrucks).to.equal(5);
+    expect(Number(b.totalAmount)).to.be.closeTo(5 * 1621.32, 0.011);
+    expect(Number(b.refundedAmount)).to.equal(0);
+    expect(of("BASE").length).to.equal(1);
+    expect(Number(b.paidAmount) + Number(b.dueAmount)).to.be.closeTo(Number(b.totalAmount), 0.011);
+  });
+}
+
+docs {
+  229 x 6 months = 1374 + 18% GST = 1621.32 per truck. Created with the flags off, so advance was not used and the 1000 wallet balance was taken.
+}

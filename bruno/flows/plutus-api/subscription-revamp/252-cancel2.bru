@@ -1,0 +1,42 @@
+meta {
+  name: 252. Cancel PRO_RATA, billing restarts in 10 days
+  type: http
+  seq: 252
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "refundMode": "PRO_RATA",
+    "newBillingStartDate": "{{subRevampPlus10}}",
+    "reason": "ENG-690 staging test: pro-rata refund"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("CANCELLED, refund = preview, subscription ACTIVE with the next billing date", function() {
+    const d = res.body.data;
+    expect(d.billing.status).to.equal("CANCELLED");
+    expect(Number(d.refund.amount)).to.equal(Number(bru.getEnvVar("subRevampPreviewRefund")));
+    expect(d.subscription.status).to.equal("ACTIVE");
+    expect(d.subscription.nextBillingDate).to.equal(bru.getEnvVar("subRevampPlus10"));
+    expect((d.billing.lineItems || []).filter(i => i.itemType === "REFUND").length).to.be.greaterThan(0);
+  });
+}

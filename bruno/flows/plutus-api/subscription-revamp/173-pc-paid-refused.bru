@@ -1,0 +1,32 @@
+meta {
+  name: 173. Partial charge on a paid billing is refused
+  type: http
+  seq: 173
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "AMOUNT",
+    "amount": 10,
+    "createDue": true,
+    "expectedDueAmount": 0
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

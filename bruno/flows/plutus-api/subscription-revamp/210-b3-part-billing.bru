@@ -1,0 +1,41 @@
+meta {
+  name: 210. Second add-on only part paid, the rest due
+  type: http
+  seq: 210
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingStart", String(res.body.data.billingStartDate));
+  bru.setEnvVar("subRevampBillingEnd", String(res.body.data.billingEndDate));
+  bru.setEnvVar("subRevampBillingTrucks", String(res.body.data.noOfTrucks));
+  bru.setEnvVar("subRevampBillingStatus", String(res.body.data.status));
+  bru.setEnvVar("subRevampBillingDue", String(res.body.data.dueAmount));
+  bru.setEnvVar("subRevampBillingPaid", String(res.body.data.paidAmount));
+  bru.setEnvVar("subRevampBillingTotal", String(res.body.data.totalAmount));
+}
+
+tests {
+  const b = res.body.data;
+  const items = b.lineItems || [];
+  const of = t => items.filter(i => i.itemType === t);
+  test("due = add-on less the 50 collected", function() {
+    expect(of("TRUCK_ADDON").length).to.equal(2);
+    const a = of("TRUCK_ADDON")[1];
+    expect(Number(b.dueAmount)).to.be.closeTo(Number(a.amount) - 50, 0.011);
+    expect(b.status).to.equal("PARTIAL");
+  });
+}

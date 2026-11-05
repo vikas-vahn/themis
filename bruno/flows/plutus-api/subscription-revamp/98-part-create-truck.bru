@@ -1,0 +1,38 @@
+meta {
+  name: 98. Add a fourth truck
+  type: http
+  seq: 98
+}
+
+post {
+  url: {{baseUrl}}/api/trucks
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "registrationNumber": "{{subRevampTruck4Reg}}",
+    "torgId": {{subRevampTorgId}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampTruck4Reg", "MH69AC" + String(Date.now()).slice(-4));
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampTruck4Id", String(res.body.data.id));
+}

@@ -1,0 +1,44 @@
+meta {
+  name: 51. Record external payment P2 (bank transfer)
+  type: http
+  seq: 51
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 500,
+    "mode": "BANK_TRANSFER",
+    "referenceNumber": "NEFT-690-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-p2-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampPayment2Id", String(res.body.data.externalPayment.id));
+}
+
+tests {
+  test("advance is 1500", function() {
+    expect(Number(res.body.data.advanceBalance)).to.equal(1500);
+  });
+}

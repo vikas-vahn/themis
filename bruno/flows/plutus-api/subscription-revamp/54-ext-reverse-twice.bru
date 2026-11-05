@@ -1,0 +1,29 @@
+meta {
+  name: 54. Reversing P2 again is refused
+  type: http
+  seq: 54
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments/{{subRevampPayment2Id}}/reverse
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "again"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

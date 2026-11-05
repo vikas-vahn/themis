@@ -1,0 +1,23 @@
+meta {
+  name: 21. Flags off: TORG_ADMIN cannot select an OFFERED plan
+  type: http
+  seq: 21
+}
+
+put {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan?planId=9&reason=flag%20off%20check
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Plan 9 is OFFERED (not OPEN). Torg users may only pick active OPEN plans. (Plan 7, the current plan, is accepted as a no-op on this route.)
+}

@@ -1,0 +1,47 @@
+meta {
+  name: 44. Same requestId again returns the original (duplicate=true)
+  type: http
+  seq: 44
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 1000,
+    "mode": "UPI",
+    "referenceNumber": "UTR-690-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-p1-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("same payment, flagged duplicate, advance not doubled", function() {
+    const d = res.body.data;
+    expect(d.duplicate).to.equal(true);
+    expect(String(d.externalPayment.id)).to.equal(bru.getEnvVar("subRevampPayment1Id"));
+    expect(Number(d.advanceBalance)).to.equal(1000);
+  });
+}
+
+docs {
+  Idempotent on requestId.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: 243. createDue=false needs a reason
+  type: http
+  seq: 243
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "AMOUNT",
+    "amount": 100,
+    "createDue": false,
+    "expectedDueAmount": {{subRevampBillingDue}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

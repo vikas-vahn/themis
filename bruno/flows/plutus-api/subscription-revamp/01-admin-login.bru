@@ -1,0 +1,43 @@
+meta {
+  name: 01. Login (VAHN_ADMIN)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{subRevampAdminPhone}}",
+    "otp": "{{subRevampOtp}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.user.role: eq VAHN_ADMIN
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampAdminToken", res.body.data.accessToken);
+  // server dates are IST; the run id keeps requestId / UTR values unique per run
+  bru.setEnvVar("subRevampToday", new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10));
+  bru.setEnvVar("subRevampRun", String(Date.now()));
+  const day = n => new Date(Date.UTC(Number(bru.getEnvVar("subRevampToday").slice(0,4)), Number(bru.getEnvVar("subRevampToday").slice(5,7)) - 1, Number(bru.getEnvVar("subRevampToday").slice(8,10)) + n)).toISOString().slice(0, 10);
+  bru.setEnvVar("subRevampPlus1", day(1));
+  bru.setEnvVar("subRevampPlus10", day(10));
+}
+
+docs {
+  Real VAHN_ADMIN login (OTP 776677 on staging). The money routes (record/reverse external
+  payment, move-to-wallet, partial-charge) refuse the static admin token, so this token is used
+  for everything. Set `subRevampAdminPhone` at run time (`--env-var`), it is not stored.
+}

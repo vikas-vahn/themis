@@ -1,0 +1,35 @@
+meta {
+  name: 25. Flags off: existing billings still read
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/billings/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data: isArray
+}
+
+script:post-response {
+  const b = res.body.data[0];
+  bru.setEnvVar("subRevampBillingId", String(b.id));
+}
+
+tests {
+  test("the torg has a billing", function() {
+    expect(res.body.data.length).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  Legacy list route, unaffected by any flag. Captures subRevampBillingId (the torg's first billing, created by the scheduler with the flags off).
+}

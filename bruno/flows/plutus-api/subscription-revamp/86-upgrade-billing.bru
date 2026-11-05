@@ -1,0 +1,44 @@
+meta {
+  name: 86. Billing after the upgrade: BASE + TRUCK_ADDON + PLAN_CHANGE_CHARGE
+  type: http
+  seq: 86
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingStart", String(res.body.data.billingStartDate));
+  bru.setEnvVar("subRevampBillingEnd", String(res.body.data.billingEndDate));
+  bru.setEnvVar("subRevampBillingTrucks", String(res.body.data.noOfTrucks));
+  bru.setEnvVar("subRevampBillingStatus", String(res.body.data.status));
+  bru.setEnvVar("subRevampBillingDue", String(res.body.data.dueAmount));
+  bru.setEnvVar("subRevampBillingPaid", String(res.body.data.paidAmount));
+  bru.setEnvVar("subRevampBillingTotal", String(res.body.data.totalAmount));
+}
+
+tests {
+  const b = res.body.data;
+  const items = b.lineItems || [];
+  const of = t => items.filter(i => i.itemType === t);
+  test("three charge items, total is their sum, BASE is frozen at the old price", function() {
+    expect(of("BASE").length).to.equal(1);
+    expect(Number(of("BASE")[0].amount)).to.be.closeTo(Number(bru.getEnvVar("subRevampBase0")), 0.011);
+    expect(of("TRUCK_ADDON").length).to.equal(1);
+    expect(of("PLAN_CHANGE_CHARGE").length).to.equal(1);
+    const sum = items.filter(i => i.nature === "CHARGE" || i.nature === "CREDIT").reduce((s, i) => s + Number(i.amount), 0);
+    expect(Number(b.totalAmount)).to.be.closeTo(sum, 0.011);
+    expect(Number(b.dueAmount)).to.equal(0);
+  });
+}

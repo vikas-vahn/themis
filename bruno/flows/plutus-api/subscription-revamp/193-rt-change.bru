@@ -1,0 +1,47 @@
+meta {
+  name: 193. Cycle change MONTH -> HALFY
+  type: http
+  seq: 193
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 11,
+    "expectedNetPayable": {{subRevampQuoteNet}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampOldBillingId", bru.getEnvVar("subRevampBillingId"));
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampBillingId", String(res.body.data.billing.id));
+}
+
+tests {
+  test("new half-yearly billing paid in full", function() {
+    const d = res.body.data;
+    expect(d.billing.subscriptionPlan.id).to.equal(11);
+    expect(d.billing.status).to.equal("PAID");
+    expect(Number(d.billing.dueAmount)).to.equal(0);
+  });
+}

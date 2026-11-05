@@ -1,0 +1,37 @@
+meta {
+  name: 48. Advance balance as VAHN_ADMIN
+  type: http
+  seq: 48
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const cur = Number(res.body.data.advanceBalance);
+  bru.setEnvVar("subRevampAdvancePrev", String(bru.getEnvVar("subRevampAdvanceBalance") || cur));
+  bru.setEnvVar("subRevampAdvanceBalance", String(cur));
+}
+
+tests {
+  const cur = Number(bru.getEnvVar("subRevampAdvanceBalance"));
+  const prev = Number(bru.getEnvVar("subRevampAdvancePrev"));
+  test("1000", function() {
+    expect(cur).to.equal(1000);
+  });
+}
+
+docs {
+  Reads the torg advance balance. subRevampAdvancePrev is the previous reading.
+}

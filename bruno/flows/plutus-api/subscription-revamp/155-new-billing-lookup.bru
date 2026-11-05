@@ -1,0 +1,30 @@
+meta {
+  name: 155. Find the billing the scheduler created
+  type: http
+  seq: 155
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/billings/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const live = res.body.data.filter(b => b.status !== "CANCELLED");
+  if (live.length > 0) { bru.setEnvVar("subRevampBillingId", String(live[0].id)); }
+}
+
+tests {
+  test("exactly one live billing exists now", function() {
+    expect(res.body.data.filter(b => b.status !== "CANCELLED").length).to.equal(1);
+  });
+}

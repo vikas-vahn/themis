@@ -1,0 +1,37 @@
+meta {
+  name: 187. Wallet gained only its own 1000 back
+  type: http
+  seq: 187
+}
+
+get {
+  url: {{baseUrl}}/api/wallets/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const cur = Number(res.body.data[0].balance);
+  bru.setEnvVar("subRevampWalletPrev", String(bru.getEnvVar("subRevampWalletBalance") || cur));
+  bru.setEnvVar("subRevampWalletBalance", String(cur));
+}
+
+tests {
+  const cur = Number(bru.getEnvVar("subRevampWalletBalance"));
+  const prev = Number(bru.getEnvVar("subRevampWalletPrev"));
+  test("wallet + credit; the externally funded slices did not touch it", function() {
+    expect(cur - prev).to.be.closeTo(Number(bru.getEnvVar("subRevampQuoteCredit")), 0.011);
+  });
+}
+
+docs {
+  The new charge was paid from advance first, so the wallet only changes by the refund of what it had paid.
+}

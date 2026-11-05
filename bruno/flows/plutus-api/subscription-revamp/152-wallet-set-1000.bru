@@ -1,0 +1,33 @@
+meta {
+  name: 152. Set the test wallet to 1000 (test money, adjustment on the test torg only)
+  type: http
+  seq: 152
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/{{subRevampWalletId}}/balance?amount={{subRevampWalletAdjust}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampWalletAdjust", (1000 - Number(bru.getEnvVar("subRevampWalletBalance"))).toFixed(2));
+}
+
+tests {
+  test("balance is 1000", function() {
+    expect(Number(res.body.data.balance)).to.be.closeTo(1000, 0.011);
+  });
+}
+
+docs {
+  There is no gateway-free deposit route, so the admin balance adjustment is the way to put test money in this wallet. It writes no ledger row.
+}

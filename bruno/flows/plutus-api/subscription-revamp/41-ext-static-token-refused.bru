@@ -1,0 +1,38 @@
+meta {
+  name: 41. External payment with the static admin token is refused
+  type: http
+  seq: 41
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 100,
+    "mode": "UPI",
+    "referenceNumber": "UTR-STATIC-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/subrevamp/proof.png",
+    "requestId": "subrevamp-static-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  Money writes need a real user (JwtAuthenticator.requireRealUser). Needs `subRevampStaticToken` passed at run time (`--env-var`); it is never stored.
+}

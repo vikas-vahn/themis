@@ -1,0 +1,49 @@
+meta {
+  name: 63. Add a truck mid-cycle (created unverified)
+  type: http
+  seq: 63
+}
+
+post {
+  url: {{baseUrl}}/api/trucks
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "registrationNumber": "{{subRevampTruck3Reg}}",
+    "torgId": {{subRevampTorgId}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampTruck3Reg", "MH69AB" + String(Date.now()).slice(-4));
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampTruck3Id", String(res.body.data.id));
+}
+
+tests {
+  test("the truck exists and is not VERIFIED yet", function() {
+    expect(res.body.data.verificationStatus).to.not.equal("VERIFIED");
+  });
+}
+
+docs {
+  Creating a truck triggers one RC lookup against the vendor (Surepass; staging answers RC_NOT_VALID for a made-up plate).
+  "MH69" is not a registered RTO series. Captures subRevampTruck3Id.
+}

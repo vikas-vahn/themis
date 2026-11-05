@@ -1,0 +1,43 @@
+meta {
+  name: 40. External payment without proofKey is refused
+  type: http
+  seq: 40
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 100,
+    "mode": "UPI",
+    "referenceNumber": "UTR-NOPROOF-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "requestId": "subrevamp-noproof-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+tests {
+  test("message names proofKey", function() {
+    expect(JSON.stringify(res.body)).to.contain("proofKey");
+  });
+}
+
+docs {
+  proofKey and requestId are mandatory.
+}

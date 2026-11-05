@@ -1,0 +1,31 @@
+meta {
+  name: 31. Flags read back
+  type: http
+  seq: 31
+}
+
+get {
+  url: {{baseUrl}}/api/v1/config/subscription-billing
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("every flag but dueSweep is on", function() {
+    const c = res.body.data.config || res.body.data;
+    ["lineItemMaths","lineItemWrites","cancelRefund","externalPayments","truckAddon","partialBilling","planChange"].forEach(k => expect(c[k].enabled, k).to.equal(true));
+    expect(c.dueSweep.enabled).to.equal(false);
+  });
+}
+
+docs {
+  Confirms the stored config.
+}

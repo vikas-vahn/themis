@@ -1,0 +1,34 @@
+meta {
+  name: 20. Flags off: plan-change refused
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 5,
+    "reason": "flag off check"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  With the flag off the route refuses with a body statusCode of 403 (HTTP is 200 through the response filter).
+}

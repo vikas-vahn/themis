@@ -1,0 +1,107 @@
+meta {
+  name: 271. A second live billing for the same dates
+  type: http
+  seq: 271
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/billings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "subscriptionPlan": {
+      "id": 5,
+      "name": "Monthly Plan",
+      "description": "299 per truck plus gst",
+      "pricePerTruck": 299.0,
+      "taxPercentage": 18.0,
+      "displayPrice": 330.0,
+      "features": [
+        "View/Manage Fleet",
+        "All Payments",
+        "Access to Vendor Payment (Transaction Charges applicable)",
+        "Tracking/VTS",
+        "Automatic trip sheet / settlement workflow",
+        "Document storage/visibility",
+        "Document Expiry Alerts and SMS (Charges apply)",
+        "Driver App",
+        "Credit Fuel Management system",
+        "24*7 Support"
+      ],
+      "cycle": "MONTH",
+      "gracePeriodDays": 3,
+      "extraInfo": {
+        "isBestValue": false,
+        "basePricePerTruck": 299
+      },
+      "planType": "OPEN",
+      "trialDays": 7,
+      "monthlyPricePerTruck": 299.0,
+      "totalPricePerTruck": 352.82,
+      "taxAmountPerTruck": 53.82,
+      "isTaxInclusive": false,
+      "isActive": true,
+      "isDefault": true,
+      "isRecommended": true
+    },
+    "torg": {
+      "id": 685,
+      "name": "ZZ ENG-690 Subscription Test Torg",
+      "gstId": null,
+      "panCardId": 469,
+      "directorAadhaarId": null,
+      "torgAdminId": 2648,
+      "bankAccountList": "[]",
+      "companyDetails": "{}",
+      "virtualAccountList": "[]",
+      "torgEmployeeList": "[]",
+      "externalCustomerId": null,
+      "status": "ACTIVE",
+      "vehicleType": "TRUCK",
+      "panCardIds": [
+        469
+      ],
+      "alertsMessage": null,
+      "alertsTitle": null,
+      "tripSheetSetting": {
+        "salaryEnabled": true,
+        "foodingEnabled": true,
+        "miscellaneousExpenseEnabled": true,
+        "fullFuelEnabled": true,
+        "fastTagEnabled": true,
+        "emptyRunEnabled": true,
+        "defEnabled": true,
+        "defSettings": null
+      },
+      "default_compensation_details": null
+    },
+    "billingStartDate": "{{subRevampToday}}",
+    "billingEndDate": "{{subRevampPlus30}}",
+    "totalAmount": 352.82,
+    "paidAmount": 352.82,
+    "dueAmount": 0,
+    "status": "PAID",
+    "noOfTrucks": 1,
+    "paymentDueDate": "{{subRevampToday}}",
+    "notes": "ENG-690 overlap-guard test row"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampOverlapB", String(res.body.data.id));
+}

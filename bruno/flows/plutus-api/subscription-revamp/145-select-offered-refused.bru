@@ -1,0 +1,29 @@
+meta {
+  name: 145. Selecting an OFFERED plan during onboarding is refused
+  type: http
+  seq: 145
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/select-plan-onboarding
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 7
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

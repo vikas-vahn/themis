@@ -1,0 +1,33 @@
+meta {
+  name: 119. POST /select-plan-onboarding is refused once the subscription is ACTIVE
+  type: http
+  seq: 119
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/select-plan-onboarding
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 11
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Onboarding selection is only for PENDING or TRIAL subscriptions; an ACTIVE one has to use plan change.
+}

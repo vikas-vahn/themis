@@ -1,0 +1,45 @@
+meta {
+  name: 30. ENABLE flags (test window opens)
+  type: http
+  seq: 30
+}
+
+put {
+  url: {{baseUrl}}/api/v1/config/subscription-billing
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "config": {
+      "lineItemMaths": { "enabled": true },
+      "lineItemWrites": { "enabled": true },
+      "cancelRefund": { "enabled": true },
+      "externalPayments": { "enabled": true },
+      "truckAddon": { "enabled": true },
+      "partialBilling": { "enabled": true },
+      "planChange": { "enabled": true },
+      "dueSweep": { "enabled": false }
+    },
+    "reason": "ENG-690 staging test window: enable subscription revamp flags (dueSweep stays off)"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  Opens the test window. Global to staging, so keep the window short and ALWAYS finish with step 300.
+  PUT replaces the whole namespace, so every key is sent. dueSweep stays false on purpose (it moves
+  money unattended every hour). `subscription-notifications` (WhatsApp) is not touched.
+}

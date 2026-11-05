@@ -1,0 +1,19 @@
+meta {
+  name: 100. Reconcile after the fourth truck
+  type: http
+  seq: 100
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billing/reconcile?isTruckAddition=true&reason=ENG-690%20test
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}

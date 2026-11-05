@@ -1,0 +1,35 @@
+meta {
+  name: 279. With two live billings a cancel is refused
+  type: http
+  seq: 279
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampOverlapA}}/cancel
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "refundMode": "FULL",
+    "trialEndDate": "{{subRevampPlus1}}",
+    "reason": "overlap guard"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  The overlap makes the charges ambiguous, so cancel (and cycle change) refuse until an admin cleans it up.
+}

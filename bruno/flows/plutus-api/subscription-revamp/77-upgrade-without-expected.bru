@@ -1,0 +1,29 @@
+meta {
+  name: 77. Upgrade without expectedNetPayable is refused for a torg user
+  type: http
+  seq: 77
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 5
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}

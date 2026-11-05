@@ -1,0 +1,23 @@
+meta {
+  name: 91. Legacy PUT /{torgId}/plan for a downgrade goes through
+  type: http
+  seq: 91
+}
+
+put {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan?planId=7&reason=ENG-690%20legacy%20downgrade
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  Moves no money, so the older route still works. VAHN_ADMIN may assign an OFFERED plan.
+}

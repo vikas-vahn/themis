@@ -1,0 +1,23 @@
+meta {
+  name: 50. TORG_ADMIN cannot read another torg's advance
+  type: http
+  seq: 50
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/1/advance-balance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  Cross-torg read, refused. Torg 1 is only addressed, nothing is changed.
+}

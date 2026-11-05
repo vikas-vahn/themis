@@ -1,0 +1,23 @@
+meta {
+  name: 22. Flags off: TORG_ADMIN cannot select an inactive plan
+  type: http
+  seq: 22
+}
+
+put {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan?planId=10&reason=flag%20off%20check
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Plan 10 is inactive and OFFERED.
+}

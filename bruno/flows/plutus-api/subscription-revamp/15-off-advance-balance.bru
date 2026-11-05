@@ -1,0 +1,23 @@
+meta {
+  name: 15. Flags off: advance-balance refused
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  With the flag off the route refuses with a body statusCode of 403 (HTTP is 200 through the response filter).
+}

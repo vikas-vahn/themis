@@ -1,0 +1,37 @@
+meta {
+  name: 57. Wallet gained exactly the 100 moved
+  type: http
+  seq: 57
+}
+
+get {
+  url: {{baseUrl}}/api/wallets/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const cur = Number(res.body.data[0].balance);
+  bru.setEnvVar("subRevampWalletPrev", String(bru.getEnvVar("subRevampWalletBalance") || cur));
+  bru.setEnvVar("subRevampWalletBalance", String(cur));
+}
+
+tests {
+  const cur = Number(bru.getEnvVar("subRevampWalletBalance"));
+  const prev = Number(bru.getEnvVar("subRevampWalletPrev"));
+  test("wallet + 100", function() {
+    expect(cur - prev).to.be.closeTo(100, 0.011);
+  });
+}
+
+docs {
+  Reads the test torg admin wallet balance. subRevampWalletPrev is the previous reading.
+}

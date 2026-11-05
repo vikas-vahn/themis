@@ -1,0 +1,37 @@
+meta {
+  name: 172. Advance = before + the part of the payment not needed
+  type: http
+  seq: 172
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const cur = Number(res.body.data.advanceBalance);
+  bru.setEnvVar("subRevampAdvancePrev", String(bru.getEnvVar("subRevampAdvanceBalance") || cur));
+  bru.setEnvVar("subRevampAdvanceBalance", String(cur));
+}
+
+tests {
+  const cur = Number(bru.getEnvVar("subRevampAdvanceBalance"));
+  const prev = Number(bru.getEnvVar("subRevampAdvancePrev"));
+  test("advance = previous reading, less the 100.50 the AMOUNT charge took from it, plus the payment minus the due", function() {
+    expect(cur - (prev - 100.5)).to.be.closeTo(6000 - Number(bru.getEnvVar("subRevampDueBefore")), 0.011);
+  });
+}
+
+docs {
+  Reads the torg advance balance. subRevampAdvancePrev is the previous reading.
+}

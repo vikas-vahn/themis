@@ -1,0 +1,29 @@
+meta {
+  name: 222. Set the test wallet to 1000 again
+  type: http
+  seq: 222
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/{{subRevampWalletId}}/balance?amount={{subRevampWalletAdjust}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampWalletAdjust", (1000 - (Number(bru.getEnvVar("subRevampWalletBalance")) + Number(bru.getEnvVar("subRevampAdvanceToMove")))).toFixed(2));
+}
+
+tests {
+  test("1000", function() {
+    expect(Number(res.body.data.balance)).to.be.closeTo(1000, 0.011);
+  });
+}

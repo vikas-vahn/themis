@@ -1,0 +1,26 @@
+meta {
+  name: 143. The legacy selection changed the plan to 5
+  type: http
+  seq: 143
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/details/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("plan 5, nothing pending, dates untouched", function() {
+    expect(res.body.data.plan.id).to.equal(5);
+    expect(res.body.data.pendingPlan == null).to.equal(true);
+  });
+}

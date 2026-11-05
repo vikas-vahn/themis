@@ -1,0 +1,23 @@
+meta {
+  name: 17. Flags off: wallet-credits refused
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/external-payments/wallet-credits
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  With the flag off the route refuses with a body statusCode of 403 (HTTP is 200 through the response filter).
+}

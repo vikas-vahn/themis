@@ -1,0 +1,49 @@
+meta {
+  name: 245. Partial charge 200 with createDue=false waives the remainder
+  type: http
+  seq: 245
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/partial-charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "AMOUNT",
+    "amount": 200,
+    "createDue": false,
+    "reason": "ENG-690 test: agreed 200, rest waived",
+    "expectedDueAmount": {{subRevampBillingDue}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setEnvVar("subRevampDueBefore", bru.getEnvVar("subRevampBillingDue"));
+}
+
+tests {
+  test("200 charged, the rest waived, billing PAID", function() {
+    const d = res.body.data;
+    expect(Number(d.chargedAmount)).to.be.closeTo(200, 0.011);
+    expect(d.billing.status).to.equal("PAID");
+    expect(Number(d.billing.dueAmount)).to.equal(0);
+    const w = (d.billing.lineItems || []).filter(i => i.itemType === "WAIVER");
+    expect(w.length).to.equal(1);
+    expect(Number(w[0].amount)).to.be.closeTo(-(Number(bru.getEnvVar("subRevampDueBefore")) - 200), 0.011);
+  });
+}

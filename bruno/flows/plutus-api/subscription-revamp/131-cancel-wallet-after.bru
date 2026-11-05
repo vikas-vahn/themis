@@ -1,0 +1,37 @@
+meta {
+  name: 131. Wallet gained exactly the refund the preview showed
+  type: http
+  seq: 131
+}
+
+get {
+  url: {{baseUrl}}/api/wallets/torg/{{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const cur = Number(res.body.data[0].balance);
+  bru.setEnvVar("subRevampWalletPrev", String(bru.getEnvVar("subRevampWalletBalance") || cur));
+  bru.setEnvVar("subRevampWalletBalance", String(cur));
+}
+
+tests {
+  const cur = Number(bru.getEnvVar("subRevampWalletBalance"));
+  const prev = Number(bru.getEnvVar("subRevampWalletPrev"));
+  test("wallet + preview refund", function() {
+    expect(cur - prev).to.be.closeTo(Number(bru.getEnvVar("subRevampPreviewRefund")), 0.011);
+  });
+}
+
+docs {
+  All refunds go to the torg admin wallet, including the slices that were funded by advance (outside money).
+}
