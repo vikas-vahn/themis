@@ -1,0 +1,46 @@
+meta {
+  name: 05. Refresh token
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/auth/refresh-token
+  body: json
+  auth: bearer
+}
+
+body:json {
+  {}
+}
+
+auth:bearer {
+  token: {{fleetRefreshToken}}
+}
+
+script:post-response {
+  const data = res.getBody().data || {};
+  if (data.accessToken) {
+    bru.setVar("fleetAccessToken", data.accessToken);
+    bru.setVar("fleetRefreshToken", data.refreshToken);
+  }
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("new tokens carry the promoted role", function () {
+    const data = res.getBody().data;
+    expect(data.accessToken).to.be.a("string").and.not.empty;
+    expect(data.user.role).to.equal("TORG_ADMIN");
+  });
+}
+
+docs {
+  The apps refresh right after the role change. Note the refresh token goes in the
+  Authorization header, not the body, and the endpoint rejects a request without
+  a JSON content type (415).
+}

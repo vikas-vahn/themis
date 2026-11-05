@@ -1,0 +1,13 @@
+# An onboarded fleet owner logs in with phone + OTP and lands on the dashboard.
+#
+# Env: WEB_URL, PHONE, OTP, FLEET_NAME
+url: ${WEB_URL}
+---
+- runFlow: ../../flows/shared/fleet-web/login.yaml
+- extendedWaitUntil:
+    visible: "Account Balance"
+    timeout: 30000
+- assertVisible: ${FLEET_NAME}
+- assertVisible: "Trucks"
+- assertNotVisible: "Finish setting up your account"
+- takeScreenshot: 01-login-dashboard

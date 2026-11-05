@@ -1,0 +1,81 @@
+# A brand-new fleet owner signs up with phone + OTP, fills in basic details and
+# completes KYC (PAN, then Aadhaar through DigiLocker).
+#
+# PAN is answered by plutus-java's verification fixtures; DigiLocker by the E2E
+# mocks, whose consent page approves itself inside the app's WebView.
+#
+# Env: PHONE (never used before), OTP, FLEET_NAME and PAN (a fixture identity)
+appId: in.vahn.fleet
+---
+- runFlow: ../../flows/shared/fleet-app/launch-fresh.yaml
+- runFlow: ../../flows/shared/fleet-app/login.yaml
+
+# --- Basic information -------------------------------------------------------
+- extendedWaitUntil:
+    visible: "Basic Information"
+    timeout: 30000
+- tapOn: "Enter your full name"
+- inputText: ${FLEET_NAME}
+- tapOn: "Enter your email address"
+- inputText: "e2e.${PHONE}@example.com"
+- tapOn: "Enter total number of vehicle"
+- inputText: "5"
+- hideKeyboard
+- tapOn: "Which language do you speak"
+- tapOn: "English"
+- takeScreenshot: 01-basic-info
+- tapOn: "Save Details"
+
+# --- Dashboard, first visit --------------------------------------------------
+- extendedWaitUntil:
+    visible: "Start Free Trial"
+    timeout: 30000
+- takeScreenshot: 01-home-first-visit
+- tapOn: "Start Free Trial"
+- extendedWaitUntil:
+    notVisible: "Start Free Trial"
+    timeout: 20000
+- takeScreenshot: 01-home-after-trial
+
+# --- KYC: PAN ----------------------------------------------------------------
+- tapOn: "KYC Pending"
+- extendedWaitUntil:
+    visible: "Complete your KYC"
+    timeout: 20000
+- tapOn: "Enter your PAN"
+- inputText: ${PAN}
+- hideKeyboard
+- takeScreenshot: 01-kyc-pan
+- tapOn: "Verify PAN"
+- extendedWaitUntil:
+    visible: "PAN verified successfully"
+    timeout: 30000
+- takeScreenshot: 01-kyc-pan-verified
+- assertVisible: "PAN Verified"
+- tapOn: "Proceed"
+
+# --- KYC: Aadhaar through DigiLocker -----------------------------------------
+# The app opens the consent page in a WebView. The E2E stand-in approves by
+# itself and redirects, which is the signal the app waits for.
+- extendedWaitUntil:
+    visible: "Verify Aadhaar via DigiLocker"
+    timeout: 20000
+- takeScreenshot: 01-kyc-aadhaar
+- tapOn: "Verify Aadhaar"
+- extendedWaitUntil:
+    visible: "Aadhaar verified successfully"
+    timeout: 120000
+- takeScreenshot: 01-kyc-aadhaar-verified
+- tapOn: "Proceed"
+
+# --- KYC complete ------------------------------------------------------------
+- extendedWaitUntil:
+    visible: "Congratulations !!"
+    timeout: 30000
+- takeScreenshot: 01-kyc-complete
+- tapOn: "Close"
+- extendedWaitUntil:
+    notVisible: "Congratulations !!"
+    timeout: 15000
+- assertNotVisible: "KYC Pending"
+- takeScreenshot: 01-home-after-kyc

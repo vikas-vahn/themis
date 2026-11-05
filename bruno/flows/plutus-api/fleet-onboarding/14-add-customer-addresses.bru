@@ -1,0 +1,74 @@
+meta {
+  name: 14. Add pickup and drop addresses
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{baseUrl}}/api/customers/{{fleetCustomerId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+body:json {
+  {
+    "name": "E2E Api Customer",
+    "torgId": {{fleetTorgId}},
+    "pickupLocationList": [
+      {
+        "id": "new-pickup",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "address": "MG Road, Bengaluru",
+        "pincode": "560001",
+        "nickName": "BLR Yard"
+      }
+    ],
+    "destinationLocationList": [
+      {
+        "id": "new-drop",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "latitude": 13.0827,
+        "longitude": 80.2707,
+        "address": "Anna Salai, Chennai",
+        "pincode": "600002",
+        "nickName": "MAA Depot"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  const data = res.getBody().data || {};
+  bru.setVar("fleetPickup", JSON.stringify((data.pickupLocationList || [])[0] || null));
+  bru.setVar("fleetDrop", JSON.stringify((data.destinationLocationList || [])[0] || null));
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("both addresses are saved with server-assigned ids", function () {
+    const data = res.getBody().data;
+    expect(data.pickupLocationList).to.have.lengthOf(1);
+    expect(data.destinationLocationList).to.have.lengthOf(1);
+    expect(data.pickupLocationList[0].addressType).to.equal("PICKUP");
+    expect(data.destinationLocationList[0].addressType).to.equal("DROP");
+    expect(data.pickupLocationList[0].id).to.not.equal("new-pickup");
+  });
+}
+
+docs {
+  What the apps' add-address screen does after the user picks a place: PUT the
+  customer with the new address appended. The trip form can only choose from these
+  saved addresses, so a customer needs one of each before a trip can be created.
+}

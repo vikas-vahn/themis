@@ -1,0 +1,48 @@
+# The owner creates a trip for the truck added in 02, from its card on the
+# dashboard. Continues in the same app session.
+#
+# The trip form only offers a customer's saved addresses, and adding one in the
+# app goes through a Google map, so the runner seeds a customer with a pickup
+# and a drop address through the API before this flow (e2e/lib/seed.mjs).
+#
+# Env: CUSTOMER_NAME, PICKUP, DROP (the seeded customer and address nicknames)
+appId: in.vahn.fleet
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Trucks \\(1\\)"
+    timeout: 60000
+- scrollUntilVisible:
+    element: "Add Trip"
+    direction: DOWN
+- tapOn: "Add Trip"
+- extendedWaitUntil:
+    visible: "Customer Details"
+    timeout: 30000
+- takeScreenshot: 03-trip-form-empty
+- tapOn: "Select Customer"
+- tapOn: ${CUSTOMER_NAME}
+- tapOn: "Select Pickup Address"
+- tapOn: ${PICKUP}
+- tapOn: "Select Destination Address"
+- tapOn: ${DROP}
+- takeScreenshot: 03-trip-form-filled
+# Three buttons read "Add": one beside each optional phone number, and the
+# footer button that submits the form, which is the last of them.
+- tapOn:
+    text: "Add"
+    index: 2
+# The heading wraps over two lines, hence the pattern.
+- extendedWaitUntil:
+    visible: "Your trip has been created[\\s\\S]*"
+    timeout: 30000
+- assertVisible: ${PICKUP}
+- assertVisible: ${DROP}
+- assertVisible: "VN[0-9]+"
+- assertVisible: "One-way Trip"
+- takeScreenshot: 03-trip-created
+- tapOn: "Go to Details Page"
+- extendedWaitUntil:
+    notVisible: "Go to Details Page"
+    timeout: 20000
+- takeScreenshot: 03-truck-details-with-trip

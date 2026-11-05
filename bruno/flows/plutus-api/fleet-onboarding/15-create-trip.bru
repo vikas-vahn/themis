@@ -1,0 +1,50 @@
+meta {
+  name: 15. Create a trip
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/api/trips
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+body:json {
+  {
+    "truckId": {{fleetTruckId}},
+    "driverId": {{fleetDriverId}},
+    "customerId": {{fleetCustomerId}},
+    "tripType": "SINGLE",
+    "returnTripEmpty": false,
+    "notes": "Created by the E2E API flow",
+    "sourceLocation": {{fleetPickup}},
+    "destinationLocation": {{fleetDrop}}
+  }
+}
+
+script:post-response {
+  const data = res.getBody().data || {};
+  bru.setVar("fleetTripId", data.id);
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("trip is planned for this truck, driver and customer", function () {
+    const data = res.getBody().data;
+    expect(data.id).to.be.a("number");
+    expect(data.tripNumber).to.be.a("string").and.not.empty;
+    expect(data.status).to.equal("PLANNED");
+    expect(data.tripSheetStatus).to.equal("PENDING");
+    expect(data.truckId).to.equal(bru.getVar("fleetTruckId"));
+    expect(data.customerId).to.equal(bru.getVar("fleetCustomerId"));
+  });
+}

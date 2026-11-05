@@ -1,0 +1,18 @@
+# The web ERP has no sign-up or KYC screens. Someone who logs in with a number
+# that has never been used gets an account (NEW_USER) but is held on a page
+# telling them to finish onboarding in the mobile app, not let into the dashboard.
+#
+# Env: WEB_URL, NEW_PHONE (never used before), OTP
+url: ${WEB_URL}
+---
+- runFlow:
+    file: ../../flows/shared/fleet-web/login.yaml
+    env:
+      PHONE: ${NEW_PHONE}
+- extendedWaitUntil:
+    visible: "Finish setting up your account"
+    timeout: 30000
+- assertVisible: "Download Mobile App"
+- assertVisible: "Logout"
+- assertNotVisible: "Account Balance"
+- takeScreenshot: 03-new-user-blocked

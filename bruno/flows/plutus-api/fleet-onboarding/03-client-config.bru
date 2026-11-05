@@ -1,0 +1,39 @@
+meta {
+  name: 03. Client config
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/client/config?os=android&appVersion=1.9.3
+  body: none
+  auth: bearer
+}
+
+params:query {
+  os: android
+  appVersion: 1.9.3
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("the app is allowed to start", function () {
+    const data = res.getBody().data;
+    expect(data.appDown).to.equal(false);
+    expect(data.forceUpdate).to.equal(false);
+    expect(data.disabledFeatures).to.be.an("array");
+  });
+}
+
+docs {
+  Both fleet apps call this at launch and refuse to start if it fails, reports
+  `appDown`, or (mobile) `forceUpdate`.
+}

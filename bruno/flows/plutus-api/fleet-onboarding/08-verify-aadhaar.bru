@@ -1,0 +1,45 @@
+meta {
+  name: 08. KYC: verify Aadhaar by OTP
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/aadhaar/verify-otp?otp=123456
+  body: json
+  auth: bearer
+}
+
+params:query {
+  otp: 123456
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+body:json {
+  {
+    "aadhaarNumber": "{{fleetAadhaar}}",
+    "torgId": {{fleetTorgId}}
+  }
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("Aadhaar is verified", function () {
+    const data = res.getBody().data;
+    expect(data.status).to.equal("VERIFIED");
+    expect(data.torgId).to.equal(bru.getVar("fleetTorgId"));
+  });
+}
+
+docs {
+  The Aadhaar-OTP path, which the test verification service answers for OTP 123456.
+  atlas-rn itself verifies Aadhaar through DigiLocker in a WebView; that path is
+  covered by the Maestro flow, with the E2E mocks standing in for DigiLocker.
+}

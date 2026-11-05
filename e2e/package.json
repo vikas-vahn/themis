@@ -1,0 +1,8 @@
+{
+  "name": "themis-e2e",
+  "private": true,
+  "description": "Pinned tooling for the E2E runner (e2e/run.sh).",
+  "devDependencies": {
+    "@usebruno/cli": "^2.13.0"
+  }
+}

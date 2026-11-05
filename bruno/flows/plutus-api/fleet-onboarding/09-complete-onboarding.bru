@@ -1,0 +1,38 @@
+meta {
+  name: 09. Recompute onboarding status
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/users/{{fleetUserId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+body:json {
+  {
+    "onboardingStatus": "BUSINESS_DETAILS_ADDED"
+  }
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("PAN + Aadhaar verified means onboarding is complete", function () {
+    expect(res.getBody().data.onboardingStatus).to.equal("ONBOARDING_COMPLETED");
+  });
+}
+
+docs {
+  The status is not recomputed when a document is verified; it is recomputed when the
+  client next PUTs the user with `onboardingStatus` (the value sent is ignored). The
+  app does this from the "Proceed" button after Aadhaar.
+}

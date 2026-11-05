@@ -13,4 +13,8 @@
 
 ## Status
 
-Empty for now — flows will be added incrementally as mobile E2E coverage is built out.
+- `tests/fleet-web/`: perseus in a browser (Maestro web mode): login, add truck + create trip, and the new-user blocker page.
+- `tests/fleet-app/`: atlas-rn on Android: sign-up + KYC, add truck, create trip. One journey for one user, run in order.
+- `tests/driver-app/`: empty.
+
+These run against the hermetic stack through `e2e/run.sh web` / `e2e/run.sh mobile`, which builds the apps and passes the flows their environment variables. See `e2e/README.md`.

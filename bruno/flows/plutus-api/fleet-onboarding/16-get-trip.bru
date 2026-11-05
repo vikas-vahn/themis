@@ -1,0 +1,29 @@
+meta {
+  name: 16. Trip can be read back
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}}/api/trips/{{fleetTripId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("the stored trip matches what was created", function () {
+    const data = res.getBody().data;
+    expect(data.id).to.equal(bru.getVar("fleetTripId"));
+    expect(data.status).to.equal("PLANNED");
+    expect(data.truckId).to.equal(bru.getVar("fleetTruckId"));
+  });
+}

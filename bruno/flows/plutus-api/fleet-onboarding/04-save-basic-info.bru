@@ -1,0 +1,51 @@
+meta {
+  name: 04. Save basic info (become fleet owner)
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/users/{{fleetUserId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+body:json {
+  {
+    "name": "{{fleetName}}",
+    "email": "e2e.api.{{fleetPhone}}@example.com",
+    "role": "TORG_ADMIN",
+    "onboardingStatus": "BASIC_DETAILS_ADDED",
+    "fleetSize": 5,
+    "preferredLanguage": "English"
+  }
+}
+
+script:post-response {
+  const data = res.getBody().data || {};
+  bru.setVar("fleetTorgId", data.torgId);
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("user is promoted and a Torg is created", function () {
+    const data = res.getBody().data;
+    expect(data.role).to.equal("TORG_ADMIN");
+    expect(data.onboardingStatus).to.equal("BASIC_DETAILS_ADDED");
+    expect(data.torgId, "torgId").to.be.a("number");
+  });
+}
+
+docs {
+  The body atlas-rn's "Basic Information" screen sends. Role and name arrive in one
+  request while the caller is still NEW_USER, which is what makes the backend create
+  the Torg (with its wallet and default-plan subscription) here.
+}

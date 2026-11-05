@@ -1,0 +1,30 @@
+meta {
+  name: 10. Onboarded user as the apps see it
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/users/{{fleetUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{fleetAccessToken}}
+}
+
+tests {
+  test("request succeeded", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success, JSON.stringify(res.getBody()).slice(0, 300)).to.equal(true);
+  });
+
+  test("user is an onboarded fleet owner", function () {
+    const data = res.getBody().data;
+    expect(data.role).to.equal("TORG_ADMIN");
+    expect(data.onboardingStatus).to.equal("ONBOARDING_COMPLETED");
+    expect(data.torgId).to.equal(bru.getVar("fleetTorgId"));
+    expect(data.phone).to.equal(bru.getVar("fleetPhone"));
+  });
+}
