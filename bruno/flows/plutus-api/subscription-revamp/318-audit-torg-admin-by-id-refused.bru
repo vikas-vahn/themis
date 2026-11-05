@@ -1,0 +1,19 @@
+meta {
+  name: 318. Admin audit log: TORG_ADMIN cannot read one row either
+  type: http
+  seq: 318
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs/{{subRevampAuditRowId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}

@@ -1,0 +1,46 @@
+meta {
+  name: 41. External payment with the static admin token passes auth (no proofKey, so 400 and no money moves)
+  type: http
+  seq: 41
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 100,
+    "mode": "UPI",
+    "referenceNumber": "UTR-STATIC-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "requestId": "subrevamp-static-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+tests {
+  test("refused by validation (proofKey), not by auth", function() {
+    expect(JSON.stringify(res.body)).to.contain("proofKey");
+  });
+}
+
+docs {
+  The static VAHN_ADMIN token (zeus) may record external payments; it used to get 403 (requireRealUser, now removed). This body has no proofKey,
+  so it must fail validation with 400: a 401/403 here would mean auth still refuses the token, and no payment is recorded either way.
+  The real static-token writes are 51 (record), 52 (reverse), 56 (move to wallet) and 237 (partial charge), each accounted for by the steps after it.
+  Needs `subRevampStaticToken` passed at run time (`--env-var`); it is never stored.
+}

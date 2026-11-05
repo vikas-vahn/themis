@@ -1,0 +1,19 @@
+meta {
+  name: 312. Admin audit log: unknown id is 404
+  type: http
+  seq: 312
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs/999999999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 404
+}

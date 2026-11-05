@@ -1,0 +1,25 @@
+meta {
+  name: 314. Admin audit log: GET requests are not recorded
+  type: http
+  seq: 314
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs?torgId={{subRevampTorgId}}&routeTemplate=/api/torgs/{torgId}/advance-balance&take=10
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.total: eq 0
+}
+
+docs {
+  `GET /api/torgs/{torgId}/advance-balance` was read many times above (steps 15, 32, 48, 53 ...); none of those reads has a row. The same path with POST
+  `/advance-balance/move-to-wallet` has a different template and is recorded.
+}

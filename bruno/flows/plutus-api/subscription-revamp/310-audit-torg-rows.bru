@@ -1,0 +1,62 @@
+meta {
+  name: 310. Admin audit log: the test torg's writes are there, with the right actor
+  type: http
+  seq: 310
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs?torgId={{subRevampTorgId}}&take=200
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  // rows are written asynchronously
+  await bru.sleep(3000);
+}
+
+script:post-response {
+  const items = res.body.data.items || [];
+  if (items.length > 0) { bru.setEnvVar("subRevampAuditRowId", String(items[0].id)); }
+}
+
+tests {
+  const items = res.body.data.items || [];
+  const routeOf = (i) => i.routeTemplate || "";
+  test("rows exist for the torg and none is a GET", function() {
+    expect(items.length).to.be.greaterThan(0);
+    items.forEach(i => expect(i.httpMethod, i.path).to.not.equal("GET"));
+  });
+  test("static-token rows: userId null, username admin, staticToken true (record P2, reverse, move, partial charge)", function() {
+    const st = items.filter(i => i.staticToken === true);
+    expect(st.length).to.be.greaterThan(0);
+    st.forEach(i => { expect(i.userId, i.path).to.equal(null); expect(i.username, i.path).to.equal("admin"); });
+    ["/api/torgs/{torgId}/external-payments", "/api/torgs/{torgId}/advance-balance/move-to-wallet"].forEach(t =>
+      expect(st.some(i => routeOf(i) === t && i.outcome === "SUCCESS"), t).to.equal(true));
+    expect(st.some(i => routeOf(i).includes("/reverse")), "reverse").to.equal(true);
+    expect(st.some(i => routeOf(i).includes("partial-charge") && i.outcome === "SUCCESS"), "partial-charge").to.equal(true);
+  });
+  test("signed-in admin rows carry that admin's id and name", function() {
+    const real = items.filter(i => i.staticToken === false && i.outcome === "SUCCESS");
+    expect(real.length).to.be.greaterThan(0);
+    real.forEach(i => { expect(String(i.userId), i.path).to.equal(bru.getEnvVar("subRevampAdminUserId")); expect(i.username, i.path).to.not.equal("admin"); });
+  });
+  test("no request body or response body is stored (a service may attach the payment reference as details, by design)", function() {
+    const text = JSON.stringify(items);
+    ["themis/subrevamp/proof.png", "ENG-690 staging test payment", "\"requestBody\"", "\"responseBody\""].forEach(s =>
+      expect(text.includes(s), s).to.equal(false));
+  });
+}
+
+docs {
+  Every non-GET request an admin made on the test torg has a row (the static-token ones with userId null / username "admin" / staticToken true,
+  the signed-in ones with the real admin's id and name). Waits 3 seconds because rows are written asynchronously. Captures subRevampAuditRowId.
+}

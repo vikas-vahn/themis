@@ -25,5 +25,5 @@ tests {
 }
 
 docs {
-  After this the hourly scheduler creates the next billing. WAIT for it (up to an hour), then run 155. Whatever flags are on at that tick decide how it is made: with them off (as on 2026-11-04) it is a legacy-maths billing charged from the wallet only, with advance untouched.
+  After this the hourly scheduler creates the next billing. WAIT for it (up to an hour), then run 155. The flags must be OFF at that tick: steps 157-173 expect the legacy-maths billing it then makes (charged from the wallet only, advance untouched). With the flags on it is paid in full from advance and 160-173 fail with 400.
 }

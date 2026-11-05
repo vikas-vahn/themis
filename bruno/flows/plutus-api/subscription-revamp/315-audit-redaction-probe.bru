@@ -1,0 +1,20 @@
+meta {
+  name: 315. Admin audit log: probe write with sensitive path and query values (404, nothing changes)
+  type: http
+  seq: 315
+}
+
+delete {
+  url: {{baseUrl}}/api/vpas/torg/{{subRevampTorgId}}/99999999?mobile=9876543210&otp=123456&reason=ENG-690%20redaction%20probe
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+docs {
+  Deletes a VPA mapping that does not exist (id 99999999 on a torg with none), so nothing changes whatever the answer is. It only exists to give the audit log
+  a row whose `vpaId` path value and `mobile` / `otp` query values must be hidden. The result is not asserted; 316 checks the row.
+}

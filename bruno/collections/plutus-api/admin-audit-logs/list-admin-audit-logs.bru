@@ -1,0 +1,27 @@
+meta {
+  name: List Admin Audit Logs
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs?torgId=&outcome=&routeTemplate=&userId=&from=&to=&skip=0&take=50
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  What admin users did, newest first (`AdminAuditLogResource.list`, `common/controller/AdminAuditLogResource.java`). VAHN_ADMIN only: any other
+  role gets 403. One row per non-GET request by an authenticated VAHN_ADMIN/ADMIN; GETs are not recorded. Blank filters are ignored.
+
+  Filters: `userId`, `torgId`, `routeTemplate` (e.g. `/api/torgs/{torgId}/external-payments`), `outcome` (SUCCESS, DENIED, FAILED), `from` and `to`
+  (yyyy-MM-dd, inclusive), `skip`, `take` (1-200, default 50). A bad date or outcome is 400.
+
+  Response `data` is `{ items, total, skip, take }`. A row has `userId`, `username`, `staticToken`: a request made with the shared static VAHN_ADMIN
+  token (zeus) has `userId` null, `username` "admin" and `staticToken` true. `responseStatus` is the real status (read from the body when HTTP is 200),
+  401/403 are DENIED. Request/response bodies are never stored; values of sensitive path/query params (phone, pan, vpa, otp, key ...) read `***`.
+  Rows are written asynchronously, so a request made a moment ago may take a second to show up.
+}

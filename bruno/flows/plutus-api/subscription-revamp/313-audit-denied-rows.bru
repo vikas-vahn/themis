@@ -1,0 +1,34 @@
+meta {
+  name: 313. Admin audit log: the flag-off refusals (steps 11-22) are DENIED rows
+  type: http
+  seq: 313
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs?torgId={{subRevampTorgId}}&outcome=DENIED&take=200
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  const items = res.body.data.items || [];
+  test("refused admin writes are recorded as DENIED with a 401/403 status", function() {
+    expect(items.length).to.be.greaterThan(0);
+    items.forEach(i => { expect(i.outcome, i.path).to.equal("DENIED"); expect([401, 403], i.path).to.include(i.responseStatus); });
+  });
+  test("the flag-off record-external-payment refusal (step 12) is among them", function() {
+    expect(items.some(i => (i.routeTemplate || "") === "/api/torgs/{torgId}/external-payments" && i.httpMethod === "POST")).to.equal(true);
+  });
+}
+
+docs {
+  Steps 11-22 ran as VAHN_ADMIN with the flags off, so the server answered 403 (in the body; HTTP is 200). The audit filter reads the real status from the body.
+}

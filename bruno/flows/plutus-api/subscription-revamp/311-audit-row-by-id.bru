@@ -1,0 +1,26 @@
+meta {
+  name: 311. Admin audit log: one row by id
+  type: http
+  seq: 311
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs/{{subRevampAuditRowId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("the row is the one listed", function() {
+    expect(String(res.body.data.id)).to.equal(bru.getEnvVar("subRevampAuditRowId"));
+    expect(res.body.data.httpMethod).to.not.equal("GET");
+  });
+}

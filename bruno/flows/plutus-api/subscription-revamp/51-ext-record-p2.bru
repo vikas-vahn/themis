@@ -1,5 +1,5 @@
 meta {
-  name: 51. Record external payment P2 (bank transfer)
+  name: 51. Record external payment P2 (bank transfer) with the static admin token
   type: http
   seq: 51
 }
@@ -11,7 +11,7 @@ post {
 }
 
 auth:bearer {
-  token: {{subRevampAdminToken}}
+  token: {{subRevampStaticToken}}
 }
 
 headers {
@@ -41,4 +41,12 @@ tests {
   test("advance is 1500", function() {
     expect(Number(res.body.data.advanceBalance)).to.equal(1500);
   });
+  test("static token: recordedBy is null (stored as admin, no user id)", function() {
+    expect(res.body.data.externalPayment.recordedBy).to.equal(null);
+  });
+}
+
+docs {
+  Sent with the static VAHN_ADMIN token (zeus): allowed, and recorded with no user id (recordedBy null). Needs `subRevampStaticToken` at run time.
+  Step 52 reverses it, so the advance returns to 1000 and the later readings are unchanged.
 }

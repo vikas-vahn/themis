@@ -1,0 +1,19 @@
+meta {
+  name: Get Admin Audit Log By ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs/{{adminAuditLogId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  One audit row (`AdminAuditLogResource.get`). VAHN_ADMIN only (403 otherwise); 404 with statusCode 404 when the id does not exist.
+  Take an id from the list request.
+}

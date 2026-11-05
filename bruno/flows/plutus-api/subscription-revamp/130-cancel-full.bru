@@ -44,4 +44,7 @@ tests {
     expect(Number(d.billing.refundedAmount)).to.be.closeTo(Number(d.refund.amount), 0.011);
     expect(d.subscription.status).to.equal("TRIAL");
   });
+  test("signed-in admin: cancelledBy is that admin's user id", function() {
+    expect(String(res.body.data.billing.cancelledBy)).to.equal(bru.getEnvVar("subRevampAdminUserId"));
+  });
 }

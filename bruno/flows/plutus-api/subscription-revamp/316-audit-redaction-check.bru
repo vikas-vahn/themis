@@ -1,0 +1,39 @@
+meta {
+  name: 316. Admin audit log: sensitive path and query values are redacted
+  type: http
+  seq: 316
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs?torgId={{subRevampTorgId}}&routeTemplate=/api/vpas/torg/{torgId}/{vpaId}&take=5
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  await bru.sleep(3000);
+}
+
+tests {
+  const items = res.body.data.items || [];
+  test("a row exists and hides the vpaId, mobile and otp values", function() {
+    expect(items.length).to.be.greaterThan(0);
+    const r = items[0];
+    const text = JSON.stringify(r);
+    expect(text).to.not.contain("99999999");
+    expect(text).to.not.contain("9876543210");
+    expect(text).to.not.contain("123456");
+    expect(r.path).to.contain("***");
+    expect(r.queryParams.mobile).to.equal("***");
+    expect(r.queryParams.otp).to.equal("***");
+    expect(r.reason).to.equal("ENG-690 redaction probe");
+  });
+}

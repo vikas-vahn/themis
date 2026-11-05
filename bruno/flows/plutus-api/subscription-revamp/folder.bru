@@ -21,6 +21,8 @@ docs {
   - Step 30 turns them on (dueSweep stays off: it auto-debits wallets every hour). Steps 31-281 run in the window.
   - Step 300 turns them off again. **Always run 300**, even if something failed. 301-304 prove it.
   - 305-308 end the test torg's subscription and check the flag-off refusal of a CANCELLED subscription.
+  - 310-318 read the admin audit log (`GET /api/admin-audit-logs`): the writes above produced rows, GETs did not, refusals
+    are DENIED, a non-VAHN_ADMIN gets 403, and no request body or sensitive value is stored.
 
   ## Status (staging re-run 2026-11-05 on build #1111 / 30d04c6d9, which contains the d7a31e277 billing-insert fix)
 
@@ -38,11 +40,23 @@ docs {
   - The scheduler tick that bills a torg whose trial ends decides how the billing is made: with the flags off it is a
     legacy-maths billing charged from the wallet only (advance untouched). Turn the flags on before the tick (steps 150-156).
 
+  ## Status (staging re-run 2026-11-05 evening, build #1117 / af301e40c, torg 712)
+
+  Steps 1-154 passed (122 requests, 69 tests, 125 assertions). 155-281 ran with the scheduler's flags-off second billing: 91 of 101 requests
+  passed. Known open items:
+  - 193 (static-token cycle change) got 400 "reason is required": an admin-made plan change needs a reason. The request now sends one; it was
+    not re-run, and 194-196, 204, 221, 260 and 275-277 failed as a chain from it (the plan stayed monthly).
+  - 252: with the static token the billing's cancelled_by is null but the REFUND line items get created_by 1
+    (SubscriptionRefundService uses actor.getId() instead of JwtAuthenticator.actorId). Plutus bug, not fixed.
+  - 310-318 (admin audit log) passed 11 of 11 requests.
+
   ## Needs
 
-  - A real VAHN_ADMIN login (OTP `776677`): money writes refuse the static token with 403. Pass the phone at run
-    time: `--env-var subRevampAdminPhone=<phone>`. Never commit it. For steps 41 and 163 also pass
-    `--env-var subRevampStaticToken=<VAHN_ADMIN static token>` (not stored anywhere).
+  - A real VAHN_ADMIN login (OTP `776677`). Pass the phone at run time: `--env-var subRevampAdminPhone=<phone>`.
+    Never commit it. Also pass `--env-var subRevampStaticToken=<VAHN_ADMIN static token>` (not stored anywhere) for
+    steps 41, 51, 52, 56, 162, 233 and 237. The static token (zeus) is allowed on record/reverse external payment,
+    move-to-wallet and partial charge (`requireRealUser` is gone); such actions are stored with null user ids and
+    username `admin`. The real-login steps (43, 61, 72, 150, 163, 240 ...) store the signed-in admin's id and name.
   - A test torg. `subRevampTorgId`, `subRevampWalletId` (the torg admin's wallet), `subRevampPanId`, and
     `subRevampTorgAdminPhone` (a made-up number with no email, so no real person is contacted).
     Create it with admin calls (no DB access needed):
@@ -57,7 +71,10 @@ docs {
     5. `PUT /api/wallets/{walletId}/balance?amount=3000` (admin adjustment; there is no gateway-free deposit).
   - The hourly billing scheduler must create the first billing (nothing else creates it: `POST /billings/start`
     is broken for this, it reads `currentBillingDate`). Run 25-26 once it has.
-  - Step 135 waits for the scheduler again (up to an hour) after the trial is ended.
+  - Step 154 ends the trial again and the scheduler must bill the torg a second time (up to an hour). **Keep the flags OFF for that tick**:
+    steps 157-173 expect the legacy-maths billing it makes then (wallet only, 1000 paid, advance untouched). With the flags on, the tick pays
+    the whole billing from advance and 160-173 fail with 400. So close the window (step 300) after 153, run 154, wait, then run 30 and 155 onward.
+  - Steps 10, 11 and 18 build URLs from the billing id: run 07 first.
 
   ## Order and state
 

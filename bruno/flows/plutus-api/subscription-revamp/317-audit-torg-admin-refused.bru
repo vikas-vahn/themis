@@ -1,0 +1,19 @@
+meta {
+  name: 317. Admin audit log: TORG_ADMIN cannot read the list
+  type: http
+  seq: 317
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs?torgId={{subRevampTorgId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
