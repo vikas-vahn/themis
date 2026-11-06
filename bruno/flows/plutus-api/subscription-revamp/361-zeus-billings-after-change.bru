@@ -24,7 +24,7 @@ script:post-response {
 }
 
 tests {
-  test("one non-cancelled billing, on the annual plan", function() {
+  test("one non-cancelled billing", function() {
     const live = (res.body.data || []).filter(b => b.status !== "CANCELLED");
     expect(live.length).to.equal(1);
   });

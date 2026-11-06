@@ -57,9 +57,11 @@ docs {
   - 320-333 passed (16 of 16 requests, 17 of 17 tests). The storage upload (333) is accepted for the static token.
   - 340-342 (wallet `set-balance` torg check, 7a31297ec) passed (5 of 5 with the logins). They need `--env-var subRevampOtherTorgUserId=<user in another
     torg>` and `subRevampSameTorgUserId=<user with a wallet in the test torg>`, and money in the torg admin's wallet.
-  - 350-368 ran once; 350-352, 358, 360-368 passed. Four things were fixed afterwards and NOT re-run (no live billing was left): 320's assertion,
-    353 (a payment with a due open is auto-allocated to it, it does not stay as advance), a new top-up step 355 before the waive 356, and 359
-    (a stale expectedNetPayable gives a 409 with a message only, `data` is null).
+  - 350-368 (waive refused when short and rolled back, waive with createDue=false, plan change preview / stale 409 / change, allocated payment reversed so the
+    due reopens, static-token cancel) passed on the second run (22 of 22 requests with the logins, 17 of 17 tests). They need
+    `--env-var subRevampZeusTargetPlan=<a plan on a different cycle than the torg's current one>` and a billing that is unpaid with an empty wallet and advance.
+    A stale expectedNetPayable gives a 409 with a message only; `data` is null (no preview body on `/plan-change`).
+    A torg's second billing can be made without the scheduler with `POST /api/subscriptions/billings/start?torgId=` (it worked on an ACTIVE subscription).
   - Flags off: every flagged route refuses with body statusCode 403 and a message ending "is not enabled" / "are not enabled". The real HTTP status
     is 200 for all of them.
 

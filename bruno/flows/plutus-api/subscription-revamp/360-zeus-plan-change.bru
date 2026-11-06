@@ -1,5 +1,5 @@
 meta {
-  name: 360. zeus: plan change to annual with the right expectedNetPayable (static token, allowDue)
+  name: 360. zeus: plan change to the target plan with the right expectedNetPayable (static token, allowDue)
   type: http
   seq: 360
 }
@@ -20,7 +20,7 @@ headers {
 
 body:json {
   {
-    "planId": 8,
+    "planId": {{subRevampZeusTargetPlan}},
     "expectedNetPayable": {{subRevampZeusNetPayable}},
     "allowDue": true,
     "reason": "ENG-690 zeus re-test: cycle change"
@@ -34,7 +34,7 @@ assert {
 tests {
   test("200, new annual billing, previous billing closed", function() {
     const d = res.body.data;
-    expect(d.toPlan.id).to.equal(8);
+    expect(String(d.toPlan.id)).to.equal(bru.getEnvVar("subRevampZeusTargetPlan"));
     expect(d.billing).to.not.equal(null);
     expect(d.closedBilling).to.not.equal(null);
   });
