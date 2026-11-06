@@ -1,0 +1,41 @@
+meta {
+  name: 326. zeus: move-to-wallet with a stale expectedAdvanceBalance is 409
+  type: http
+  seq: 326
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance/move-to-wallet?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 10,
+    "expectedAdvanceBalance": 999999,
+    "reason": "ENG-690 zeus stale"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 409
+}
+
+tests {
+  test("message names the real balance", function() {
+    expect(res.body.message).to.match(/^Advance balance is [0-9.]+, not 999999/);
+  });
+}
+
+docs {
+  Nothing moves.
+}

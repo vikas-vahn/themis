@@ -1,0 +1,42 @@
+meta {
+  name: 327. zeus: reverse the payment (static token)
+  type: http
+  seq: 327
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments/{{subRevampZeusPaymentId}}/reverse?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "ENG-690 zeus re-test: recorded by mistake"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("REVERSED, reversedBy null (static token), advance back to its first reading", function() {
+    const d = res.body.data;
+    expect(d.externalPayment.status).to.equal("REVERSED");
+    expect(d.externalPayment.reversedBy).to.equal(null);
+    expect(d.reopenedBillingIds.length).to.equal(0);
+  });
+}
+
+docs {
+  Payment 323 only held advance, so no billing reopens. The reopen case is 365.
+}

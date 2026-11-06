@@ -1,0 +1,52 @@
+meta {
+  name: 353. zeus: record 150 external payment (funds the partial charge from advance)
+  type: http
+  seq: 353
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 150,
+    "mode": "UPI",
+    "referenceNumber": "UTR-ZEUS2-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/zeus-retest/proof.txt",
+    "remarks": "ENG-690 zeus re-test: funds partial charge",
+    "requestId": "zeus-retest-fund-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampZeusPayment2Id", String(res.body.data.externalPayment.id));
+}
+
+tests {
+  test("with a due open the 150 is allocated to it (nothing is left as advance)", function() {
+    const d = res.body.data;
+    const alloc = (d.allocations || []).reduce((a, x) => a + Number(x.amount), 0);
+    expect(alloc + Number(d.externalPayment.unallocatedAmount)).to.be.closeTo(150, 0.011);
+    expect(alloc).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  A payment with no allocations is applied oldest-due-first by the service (on the 2026-11-06 run all 150 went to the billing's due, none stayed as advance). Captures subRevampZeusPayment2Id.
+}

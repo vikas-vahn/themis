@@ -1,0 +1,45 @@
+meta {
+  name: 360. zeus: plan change to annual with the right expectedNetPayable (static token, allowDue)
+  type: http
+  seq: 360
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": 8,
+    "expectedNetPayable": {{subRevampZeusNetPayable}},
+    "allowDue": true,
+    "reason": "ENG-690 zeus re-test: cycle change"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("200, new annual billing, previous billing closed", function() {
+    const d = res.body.data;
+    expect(d.toPlan.id).to.equal(8);
+    expect(d.billing).to.not.equal(null);
+    expect(d.closedBilling).to.not.equal(null);
+  });
+}
+
+docs {
+  Different cycle: the current billing is settled and a new one starts today. Wallet and advance are small, so allowDue leaves a due on the new billing.
+}

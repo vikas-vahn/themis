@@ -1,0 +1,43 @@
+meta {
+  name: 350. zeus: read the live billing (due, paid, line items)
+  type: http
+  seq: 350
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampZeusBillingId}}?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const b = res.body.data;
+  bru.setEnvVar("subRevampZeusDue", String(b.dueAmount));
+  bru.setEnvVar("subRevampZeusPaid", String(b.paidAmount));
+  bru.setEnvVar("subRevampZeusTotal", String(b.totalAmount));
+  bru.setEnvVar("subRevampZeusStatus", String(b.status));
+  bru.setEnvVar("subRevampZeusWaivers", String((b.lineItems || []).filter(i => i.itemType === "WAIVER").length));
+  bru.setEnvVar("subRevampZeusLineSum", String((b.lineItems || []).reduce((a, i) => a + Number(i.amount), 0)));
+}
+
+tests {
+  test("total equals the sum of its line items", function() {
+    const b = res.body.data;
+    expect(Number(b.totalAmount)).to.be.closeTo((b.lineItems || []).reduce((a, i) => a + Number(i.amount), 0), 0.011);
+  });
+  test("due is positive: the torg's wallet and advance were empty at billing time", function() {
+    expect(Number(res.body.data.dueAmount)).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  Reads the billing and captures subRevampZeusDue / Paid / Total / Status / Waivers / LineSum.
+}

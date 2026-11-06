@@ -1,0 +1,27 @@
+meta {
+  name: 329. zeus: externally funded wallet credits
+  type: http
+  seq: 329
+}
+
+get {
+  url: {{baseUrl}}/api/external-payments/wallet-credits?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("returns data", function() { expect(res.body.data).to.not.equal(undefined); });
+}
+
+docs {
+  VAHN_ADMIN list of refunds and advance moves in the last 30 days.
+}

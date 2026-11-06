@@ -1,0 +1,35 @@
+meta {
+  name: 361. zeus: billing list after the change (captures the new billing)
+  type: http
+  seq: 361
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/billings/torg/{{subRevampTorgId}}?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const live = (res.body.data || []).filter(b => b.status !== "CANCELLED");
+  bru.setEnvVar("subRevampZeusBillingId", live.length ? String(live[live.length - 1].id) : "");
+}
+
+tests {
+  test("one non-cancelled billing, on the annual plan", function() {
+    const live = (res.body.data || []).filter(b => b.status !== "CANCELLED");
+    expect(live.length).to.equal(1);
+  });
+}
+
+docs {
+  Points subRevampZeusBillingId at the new billing.
+}

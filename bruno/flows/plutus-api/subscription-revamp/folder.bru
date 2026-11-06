@@ -50,6 +50,19 @@ docs {
     (SubscriptionRefundService uses actor.getId() instead of JwtAuthenticator.actorId). Plutus bug, not fixed.
   - 310-318 (admin audit log) passed 11 of 11 requests.
 
+  ## Zeus-screen and wallet checks (steps 320-368, staging 2026-11-06, build #1121 / 228b0b12d)
+
+  Steps 320-333 call the routes the new zeus screens use, with the static VAHN_ADMIN token and `?src=zeus`; 350-368 are the billing-dependent ones.
+  They need a torg with a live billing (the scheduler's tick), run inside the step-30 flag window, and are single-use per billing.
+  - 320-333 passed (16 of 16 requests, 17 of 17 tests). The storage upload (333) is accepted for the static token.
+  - 340-342 (wallet `set-balance` torg check, 7a31297ec) passed (5 of 5 with the logins). They need `--env-var subRevampOtherTorgUserId=<user in another
+    torg>` and `subRevampSameTorgUserId=<user with a wallet in the test torg>`, and money in the torg admin's wallet.
+  - 350-368 ran once; 350-352, 358, 360-368 passed. Four things were fixed afterwards and NOT re-run (no live billing was left): 320's assertion,
+    353 (a payment with a due open is auto-allocated to it, it does not stay as advance), a new top-up step 355 before the waive 356, and 359
+    (a stale expectedNetPayable gives a 409 with a message only, `data` is null).
+  - Flags off: every flagged route refuses with body statusCode 403 and a message ending "is not enabled" / "are not enabled". The real HTTP status
+    is 200 for all of them.
+
   ## Needs
 
   - A real VAHN_ADMIN login (OTP `776677`). Pass the phone at run time: `--env-var subRevampAdminPhone=<phone>`.

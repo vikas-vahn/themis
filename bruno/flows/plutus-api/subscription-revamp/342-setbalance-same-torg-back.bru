@@ -1,0 +1,23 @@
+meta {
+  name: 342. set the same-torg user back to 0
+  type: http
+  seq: 342
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/{{subRevampSameTorgUserId}}/set-balance?balance=0
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  Returns the 5 to the torg admin wallet.
+}

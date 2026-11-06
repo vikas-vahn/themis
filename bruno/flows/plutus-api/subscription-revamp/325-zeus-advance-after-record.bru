@@ -1,0 +1,29 @@
+meta {
+  name: 325. zeus: advance balance after the payment
+  type: http
+  seq: 325
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("advance is +70 once, not +140", function() {
+    expect(Number(res.body.data.advanceBalance)).to.be.closeTo(Number(bru.getEnvVar("subRevampZeusAdvance0")) + 70, 0.011);
+  });
+}
+
+docs {
+  (no extra notes)
+}

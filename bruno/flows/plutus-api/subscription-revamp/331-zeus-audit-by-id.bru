@@ -1,0 +1,33 @@
+meta {
+  name: 331. zeus: one admin audit row by id
+  type: http
+  seq: 331
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs/{{subRevampZeusAuditRowId}}?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("the row is a zeus static-token row", function() {
+    const d = res.body.data;
+    expect(d.source).to.equal("zeus");
+    expect(d.userId).to.equal(null);
+    expect(d.username).to.equal("admin");
+    expect(d.staticToken).to.equal(true);
+  });
+}
+
+docs {
+  (no extra notes)
+}

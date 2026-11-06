@@ -1,0 +1,23 @@
+meta {
+  name: 341. set-balance on a user of the SAME torg works (torg admin)
+  type: http
+  seq: 341
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/{{subRevampSameTorgUserId}}/set-balance?balance=5
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  Needs --env-var subRevampSameTorgUserId=<a user id in the test torg that has a wallet> and money in the torg admin's wallet. The amount moves between two ZZ wallets only.
+}

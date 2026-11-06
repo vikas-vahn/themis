@@ -1,0 +1,44 @@
+meta {
+  name: 368. zeus: cancel with FULL refund (static token): no actor ids stored
+  type: http
+  seq: 368
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampZeusBillingId}}/cancel?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "refundMode": "FULL",
+    "reason": "ENG-690 zeus re-test: static-token cancel"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("cancelled, refund equals the preview, cancelledBy null", function() {
+    const d = res.body.data;
+    expect(d.preview).to.equal(false);
+    expect(d.billing.status).to.equal("CANCELLED");
+    expect(Number(d.refund.amount)).to.be.closeTo(Number(bru.getEnvVar("subRevampZeusRefund")), 0.011);
+    expect(d.billing.cancelledBy === null || d.billing.cancelledBy === undefined).to.equal(true);
+  });
+}
+
+docs {
+  Check outside Bruno by DB read: refund line items created_by, wallet transaction meta actor_id and allocations reversed_by are all null.
+}

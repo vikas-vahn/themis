@@ -1,0 +1,42 @@
+meta {
+  name: 357. zeus: billing after the waive
+  type: http
+  seq: 357
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampZeusBillingId}}?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const b = res.body.data;
+  bru.setEnvVar("subRevampZeusDue", String(b.dueAmount));
+  bru.setEnvVar("subRevampZeusPaid", String(b.paidAmount));
+  bru.setEnvVar("subRevampZeusTotal", String(b.totalAmount));
+  bru.setEnvVar("subRevampZeusStatus", String(b.status));
+  bru.setEnvVar("subRevampZeusWaivers", String((b.lineItems || []).filter(i => i.itemType === "WAIVER").length));
+  bru.setEnvVar("subRevampZeusLineSum", String((b.lineItems || []).reduce((a, i) => a + Number(i.amount), 0)));
+}
+
+tests {
+  test("PAID, due 0, total still equals the line items, one waiver", function() {
+    const b = res.body.data;
+    expect(b.status).to.equal("PAID");
+    expect(Number(b.dueAmount)).to.equal(0);
+    expect(Number(bru.getEnvVar("subRevampZeusWaivers"))).to.equal(1);
+  });
+}
+
+docs {
+  Reads the billing and captures subRevampZeusDue / Paid / Total / Status / Waivers / LineSum.
+}
