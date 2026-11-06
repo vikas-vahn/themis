@@ -1,0 +1,32 @@
+meta {
+  name: Trucks fleet compliance - expired only
+  type: http
+  seq: 302
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/compliance?torgId={{torgId}}&expiredOnly=true
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("every row is expired", function () {
+    expect(res.body.data).to.be.an("array");
+    res.body.data.forEach(function (r) { expect(r.anyExpired).to.equal(true); });
+  });
+}
+
+docs {
+  `expiredOnly=true` keeps trucks with an expired road tax, state permit or national permit.
+  {{torgId}} must be the caller's own company (315 on staging) for a TORG_ADMIN token.
+}

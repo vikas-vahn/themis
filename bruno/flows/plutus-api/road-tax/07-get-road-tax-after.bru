@@ -1,0 +1,27 @@
+meta {
+  name: 7. Get road tax - shows the entry
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{plutusRoadTaxTruckId}}/road-tax
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusRoadTaxToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.paidFor: eq QUARTERLY
+  res.body.data.validUpto: eq 2026-12-31
+  res.body.data.source: eq USER
+}
+
+docs {
+  The row saved in step 6.
+}

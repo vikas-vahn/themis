@@ -1,0 +1,48 @@
+meta {
+  name: 8. Fleet compliance includes the truck
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/compliance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusRoadTaxToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("our truck is listed with the saved road tax", function () {
+    const rows = res.body.data;
+    expect(rows).to.be.an("array");
+    const row = rows.find(function (r) { return String(r.truckId) === String(bru.getEnvVar("plutusRoadTaxTruckId")); });
+    expect(row, "truck row").to.be.an("object");
+    expect(row.roadTax.validUpto).to.equal("2026-12-31");
+    expect(row.roadTax.source).to.equal("USER");
+    expect(row).to.have.property("anyExpired");
+  });
+
+  test("expired trucks come first", function () {
+    const flags = res.body.data.map(function (r) { return r.anyExpired; });
+    const firstFalse = flags.indexOf(false);
+    if (firstFalse >= 0) { expect(flags.slice(firstFalse)).to.not.include(true); }
+  });
+
+  test("every row has a road tax with a status", function () {
+    res.body.data.forEach(function (r) { expect(r.roadTax.status).to.be.a("string"); });
+  });
+}
+
+docs {
+  A TORG_ADMIN gets their own company's trucks (no torgId needed). A VAHN_ADMIN must pass `torgId`
+  (400 otherwise); a non-admin passing another company's `torgId` gets 403.
+  Optional `expiredOnly=true` keeps only trucks with an expired document.
+}
