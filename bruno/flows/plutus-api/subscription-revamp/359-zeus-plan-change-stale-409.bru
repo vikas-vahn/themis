@@ -1,0 +1,43 @@
+meta {
+  name: 359. zeus: plan change with a stale expectedNetPayable is 409 and carries the fresh preview
+  type: http
+  seq: 359
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "planId": {{subRevampZeusTargetPlan}},
+    "expectedNetPayable": 12345.67,
+    "allowDue": true,
+    "reason": "ENG-690 zeus re-test: stale"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 409
+}
+
+tests {
+  test("409 carries a message; on this route data is null (the preview body is only built by the legacy plan routes)", function() {
+    expect(res.body.message).to.be.a("string");
+    expect(res.body.data === null || res.body.data === undefined).to.equal(true);
+  });
+}
+
+docs {
+  Nothing changes. Observed 2026-11-06: no preview in the 409, only the message; the screen has to call the preview route again.
+}

@@ -1,0 +1,34 @@
+meta {
+  name: 321. zeus: advance balance before
+  type: http
+  seq: 321
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/advance-balance?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampZeusAdvance0", String(res.body.data.advanceBalance));
+}
+
+tests {
+  test("shape: torgId and a numeric advanceBalance", function() {
+    expect(String(res.body.data.torgId)).to.equal(bru.getEnvVar("subRevampTorgId"));
+    expect(Number(res.body.data.advanceBalance)).to.be.a("number");
+  });
+}
+
+docs {
+  Captures subRevampZeusAdvance0.
+}

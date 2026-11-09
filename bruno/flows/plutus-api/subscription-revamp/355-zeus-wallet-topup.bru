@@ -1,0 +1,23 @@
+meta {
+  name: 355. admin: add 150 to the torg admin wallet (funds the partial charge)
+  type: http
+  seq: 355
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/{{subRevampWalletId}}/balance?amount=150
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  VAHN_ADMIN balance adjustment on a ZZ test wallet (adds 150). The partial charge below draws from advance then wallet.
+}

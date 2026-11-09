@@ -1,0 +1,33 @@
+meta {
+  name: 322. zeus: external payments list (paged)
+  type: http
+  seq: 322
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("paged shape", function() {
+    const d = res.body.data;
+    expect(d.items).to.be.an("array");
+    expect(d).to.have.property("total");
+    expect(d).to.have.property("skip");
+    expect(d).to.have.property("take");
+  });
+}
+
+docs {
+  List shape the zeus screen reads: items, total, skip, take.
+}

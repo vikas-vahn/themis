@@ -1,0 +1,36 @@
+meta {
+  name: 367. zeus: cancel preview FULL (static token)
+  type: http
+  seq: 367
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampZeusBillingId}}/cancel-preview?src=zeus&refundMode=FULL
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampZeusRefund", String(res.body.data.refund.amount));
+}
+
+tests {
+  test("preview: nothing written, refund block present", function() {
+    const d = res.body.data;
+    expect(d.preview).to.equal(true);
+    expect(d.refund.mode).to.equal("FULL");
+    expect(d.refund).to.have.property("allocations");
+  });
+}
+
+docs {
+  Captures subRevampZeusRefund.
+}

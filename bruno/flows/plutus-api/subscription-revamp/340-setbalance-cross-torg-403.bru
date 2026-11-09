@@ -1,0 +1,27 @@
+meta {
+  name: 340. set-balance on a user of ANOTHER torg is 403 (torg admin)
+  type: http
+  seq: 340
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/{{subRevampOtherTorgUserId}}/set-balance?balance=500
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampTorgToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+tests {
+  test("message", function() { expect(JSON.stringify(res.body)).to.include("User is not in your torg"); });
+}
+
+docs {
+  Needs --env-var subRevampOtherTorgUserId=<a user id in a different torg>. Re-read both wallets afterwards: neither may change (checked outside Bruno, by DB read, on the 2026-11-06 run). Real HTTP status is 200 with the code in the body statusCode.
+}

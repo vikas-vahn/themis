@@ -1,0 +1,27 @@
+meta {
+  name: 332. zeus: audit list filtered to DENIED rows
+  type: http
+  seq: 332
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs?src=zeus&outcome=DENIED&torgId={{subRevampTorgId}}&take=20
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("only DENIED rows", function() { (res.body.data.items || []).forEach(i => expect(i.outcome).to.equal("DENIED")); });
+}
+
+docs {
+  The outcome filter zeus uses.
+}

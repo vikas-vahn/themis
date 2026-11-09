@@ -1,0 +1,51 @@
+meta {
+  name: 363. zeus: record a 40 external payment allocated to the new billing
+  type: http
+  seq: 363
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 40,
+    "mode": "UPI",
+    "referenceNumber": "UTR-ZEUS3-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/zeus-retest/proof.txt",
+    "remarks": "ENG-690 zeus re-test: allocated",
+    "requestId": "zeus-retest-alloc-{{subRevampRun}}",
+    "allocations": [ { "targetType": "SUBSCRIPTION_BILLING", "targetId": {{subRevampZeusBillingId}}, "amount": 40 } ]
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampZeusPayment3Id", String(res.body.data.externalPayment.id));
+}
+
+tests {
+  test("one allocation of 40", function() {
+    expect(res.body.data.allocations.length).to.equal(1);
+    expect(Number(res.body.data.allocations[0].amount)).to.equal(40);
+  });
+}
+
+docs {
+  Pays 40 of the new billing's due. Captures subRevampZeusPayment3Id.
+}

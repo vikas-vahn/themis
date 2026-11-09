@@ -1,0 +1,38 @@
+meta {
+  name: 333. zeus: storage upload with the static token (tiny dummy text file)
+  type: http
+  seq: 333
+}
+
+post {
+  url: {{baseUrl}}/api/storage/upload?src=zeus
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+body:multipart-form {
+  file: @file(subscription-revamp/files/dummy-proof.txt)
+  fileName: themis-zeus-dummy-proof.txt
+  fileSize: 73
+  folder: themis-zeus-retest
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.contentType: eq text/plain
+}
+
+tests {
+  test("accepted: key under the folder, .txt, presigned url", function() {
+    expect(res.body.data.key).to.match(/^themis-zeus-retest\/themis_zeus_dummy_proof_[0-9a-f-]+\.txt$/);
+    expect(res.body.data.url).to.include("https://");
+  });
+}
+
+docs {
+  The static VAHN_ADMIN token is accepted by storage upload (VAHN_ADMIN is in its RolesAllowed). Replies in the usual envelope (data.url, data.key, data.contentType). Tiny dummy text only; the object stays in the staging bucket. Do not print the presigned url.
+}

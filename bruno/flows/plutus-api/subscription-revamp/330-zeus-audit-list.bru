@@ -1,0 +1,50 @@
+meta {
+  name: 330. zeus: admin audit log list, filtered by torg (static token)
+  type: http
+  seq: 330
+}
+
+get {
+  url: {{baseUrl}}/api/admin-audit-logs?src=zeus&torgId={{subRevampTorgId}}&take=100
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  await bru.sleep(3000);
+}
+
+script:post-response {
+  const items = res.body.data.items || [];
+  const z = items.find(i => i.source === "zeus" && i.staticToken === true);
+  if (z) { bru.setEnvVar("subRevampZeusAuditRowId", String(z.id)); }
+}
+
+tests {
+  test("zeus static-token rows: source zeus, userId null, username admin, staticToken true", function() {
+    const z = (res.body.data.items || []).filter(i => i.source === "zeus");
+    expect(z.length).to.be.greaterThan(0);
+    z.forEach(i => { expect(i.userId, i.path).to.equal(null); expect(i.username, i.path).to.equal("admin"); expect(i.staticToken, i.path).to.equal(true); });
+  });
+  test("the 323 record and the 327 reverse are SUCCESS rows; the 326 stale move is FAILED 409", function() {
+    const z = (res.body.data.items || []).filter(i => i.source === "zeus");
+    expect(z.some(i => i.routeTemplate === "/api/torgs/{torgId}/external-payments" && i.outcome === "SUCCESS")).to.equal(true);
+    expect(z.some(i => (i.routeTemplate || "").endsWith("/reverse") && i.outcome === "SUCCESS")).to.equal(true);
+    expect(z.some(i => (i.routeTemplate || "").endsWith("/move-to-wallet") && i.outcome === "FAILED" && i.responseStatus === 409)).to.equal(true);
+  });
+  test("no GET rows, and the ip is a single address", function() {
+    (res.body.data.items || []).forEach(i => { expect(i.httpMethod, i.path).to.not.equal("GET"); expect(i.ipAddress || "", i.path).to.not.include(","); });
+  });
+}
+
+docs {
+  Captures subRevampZeusAuditRowId. Waits 3 s: rows are written asynchronously.
+}

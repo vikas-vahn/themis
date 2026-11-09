@@ -1,0 +1,35 @@
+meta {
+  name: 358. zeus: plan change preview to the target plan (subRevampZeusTargetPlan)
+  type: http
+  seq: 358
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/plan-change/preview?src=zeus&planId={{subRevampZeusTargetPlan}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampZeusNetPayable", String(res.body.data.netPayable));
+}
+
+tests {
+  test("preview shape", function() {
+    const d = res.body.data;
+    ["changeType","netPayable","creditToAdvance","advanceAvailable","walletAvailable","shortfall"].forEach(k => expect(d).to.have.property(k));
+    expect(String(d.toPlan.id)).to.equal(bru.getEnvVar("subRevampZeusTargetPlan"));
+  });
+}
+
+docs {
+  Captures subRevampZeusNetPayable. Needs --env-var subRevampZeusTargetPlan=<plan id on a DIFFERENT cycle than the current one> (5 monthly or 8 annual on staging).
+}

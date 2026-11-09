@@ -1,0 +1,35 @@
+meta {
+  name: 320. zeus: billings of the torg (static token, src=zeus)
+  type: http
+  seq: 320
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/billings/torg/{{subRevampTorgId}}?src=zeus
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  const live = (res.body.data || []).filter(b => b.status !== "CANCELLED");
+  bru.setEnvVar("subRevampZeusBillingId", live.length ? String(live[live.length - 1].id) : "");
+}
+
+tests {
+  test("data is an array of billings with id, status and amounts", function() {
+    expect(res.body.data).to.be.an("array");
+    res.body.data.forEach(b => { expect(b).to.have.property("id"); expect(b).to.have.property("status"); expect(b).to.have.property("dueAmount"); });
+  });
+}
+
+docs {
+  The billing list zeus shows. Captures subRevampZeusBillingId = the newest non-cancelled billing, empty when there is none (the scheduler has not billed the torg yet; the billing steps below then fail on purpose).
+}

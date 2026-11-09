@@ -1,0 +1,37 @@
+meta {
+  name: 351. zeus: waive the remainder with too little collected is refused (400) and rolls back
+  type: http
+  seq: 351
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampZeusBillingId}}/partial-charge?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "AMOUNT",
+    "amount": 100,
+    "createDue": false,
+    "reason": "ENG-690 zeus re-test: short collection must not waive",
+    "expectedDueAmount": {{subRevampZeusDue}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Wallet and advance are empty, so the 100 cannot be collected and the remainder must not be waived (b521a1468).
+}

@@ -1,0 +1,53 @@
+meta {
+  name: 323. zeus: record an external payment (static token)
+  type: http
+  seq: 323
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/{{subRevampTorgId}}/external-payments?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 70,
+    "mode": "UPI",
+    "referenceNumber": "UTR-ZEUS-{{subRevampRun}}",
+    "paymentDate": "{{subRevampToday}}",
+    "proofKey": "themis/zeus-retest/proof.txt",
+    "remarks": "ENG-690 zeus re-test",
+    "requestId": "zeus-retest-{{subRevampRun}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  bru.setEnvVar("subRevampZeusPaymentId", String(res.body.data.externalPayment.id));
+}
+
+tests {
+  test("new payment, static token: recordedBy null, whole amount unallocated, advance up by 70", function() {
+    const d = res.body.data;
+    expect(d.duplicate).to.equal(false);
+    expect(d.externalPayment.recordedBy).to.equal(null);
+    expect(Number(d.externalPayment.unallocatedAmount)).to.equal(70);
+    expect(Number(d.advanceBalance)).to.be.closeTo(Number(bru.getEnvVar("subRevampZeusAdvance0")) + 70, 0.011);
+  });
+}
+
+docs {
+  Captures subRevampZeusPaymentId. No allocations, so the 70 is held as advance.
+}

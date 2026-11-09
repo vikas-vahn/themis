@@ -1,0 +1,50 @@
+meta {
+  name: 356. zeus: partial charge 100 with createDue=false: due goes to 0, a WAIVER line item appears
+  type: http
+  seq: 356
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampZeusBillingId}}/partial-charge?src=zeus
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampStaticToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "mode": "AMOUNT",
+    "amount": 100,
+    "createDue": false,
+    "reason": "ENG-690 zeus re-test: agreed 100, rest waived",
+    "expectedDueAmount": {{subRevampZeusDue}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("100 charged, billing PAID, due 0, one WAIVER of -(due-100)", function() {
+    const d = res.body.data;
+    expect(Number(d.chargedAmount)).to.be.closeTo(100, 0.011);
+    expect(Number(d.fromAdvance) + Number(d.fromWallet)).to.be.closeTo(100, 0.011);
+    expect(d.billing.status).to.equal("PAID");
+    expect(Number(d.billing.dueAmount)).to.equal(0);
+    const w = (d.billing.lineItems || []).filter(i => i.itemType === "WAIVER");
+    expect(w.length).to.equal(1);
+    expect(Number(w[0].amount)).to.be.closeTo(-(Number(bru.getEnvVar("subRevampZeusDue")) - 100), 0.011);
+  });
+}
+
+docs {
+  Static token: allowed on partial charge. The waive needs a reason.
+}
