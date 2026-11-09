@@ -48,17 +48,32 @@ script:pre-request {
     throw new Error("Staging only: baseUrl is not the staging API");
   }
 
-  const current = await bru.sendRequest({
-    method: "GET",
-    url: bru.interpolate("{{baseUrl}}/api/v1/config/subscription-billing"),
-    headers: { Authorization: "Bearer " + bru.getEnvVar("accessToken") }
-  });
+  // Resolve the token the same way the request's own auth does ({{accessToken}} follows Bruno's
+  // variable precedence). bru.getEnvVar reads only the environment file, so a token set as a
+  // runtime, collection or folder variable was ignored here and the read failed with 401.
+  const token = bru.interpolate("{{accessToken}}");
+  if (!token || token === "{{accessToken}}") {
+    throw new Error("accessToken is empty: set a VAHN_ADMIN token; nothing sent");
+  }
+  let current;
+  try {
+    current = await bru.sendRequest({
+      method: "GET",
+      url: bru.interpolate("{{baseUrl}}/api/v1/config/subscription-billing"),
+      headers: { Authorization: "Bearer " + token }
+    });
+  } catch (e) {
+    current = e.response || { status: "no response", data: {} };
+  }
   const body = current.data || {};
+  const status = body.statusCode || current.status;
   let config = {};
-  if (body.statusCode === 200) {
+  if (status === 200) {
     config = JSON.parse(JSON.stringify(body.data.config || body.data));
-  } else if (body.statusCode !== 404) {
-    throw new Error("Could not read the current flags (statusCode " + body.statusCode + "); nothing sent");
+  } else if (status === 401) {
+    throw new Error("Reading the current flags got 401: accessToken is expired or not a plutus token; nothing sent");
+  } else if (status !== 404) {
+    throw new Error("Could not read the current flags (status " + status + "); nothing sent");
   }
 
   config[flag] = Object.assign({}, config[flag], { enabled: raw === "true" });
