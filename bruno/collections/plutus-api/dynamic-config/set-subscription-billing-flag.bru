@@ -1,0 +1,98 @@
+meta {
+  name: Set one subscription-billing flag
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/v1/config/subscription-billing
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "config": {},
+    "reason": "set by the pre-request script"
+  }
+}
+
+vars:pre-request {
+  plutusApiSubBillingFlag: cancelRefund
+  plutusApiSubBillingFlagEnabled: true
+  plutusApiSubBillingFlagReason: Enable cancel and refund on staging for admin testing
+}
+
+script:pre-request {
+  // PUT replaces the whole namespace, so read what is stored and change only the one flag.
+  // Sending a single key would reset every other flag to its code default.
+  const known = ["lineItemMaths", "lineItemWrites", "cancelRefund", "externalPayments", "truckAddon",
+    "partialBilling", "planChange", "dueSweep", "unbilledTruckCheck"];
+  const flag = bru.getRequestVar("plutusApiSubBillingFlag");
+  const raw = String(bru.getRequestVar("plutusApiSubBillingFlagEnabled")).trim().toLowerCase();
+  if (!known.includes(flag)) {
+    throw new Error("Unknown flag '" + flag + "'. One of: " + known.join(", "));
+  }
+  if (raw !== "true" && raw !== "false") {
+    throw new Error("plutusApiSubBillingFlagEnabled must be true or false");
+  }
+  if (!bru.interpolate("{{baseUrl}}").includes("sapi.trucks-way.com")) {
+    throw new Error("Staging only: baseUrl is not the staging API");
+  }
+
+  const current = await bru.sendRequest({
+    method: "GET",
+    url: bru.interpolate("{{baseUrl}}/api/v1/config/subscription-billing"),
+    headers: { Authorization: "Bearer " + bru.getEnvVar("accessToken") }
+  });
+  const body = current.data || {};
+  let config = {};
+  if (body.statusCode === 200) {
+    config = JSON.parse(JSON.stringify(body.data.config || body.data));
+  } else if (body.statusCode !== 404) {
+    throw new Error("Could not read the current flags (statusCode " + body.statusCode + "); nothing sent");
+  }
+
+  config[flag] = Object.assign({}, config[flag], { enabled: raw === "true" });
+  bru.setVar("plutusApiSubBillingFlagsSent", JSON.stringify(config));
+  req.setBody({ config: config, reason: bru.getRequestVar("plutusApiSubBillingFlagReason") });
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("only the chosen flag changed", function() {
+    const sent = JSON.parse(bru.getVar("plutusApiSubBillingFlagsSent"));
+    const c = res.body.data.config || res.body.data;
+    Object.keys(sent).forEach(k => expect(c[k].enabled, k).to.equal(sent[k].enabled));
+  });
+}
+
+docs {
+  Turns ONE subscription-billing flag on or off and leaves the others as they are. **Staging only**: the script refuses any
+  other `baseUrl`. The change is global (every torg on staging) and takes up to 60 seconds to reach every server.
+
+  Edit the three request vars (Vars tab):
+  - `plutusApiSubBillingFlag`: the flag name, e.g. `cancelRefund`. See "Get subscription-billing flags" for the list and
+    which flags need others on first.
+  - `plutusApiSubBillingFlagEnabled`: `true` or `false`.
+  - `plutusApiSubBillingFlagReason`: why. Stored in `dynamic_config_history` and the admin audit log.
+
+  Why the script: `PUT /api/v1/config/subscription-billing` REPLACES the whole namespace config (`DynamicConfigService.updateConfig`),
+  so a body with one key would reset every other flag. The script reads the stored config first, changes the one flag, and
+  sends the full set. If the read fails (anything but 200 or a 404 for a missing namespace), nothing is sent.
+
+  Needs a VAHN_ADMIN token in `accessToken` (the static admin token works). Other roles get 403.
+
+  Turn flags back off when testing is done.
+}

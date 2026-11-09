@@ -1,0 +1,52 @@
+meta {
+  name: Get subscription-billing flags
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/config/subscription-billing
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.body.statusCode: isDefined
+}
+
+tests {
+  test("prints each flag", function() {
+    if (res.body.statusCode === 404) {
+      console.log("namespace missing: every flag is at its code default (lineItemWrites on, the rest off)");
+      return;
+    }
+    expect(res.body.statusCode).to.equal(200);
+    const c = res.body.data.config || res.body.data;
+    Object.keys(c).forEach(k => console.log(k + ": " + (c[k] && c[k].enabled)));
+  });
+}
+
+docs {
+  The on/off switches for the subscription billing revamp (`SubscriptionBillingFlags`, `DynamicConfigResource`).
+  They live in the `dynamic_config` table, not in `config.yml`, and each plutus server re-reads them every 60 seconds.
+
+  A 404 in the body means the namespace has never been written, so every flag is at its code default.
+
+  | Flag | Default | Turns on | Also needs |
+  |---|---|---|---|
+  | `cancelRefund` | off | admin cancel billing with refund (and its preview) | nothing |
+  | `lineItemWrites` | ON | BASE line-item dual-write (kill switch) | nothing |
+  | `lineItemMaths` | off | billing totals come from line items | lineItemWrites |
+  | `externalPayments` | off | record/reverse external payments, advance routes, advance used on billing | lineItemMaths |
+  | `truckAddon` | off | mid-cycle truck add-ons, BASE freeze | lineItemMaths |
+  | `partialBilling` | off | admin partial charge | lineItemMaths + truckAddon |
+  | `planChange` | off | plan-change routes (older plan routes delegate to them) | lineItemMaths + truckAddon |
+  | `dueSweep` | off | hourly auto-debit of open dues, moves money unattended | lineItemMaths + truckAddon |
+  | `unbilledTruckCheck` | off | daily log-only check for under-billed torgs | nothing |
+
+  Read with any authenticated token. To change a flag, use "Set one subscription-billing flag".
+}
