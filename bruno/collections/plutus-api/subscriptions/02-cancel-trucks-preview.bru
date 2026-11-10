@@ -1,0 +1,45 @@
+meta {
+  name: Cancel trucks preview
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{plutusApiCancelTrucksTorgId}}/billings/{{plutusApiCancelTrucksBillingId}}/cancel-trucks-preview?noOfTrucks={{plutusApiCancelTrucksCount}}&refundMode={{plutusApiCancelTrucksRefundMode}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.data && res.body.data.refundAmount !== undefined) {
+    bru.setEnvVar("plutusApiCancelTrucksRefundAmount", String(res.body.data.refundAmount));
+  }
+}
+
+tests {
+  test("quotes the refund and writes nothing", function() {
+    const d = res.body.data;
+    expect(d.preview).to.equal(true);
+    expect(d.refundMode).to.equal(bru.getEnvVar("plutusApiCancelTrucksRefundMode"));
+    expect(d.noOfTrucks).to.equal(Number(bru.getEnvVar("plutusApiCancelTrucksCount")));
+    expect(d).to.have.property("refundAmount");
+    expect(d).to.have.property("newTotal");
+    expect(d).to.have.property("lineItems");
+  });
+}
+
+docs {
+  Read-only quote. Set `plutusApiCancelTrucksCount` (default 1) and `plutusApiCancelTrucksRefundMode` (`PRO_RATA` or `FULL`).
+  Captures `plutusApiCancelTrucksRefundAmount`, which "Cancel trucks" sends as `expectedRefundAmount`.
+  Errors: 403 "Cancelling trucks is not enabled" (flags `cancelRefund` + `truckAddon` + `lineItemMaths`);
+  400 "Only N truck(s) can be cancelled: ..." when the count exceeds `removableTrucks`.
+  Alternative: omit `noOfTrucks` (request 01) to see only the limits.
+}

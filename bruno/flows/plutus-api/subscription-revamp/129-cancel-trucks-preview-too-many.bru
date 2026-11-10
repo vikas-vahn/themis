@@ -1,0 +1,29 @@
+meta {
+  name: 129. Cancel trucks preview, more trucks than removable
+  type: http
+  seq: 129
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel-trucks-preview?noOfTrucks=999&refundMode=PRO_RATA
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+tests {
+  test("refuses a count above removableTrucks", function() {
+    expect(res.body.message).to.contain("truck(s) can be cancelled");
+  });
+}
+
+docs {
+  Read-only. Expects 400 "Only N truck(s) can be cancelled: ...".
+}

@@ -1,0 +1,32 @@
+meta {
+  name: 129. Cancel trucks preview, limits only
+  type: http
+  seq: 129
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{subRevampTorgId}}/billings/{{subRevampBillingId}}/cancel-trucks-preview
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{subRevampAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("only the truck limits come back", function() {
+    const d = res.body.data;
+    expect(d.billedTrucks).to.be.a("number");
+    expect(d.verifiedTrucks).to.be.a("number");
+    expect(d.removableTrucks).to.be.at.most(d.billedTrucks);
+  });
+}
+
+docs {
+  Read-only. Needs the flags turned on in step 30 (cancelRefund, truckAddon, lineItemMaths). The cancel-trucks POST is deliberately not in this flow because it moves money.
+}

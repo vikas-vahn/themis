@@ -1,0 +1,45 @@
+meta {
+  name: Cancel trucks (MOVES MONEY)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/{{plutusApiCancelTrucksTorgId}}/billings/{{plutusApiCancelTrucksBillingId}}/cancel-trucks
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "noOfTrucks": {{plutusApiCancelTrucksCount}},
+    "refundMode": "{{plutusApiCancelTrucksRefundMode}}",
+    "expectedRefundAmount": {{plutusApiCancelTrucksRefundAmount}},
+    "reason": "themis cancel trucks test"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("trucks cancelled and refund matches the preview", function() {
+    const d = res.body.data;
+    expect(d.preview).to.equal(false);
+    expect(Number(d.refundAmount)).to.equal(Number(bru.getEnvVar("plutusApiCancelTrucksRefundAmount")));
+    expect(d.noOfTrucks).to.equal(Number(bru.getEnvVar("plutusApiCancelTrucksCount")));
+  });
+}
+
+docs {
+  WARNING: this MOVES MONEY. It removes trucks from the billing and credits the refund to the torg. Run it only against a throw-away
+  torg and only when intended; never as part of a folder run.
+  Run "Cancel trucks preview" first: it sets `plutusApiCancelTrucksRefundAmount`, sent here as `expectedRefundAmount`.
+  Errors: 403 "Cancelling trucks is not enabled"; 400 "Only N truck(s) can be cancelled: ..."; 409 "Refund is X, not Y" when the
+  refund changed since the preview (run the preview again).
+}

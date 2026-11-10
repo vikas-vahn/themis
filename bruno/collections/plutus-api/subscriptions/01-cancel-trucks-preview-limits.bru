@@ -1,0 +1,36 @@
+meta {
+  name: Cancel trucks preview, limits only
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/{{plutusApiCancelTrucksTorgId}}/billings/{{plutusApiCancelTrucksBillingId}}/cancel-trucks-preview
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("returns only the truck limits", function() {
+    const d = res.body.data;
+    expect(d.billedTrucks).to.be.a("number");
+    expect(d.verifiedTrucks).to.be.a("number");
+    expect(d.removableTrucks).to.be.a("number");
+    expect(d.removableTrucks).to.be.at.most(d.billedTrucks);
+  });
+}
+
+docs {
+  Read-only. Without `noOfTrucks` the response carries only `billedTrucks`, `verifiedTrucks` and `removableTrucks`.
+  VAHN_ADMIN token (`accessToken`). Returns 403 "Cancelling trucks is not enabled" unless the `subscription-billing` flags
+  `cancelRefund`, `truckAddon` and `lineItemMaths` are all on.
+  Next: "Cancel trucks preview" asks for a refund quote for a given number of trucks.
+}
