@@ -1,0 +1,35 @@
+meta {
+  name: Get Road Tax
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{plutusApiRoadTaxTruckId}}/road-tax
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  plutusApiRoadTaxTruckId: 1255
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.status: isString
+  res.body.data.refreshAvailable: isBoolean
+  res.body.data.canAskVahnTeam: isBoolean
+}
+
+docs {
+  `TruckResource.getRoadTax` (ENG-1398). Roles VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Returns RoadTaxDTO. `refreshAvailable`, `canAskVahnTeam` and `helpRequest` (null until a request exists) were added by ENG-1398.
+
+  `plutusApiRoadTaxTruckId` (Vars tab) defaults to staging truck 1255 (torg 315, seeded expired tax); find ids with GET /api/trucks/compliance (expired trucks first). `{{accessToken}}` is a TORG_ADMIN
+  (or other allowed role) token of the truck's company.
+}

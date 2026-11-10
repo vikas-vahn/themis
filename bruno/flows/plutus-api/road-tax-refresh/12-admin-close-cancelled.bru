@@ -1,0 +1,43 @@
+meta {
+  name: 11. Admin close CANCELLED
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/admin/assistance-requests/{{plutusApiRoadTaxHelpRequestId}}/close
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "status": "CANCELLED",
+    "note": "themis cleanup"
+  }
+}
+
+script:pre-request {
+  if (!bru.getVar("plutusApiRoadTaxHelpRequestId")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.status: eq CANCELLED
+  res.body.data.resolutionNote: eq themis cleanup
+  res.body.data.resolvedAt: isString
+  res.body.data.resolvedBy: isNumber
+}
+
+docs {
+  Cleans up the request raised by this flow.
+}

@@ -1,0 +1,49 @@
+meta {
+  name: 3. Fleet compliance (pick expired truck)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/compliance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRoadTaxOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data: isArray
+}
+
+script:post-response {
+  // Expired trucks are listed first. Prefer one whose refresh is still available today.
+  const rows = res.body.data || [];
+  const expired = rows.filter(r => r.roadTax && r.roadTax.status === "EXPIRED");
+  const pinned = bru.getEnvVar("plutusApiRoadTaxPinnedTruckId");
+  const pick = pinned ? rows.find(r => String(r.truckId) === String(pinned))
+    : (expired.find(r => r.roadTax.refreshAvailable !== false) || expired[0]);
+  if (!pick) { throw new Error("No truck with EXPIRED road tax for this owner; seed one first"); }
+  bru.setVar("plutusApiRoadTaxTruckId", pick.truckId);
+  bru.setVar("plutusApiRoadTaxPlate", pick.registrationNumber);
+}
+
+tests {
+  test("rows carry the road tax row with the new fields", function () {
+    const rows = res.body.data;
+    const row = rows.find(r => r.roadTax && r.roadTax.status === "EXPIRED");
+    expect(row).to.not.equal(undefined);
+    expect(row.roadTax).to.have.property("refreshAvailable");
+    expect(row.roadTax).to.have.property("canAskVahnTeam");
+    expect(row.anyExpired).to.equal(true);
+  });
+}
+
+docs {
+  `TruckResource.getFleetCompliance`. Picks the first EXPIRED truck and stores `plutusApiRoadTaxTruckId` and `plutusApiRoadTaxPlate` (runtime vars).
+  Set env var `plutusApiRoadTaxPinnedTruckId` (e.g. `--env-var plutusApiRoadTaxPinnedTruckId=1254`) to use a specific truck instead.
+}

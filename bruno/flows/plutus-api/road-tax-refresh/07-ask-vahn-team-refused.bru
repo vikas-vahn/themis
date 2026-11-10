@@ -1,0 +1,45 @@
+meta {
+  name: 6b. Ask VAHN team refused (when not allowed)
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/{{plutusApiRoadTaxTruckId}}/road-tax/help-request
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRoadTaxOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "remarks": "themis ENG-1398"
+  }
+}
+
+script:pre-request {
+  if (bru.getVar("plutusApiRoadTaxCanAsk") === true || bru.getVar("plutusApiRoadTaxHasRequest") === true) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+tests {
+  test("refused until the expiry date has been checked", function () {
+    expect(res.body.statusCode).to.equal(400);
+    expect(res.body.message).to.include("Ask VAHN team opens after");
+  });
+}
+
+docs {
+  Runs only when `canAskVahnTeam` is false and no request exists for the period (e.g. refresh found a newer date). Expects 400.
+  If a request already exists (even closed, e.g. from an earlier run) asking returns that request, so this step skips. The steps that need a request then skip.
+}

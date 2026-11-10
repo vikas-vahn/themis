@@ -1,0 +1,42 @@
+meta {
+  name: 4. Get road tax (before refresh)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{plutusApiRoadTaxTruckId}}/road-tax
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRoadTaxOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.status: isString
+  res.body.data.taxType: eq PERIODIC
+  res.body.data.validUpto: isString
+  res.body.data.daysLeft: isNumber
+  res.body.data.refreshAvailable: isBoolean
+  res.body.data.canAskVahnTeam: isBoolean
+}
+
+script:post-response {
+  bru.setVar("plutusApiRoadTaxCanAsk", res.body.data.canAskVahnTeam === true);
+  bru.setVar("plutusApiRoadTaxHasRequest", !!res.body.data.helpRequest);
+  bru.setVar("plutusApiRoadTaxValidUptoBefore", res.body.data.validUpto);
+}
+
+tests {
+  test("daysLeft is zero or negative once the expiry day is reached", function () {
+    expect(res.body.data.daysLeft).to.be.at.most(0);
+  });
+}
+
+docs {
+  `TruckResource.getRoadTax`: RoadTaxDTO now has `refreshAvailable`, `canAskVahnTeam`, `helpRequest`. Stores the current `canAskVahnTeam` and whether a help request already exists for the tax period (open or closed).
+}

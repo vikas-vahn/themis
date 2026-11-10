@@ -1,0 +1,23 @@
+meta {
+  name: 9. Owner cannot list requests (403)
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/admin/assistance-requests
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRoadTaxOwnerToken}}
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  The queue is VAHN_ADMIN only; a TORG_ADMIN gets 403. Runs regardless of the refresh outcome.
+}

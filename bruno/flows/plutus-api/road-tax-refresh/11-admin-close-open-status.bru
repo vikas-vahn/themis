@@ -1,0 +1,38 @@
+meta {
+  name: 10. Admin close with OPEN status (400)
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/admin/assistance-requests/{{plutusApiRoadTaxHelpRequestId}}/close
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "status": "OPEN",
+    "note": "themis cleanup"
+  }
+}
+
+script:pre-request {
+  if (!bru.getVar("plutusApiRoadTaxHelpRequestId")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  Closing needs RESOLVED or CANCELLED; OPEN is rejected with 400.
+}

@@ -1,0 +1,37 @@
+meta {
+  name: List Assistance Requests
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/admin/assistance-requests?type=ROAD_TAX_NOT_UPDATED&status=OPEN&limit=50&offset=0
+  body: none
+  auth: bearer
+}
+
+params:query {
+  type: ROAD_TAX_NOT_UPDATED
+  status: OPEN
+  limit: 50
+  offset: 0
+  ~torgId: 315
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data: isArray
+}
+
+docs {
+  `AssistanceRequestAdminResource.list` (ENG-1398). VAHN_ADMIN only (other roles: 403). Oldest first; `status` defaults to OPEN; `type` and `torgId` are optional filters.
+  Each item: id, requestType, entityType, entityId, entityLabel (the plate for road tax), torgId, torgName, requestedBy, requestedByName, remarks,
+  context, status, requestedAt, resolvedBy, resolvedAt, resolutionNote.
+
+  Needs `{{vahnAdminToken}}`; pass it at run time with --env-var, never commit it.
+}

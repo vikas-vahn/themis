@@ -1,0 +1,27 @@
+meta {
+  name: road-tax-refresh
+}
+
+docs {
+  # Road tax refresh and "Ask VAHN team" (ENG-1398)
+
+  A fleet owner opens an expired truck's road tax, refreshes it, and (if the date is still expired) asks the VAHN team for help. A VAHN admin
+  then finds the request in the assistance queue and closes it.
+
+  Run the folder in order (staging). State is passed with runtime variables (`bru.setVar`), so nothing is written to `environments/staging.bru`.
+  The admin steps need a VAHN_ADMIN token at run time and it is never stored:
+
+      npx @usebruno/cli run bruno/flows/plutus-api/road-tax-refresh --env staging --env-var vahnAdminToken=<VAHN_ADMIN token>
+
+  Inputs: `plutusApiRoadTaxOwnerPhone` / `plutusApiRoadTaxOwnerOtp` (torg 315 owner, trucks seeded with expired road tax, extra_info.seed = 'ENG-1398').
+
+  Branches:
+  - File 05 is **paid** (ULIP VAHAN, then Surepass as fallback) and non-admins get one refresh per truck per IST day. Re-running the flow the same
+    day gets 429 at file 05 unless the fetch FAILED; the flow carries on using the state read in step 04.
+  - File 06 (Ask VAHN team) and the follow-up steps run only if `canAskVahnTeam` is true after the refresh (the refresh did not find a newer
+    date; a FAILED fetch also counts, since a fetch ran). File 07 (6b) runs instead when it is false and no request exists for the tax period,
+    and checks that asking is refused. Steps that need a request skip when none was raised.
+  - The API answers errors with HTTP 200 and the real code in `body.statusCode`, so the error steps assert on that.
+  - Optional `--env-var plutusApiRoadTaxPinnedTruckId=<id>` pins the truck instead of picking the first EXPIRED one.
+  - File 12 closes the request, so the flow leaves no OPEN request behind.
+}

@@ -1,0 +1,39 @@
+meta {
+  name: 7. Ask VAHN team again (same request)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/{{plutusApiRoadTaxTruckId}}/road-tax/help-request
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRoadTaxOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "remarks": "themis ENG-1398: second ask, different text"
+  }
+}
+
+script:pre-request {
+  if (!bru.getVar("plutusApiRoadTaxHelpRequestId")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.helpRequest.id: eq {{plutusApiRoadTaxHelpRequestId}}
+  res.body.data.helpRequest.status: eq OPEN
+}
+
+docs {
+  Same tax period: the first request is returned, `helpRequest.id` unchanged.
+}
