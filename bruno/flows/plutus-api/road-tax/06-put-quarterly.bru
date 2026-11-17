@@ -1,0 +1,51 @@
+meta {
+  name: 6. Put road tax - quarterly
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/{{plutusRoadTaxTruckId}}/road-tax
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusRoadTaxToken}}
+}
+
+body:json {
+  {
+    "taxType": "PERIODIC",
+    "validFrom": "2026-10-01",
+    "paidFor": "QUARTERLY",
+    "documentFront": "test/road-tax-proof.jpg"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.taxType: eq PERIODIC
+  res.body.data.paidFor: eq QUARTERLY
+  res.body.data.validFrom: eq 2026-10-01
+  res.body.data.validUpto: eq 2026-12-31
+  res.body.data.source: eq USER
+  res.body.data.documentFront: eq test/road-tax-proof.jpg
+}
+
+tests {
+  test("daysLeft is a number and status is set", function () {
+    expect(res.body.data.daysLeft).to.be.a("number");
+    expect(res.body.data.status).to.be.oneOf(["VALID", "EXPIRES_SOON", "EXPIRING", "EXPIRED"]);
+  });
+}
+
+docs {
+  Valid up to is worked out from valid from + paid for: 1 Oct + QUARTERLY = 31 Dec.
+  Writes a road-tax row on the staging truck.
+}

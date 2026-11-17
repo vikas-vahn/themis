@@ -1,0 +1,25 @@
+meta {
+  name: Trucks fleet compliance - other company refused
+  type: http
+  seq: 303
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/compliance?torgId=1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 403
+}
+
+docs {
+  A non-admin passing another company's torgId is refused: body statusCode 403 (HTTP stays 200).
+  Use a TORG_ADMIN token of a company other than 1.
+}

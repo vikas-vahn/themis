@@ -1,0 +1,45 @@
+meta {
+  name: 4. Put road tax - long period not confirmed
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/{{plutusRoadTaxTruckId}}/road-tax
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusRoadTaxToken}}
+}
+
+body:json {
+  {
+    "taxType": "PERIODIC",
+    "validFrom": "2026-10-01",
+    "paidFor": "OTHER",
+    "validUpto": "2028-10-01",
+    "documentFront": "test/road-tax-proof.jpg",
+    "confirmLongPeriod": false
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+tests {
+  test("message asks to confirm the long period", function () {
+    expect(res.body.message).to.match(/^CONFIRM_LONG_PERIOD/);
+  });
+}
+
+docs {
+  A period over one year needs `confirmLongPeriod: true`. Nothing is saved.
+}

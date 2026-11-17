@@ -1,0 +1,42 @@
+meta {
+  name: 5. Put road tax - no proof
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/{{plutusRoadTaxTruckId}}/road-tax
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{plutusRoadTaxToken}}
+}
+
+body:json {
+  {
+    "taxType": "PERIODIC",
+    "validFrom": "2026-10-01",
+    "paidFor": "QUARTERLY"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+}
+
+tests {
+  test("message says proof is required", function () {
+    expect(res.body.message).to.match(/Proof is required/);
+  });
+}
+
+docs {
+  Users must send `documentFront`. Nothing is saved.
+}

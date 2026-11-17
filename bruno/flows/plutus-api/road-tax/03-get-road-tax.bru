@@ -1,0 +1,30 @@
+meta {
+  name: 3. Get road tax
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{plutusRoadTaxTruckId}}/road-tax
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusRoadTaxToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("status is a known road tax status", function () {
+    expect(res.body.data.status).to.be.oneOf(["VALID", "EXPIRES_SOON", "EXPIRING", "EXPIRED", "LIFETIME", "NOT_AVAILABLE"]);
+  });
+}
+
+docs {
+  RoadTaxDTO for the truck. With no data the status is `NOT_AVAILABLE` and the other fields are absent.
+}

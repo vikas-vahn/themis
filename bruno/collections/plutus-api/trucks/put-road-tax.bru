@@ -1,0 +1,43 @@
+meta {
+  name: Trucks put road tax
+  type: http
+  seq: 305
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/{{truckId}}/road-tax
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "taxType": "PERIODIC",
+    "validFrom": "2026-10-01",
+    "paidFor": "QUARTERLY",
+    "documentFront": "test/road-tax-proof.jpg"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.validUpto: eq 2026-12-31
+  res.body.data.source: eq USER
+}
+
+docs {
+  ENG-1398. Saves hand-entered tax with proof; returns the updated RoadTaxDTO. Writes a row on the truck.
+  Refusals (body statusCode 400): no documentFront, validFrom in the future, OTHER without validUpto,
+  a period over 1 year without `confirmLongPeriod` (message starts CONFIRM_LONG_PERIOD), over 15 years.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER. The refusals are walked in
+  flows/plutus-api/road-tax.
+}

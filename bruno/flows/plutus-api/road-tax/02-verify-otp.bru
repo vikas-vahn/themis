@@ -1,0 +1,36 @@
+meta {
+  name: 2. Verify OTP (Fleet Owner)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{plutusRoadTaxOwnerPhone}}",
+    "otp": "{{plutusRoadTaxOwnerOtp}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.user.role: eq TORG_ADMIN
+}
+
+script:post-response {
+  bru.setVar("plutusRoadTaxToken", res.body.data.accessToken);
+}
+
+docs {
+  Keeps the token in the runtime var {{plutusRoadTaxToken}} (not written to the env file).
+}

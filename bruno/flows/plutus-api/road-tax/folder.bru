@@ -1,0 +1,28 @@
+meta {
+  name: road-tax
+}
+
+docs {
+  # Road Tax Journey (ENG-1398)
+
+  A fleet owner (TORG_ADMIN of staging test company 315) reads and enters a truck's road tax, then
+  sees it on the fleet compliance list and on the truck detail. Endpoints live in plutus-java
+  `TruckResource`: `GET/PUT /api/trucks/{truckId}/road-tax`, `GET /api/trucks/compliance`, and
+  `GET /api/trucks/{id}` (`truckDocuments.roadTax`).
+
+  Run requests 1-9 in order (environment "staging"):
+
+  - 1-2: the owner logs in (OTP `776677`). The token is kept in a runtime var
+    (`plutusRoadTaxToken`), so nothing is written to the environment file.
+  - 3: read the road tax. Before the first run the status is `NOT_AVAILABLE`.
+  - 4: PUT a period over one year without `confirmLongPeriod`: refused, message starts
+    `CONFIRM_LONG_PERIOD`.
+  - 5: PUT without a proof file: refused ("Proof is required").
+  - 6: valid QUARTERLY entry, valid from 2026-10-01, so valid up to 2026-12-31 (source `USER`).
+    Note: once the date passes 2026-12-31 the status turns EXPIRED, and step 8 then expects it first.
+  - 7-9: the saved row shows on the road-tax GET, the compliance list and the truck detail.
+
+  Errors come back with HTTP 200 and the code in the body (`statusCode`, `message`).
+  Step 6 writes a road-tax row on staging truck `plutusRoadTaxTruckId`; rerunning overwrites it.
+  The proof key is a dummy string; no upload is made.
+}

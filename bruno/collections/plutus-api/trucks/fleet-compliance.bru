@@ -1,0 +1,43 @@
+meta {
+  name: Trucks fleet compliance
+  type: http
+  seq: 301
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/compliance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("rows carry road tax with status and the anyExpired flag", function () {
+    expect(res.body.data).to.be.an("array");
+    res.body.data.forEach(function (r) {
+      expect(r.truckId).to.be.a("number");
+      expect(r.roadTax.status).to.be.a("string");
+      expect(r).to.have.property("anyExpired");
+    });
+  });
+
+  test("expired trucks come first", function () {
+    const flags = res.body.data.map(function (r) { return r.anyExpired; });
+    const firstFalse = flags.indexOf(false);
+    if (firstFalse >= 0) { expect(flags.slice(firstFalse)).to.not.include(true); }
+  });
+}
+
+docs {
+  ENG-1398. Road tax (always present, `status` NOT_AVAILABLE when unknown), statePermit, nationalPermit
+  and anyExpired for every truck of the caller's company. Run with a TORG_ADMIN token in
+  {{accessToken}}. A VAHN_ADMIN must pass `torgId` (400 otherwise).
+}

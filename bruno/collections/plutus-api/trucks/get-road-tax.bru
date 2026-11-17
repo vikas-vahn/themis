@@ -1,0 +1,31 @@
+meta {
+  name: Trucks get road tax
+  type: http
+  seq: 304
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{truckId}}/road-tax
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("status is a known road tax status", function () {
+    expect(res.body.data.status).to.be.oneOf(["VALID", "EXPIRES_SOON", "EXPIRING", "EXPIRED", "LIFETIME", "NOT_AVAILABLE"]);
+  });
+}
+
+docs {
+  ENG-1398. RoadTaxDTO; `NOT_AVAILABLE` with no other fields when the truck has no tax data.
+  Set {{truckId}} to a truck of the token's company. The journey is in flows/plutus-api/road-tax.
+}
