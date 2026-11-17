@@ -1,0 +1,45 @@
+meta {
+  name: 8. Admin lists open requests
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/admin/assistance-requests?type=ROAD_TAX_NOT_UPDATED&status=OPEN&torgId=315&limit=50&offset=0
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+script:pre-request {
+  if (!bru.getVar("plutusApiRoadTaxHelpRequestId")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data: isArray
+}
+
+tests {
+  test("contains the request with the plate as entityLabel", function () {
+    const id = bru.getVar("plutusApiRoadTaxHelpRequestId");
+    const item = res.body.data.find(r => r.id === id);
+    expect(item, "request " + id + " in the list").to.not.equal(undefined);
+    expect(item.requestType).to.equal("ROAD_TAX_NOT_UPDATED");
+    expect(item.entityType).to.be.a("string");
+    expect(item.entityId).to.equal(bru.getVar("plutusApiRoadTaxTruckId"));
+    expect(item.entityLabel).to.equal(bru.getVar("plutusApiRoadTaxPlate"));
+    expect(item.torgId).to.equal(315);
+    expect(item.status).to.equal("OPEN");
+    expect(item.requestedAt).to.be.a("string");
+    expect(item.remarks).to.be.a("string");
+  });
+}
+
+docs {
+  `AssistanceRequestAdminResource.list`, VAHN_ADMIN only. Needs `--env-var vahnAdminToken=...`.
+}

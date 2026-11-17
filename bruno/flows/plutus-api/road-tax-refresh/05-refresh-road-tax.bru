@@ -1,0 +1,49 @@
+meta {
+  name: 5. Refresh road tax (PAID, once)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/{{plutusApiRoadTaxTruckId}}/road-tax/refresh
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRoadTaxOwnerToken}}
+}
+
+assert {
+  res.body.statusCode: in [200, 429]
+}
+
+script:post-response {
+  if (res.body.statusCode === 200) {
+    const d = res.body.data;
+    bru.setVar("plutusApiRoadTaxCanAsk", d.canAskVahnTeam === true);
+    bru.setVar("plutusApiRoadTaxHasRequest", !!d.helpRequest);
+  }
+}
+
+tests {
+  test("200 returns the refreshed row, 429 means already refreshed today", function () {
+    if (res.body.statusCode === 200) {
+      const d = res.body.data;
+      expect(d.lastFetchedAt).to.be.a("string");
+      expect(d.lastFetchResult).to.be.a("string");
+      // a FAILED fetch can be retried the same day; any other result locks non-admins out until tomorrow
+      expect(d.refreshAvailable).to.equal(d.lastFetchResult === "FAILED");
+      expect(d.canAskVahnTeam).to.be.a("boolean");
+    } else {
+      expect(res.body.statusCode).to.equal(429);
+      expect(res.body.message).to.include("already refreshed today");
+    }
+  });
+}
+
+docs {
+  `TruckResource.refreshRoadTax`. Calls ULIP VAHAN, then **paid Surepass** as fallback. Non-admins: once per truck per IST day, else 429.
+  Run it once per run, never in a loop. `lastFetchResult` says what was found.
+  The API answers errors with HTTP 200 and the real code in `body.statusCode` (429 here). `refreshAvailable` stays true after a FAILED fetch.
+}

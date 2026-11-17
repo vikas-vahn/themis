@@ -1,0 +1,45 @@
+meta {
+  name: 6. Ask VAHN team (when allowed)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/{{plutusApiRoadTaxTruckId}}/road-tax/help-request
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiRoadTaxOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "remarks": "themis ENG-1398: paid at RTO, not showing"
+  }
+}
+
+script:pre-request {
+  if (bru.getVar("plutusApiRoadTaxCanAsk") !== true) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.helpRequest.id: isNumber
+  res.body.data.helpRequest.status: eq OPEN
+  res.body.data.helpRequest.requestedAt: isString
+}
+
+script:post-response {
+  bru.setVar("plutusApiRoadTaxHelpRequestId", res.body.data.helpRequest.id);
+}
+
+docs {
+  `TruckResource.askVahnTeam`. Runs only when `canAskVahnTeam` is true. Stores `plutusApiRoadTaxHelpRequestId`.
+}

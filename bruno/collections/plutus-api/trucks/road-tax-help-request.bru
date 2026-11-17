@@ -1,0 +1,41 @@
+meta {
+  name: Road Tax Ask VAHN Team
+  type: http
+  seq: 42
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/{{plutusApiRoadTaxTruckId}}/road-tax/help-request
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  plutusApiRoadTaxTruckId: 1255
+}
+
+body:json {
+  {
+    "remarks": "Paid at the RTO, not showing yet"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.helpRequest.id: isNumber
+  res.body.data.helpRequest.status: eq OPEN
+}
+
+docs {
+  `TruckResource.askVahnTeam` (ENG-1398), "Paid, but not showing? Ask VAHN team". Roles VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER.
+  Body is optional; `remarks` max 1000 chars (longer: 400).
+
+  Allowed only when the row's `canAskVahnTeam` is true (expiry date today or earlier AND a fetch ran on/after the expiry date); otherwise 400
+  "Ask VAHN team opens after the tax expiry date has been checked". Asking again in the same tax period returns the same request (`helpRequest.id` unchanged).
+  The request is closed automatically when a newer tax date is saved. Admins see it in `assistance-requests/list`.
+}

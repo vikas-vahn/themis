@@ -1,0 +1,40 @@
+meta {
+  name: Close Assistance Request
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/admin/assistance-requests/{{plutusApiAssistanceRequestId}}/close
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+vars:pre-request {
+  plutusApiAssistanceRequestId: 0
+}
+
+body:json {
+  {
+    "status": "CANCELLED",
+    "note": "closed from the themis reference request"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.status: eq CANCELLED
+  res.body.data.resolutionNote: isString
+}
+
+docs {
+  `AssistanceRequestAdminResource.close` (ENG-1398). VAHN_ADMIN only. Body `status` is RESOLVED or CANCELLED (OPEN or missing: 400), `note` optional (max 2000).
+  Already closed: 409. Unknown id: 404. Set `plutusApiAssistanceRequestId` on the Vars tab (take it from the list request).
+
+  Needs `{{vahnAdminToken}}`; pass it at run time with --env-var, never commit it.
+}
