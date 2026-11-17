@@ -1,0 +1,55 @@
+meta {
+  name: Permanently block (hotlist) a fuel card
+  type: http
+  seq: 120
+}
+
+put {
+  url: {{baseUrl}}/api/fuel-cards/{{plutusApiFuelCardId}}/permanent-block?reason=Driver left the organisation
+  body: none
+  auth: bearer
+}
+
+params:query {
+  reason: Driver left the organisation
+  ~transferToCardId: {{plutusApiFuelCardTransferToId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  `PUT /api/fuel-cards/{id}/permanent-block`: the closest thing plutus-api has to deleting a BPCL card.
+  BPCL has no delete; this hotlists the card at the provider and marks our row `CLOSED` with the reason.
+  It cannot be undone. Run it on purpose, one card at a time, and never against a production card from here.
+
+  plutus-java: `FuelCardResource.permanentBlockFuelCard` -> `FuelCardService.permanentBlockCard` ->
+  `BPCLClient.permanentBlockCard` (BPCL change-status `hotlist`, success is a 202 from BPCL).
+
+  Inputs:
+  - `plutusApiFuelCardId`: our `fuel_cards.id`, not the card number.
+  - `reason` (optional): saved as the block reason.
+  - `transferToCardId` (optional, disabled here): an ACTIVE card of the same provider. Required when the
+    card still has a balance, which is moved there before the hotlist. Enable it and set
+    `plutusApiFuelCardTransferToId` for that case.
+
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT, OPERATOR.
+
+  Responses:
+  - 200 with an empty body: hotlisted, row is now `CLOSED`.
+  - 400 "Fuel card balance is not zero": pass `transferToCardId`.
+  - 400 "Fuel card is not active": already blocked or closed.
+  - 503 "Unable to permanently block fuel card": BPCL refused or the balance transfer failed.
+
+  Watch out:
+  - The torg ownership check is commented out in the service, so any of the roles above can hotlist any
+    card id, including another torg's.
+  - The phone number is not unassigned at BPCL first (BPCL asked for unassign before hotlist, and
+    `BPCLClient` has no `unassignDriver`). Creating a new BPCL card for the same mobile number may still
+    fail until the number is unassigned on the BPCL web portal.
+}

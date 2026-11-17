@@ -1,3 +1,15 @@
 meta {
   name: fuel-cards
 }
+
+docs {
+  plutus-api fuel cards (`/api/fuel-cards`, `FuelCardResource`), BPCL and IOCL.
+
+  Deleting a BPCL card: there is no provider delete. Use "Permanently block (hotlist) a fuel card"
+  (`PUT /{id}/permanent-block`), which hotlists the card at BPCL and closes our row.
+
+  Not the same thing, and deliberately not added as requests:
+  - `DELETE /api/fuel-cards/{id}` (ADMIN): removes only our DB row. The card stays live at BPCL.
+  - `PUT /api/fuel-cards/{id}/status?status=` (VAHN_ADMIN): changes only our DB status.
+  - `PUT /{id}/block` and `PUT /{id}/unblock`: temporary block, reversible.
+}
