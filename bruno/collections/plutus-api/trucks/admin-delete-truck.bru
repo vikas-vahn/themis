@@ -1,0 +1,28 @@
+meta {
+  name: Admin Delete Truck (verified included)
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/admin/{{truckId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  VAHN_ADMIN only (`TruckResource.adminDeleteTruck`, service `TruckService.adminDeleteTruck`).
+  Soft-deletes a truck even when it is VERIFIED, unassigning its driver first. `{id}` is digits only.
+
+  Set `truckId` (and a VAHN_ADMIN `accessToken`) before running. Only use a throwaway truck.
+
+  Success is 204; staging wraps it as HTTP 200 with `statusCode: 204` in the body. A missing or
+  already-deleted id gives body `statusCode: 404`; a non-admin token gives body `statusCode: 403`.
+  The regular `DELETE /api/trucks/{id}` still refuses VERIFIED trucks.
+
+  Journey with assertions: `bruno/flows/plutus-api/admin-truck-force-delete`.
+}

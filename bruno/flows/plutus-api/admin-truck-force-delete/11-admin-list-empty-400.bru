@@ -1,0 +1,33 @@
+meta {
+  name: Admin list with an empty truckIds is rejected
+  type: http
+  seq: 11
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/admin/list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "truckIds": []
+  }
+}
+
+assert {
+  res.body.statusCode: eq 400
+}
+
+docs {
+  TruckDeletionRequest.truckIds is @NotEmpty.
+}

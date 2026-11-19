@@ -1,0 +1,27 @@
+meta {
+  name: Admin delete refused for a TORG_ADMIN token
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/admin/{{plutusApiTruckForceDeleteAId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteTorgToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.body.statusCode: eq 403
+}
+
+docs {
+  The route is VAHN_ADMIN only. Auth failures on this API often come back as HTTP 200 with the status in the body, so assert the body `statusCode`. Truck A must survive: step 12 still deletes it.
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Regular DELETE /trucks/list still refuses a VERIFIED truck
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "truckIds": [{{plutusApiTruckForceDeleteBId}}]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data[0].truckId: eq {{plutusApiTruckForceDeleteBId}}
+  res.body.data[0].success: eq false
+  res.body.data[0].errorMessage: contains is verified
+}
+
+docs {
+  Contrast check for the bulk route: 200 with data[0].success=false and 'is verified' for the VERIFIED truck B. Truck B is not deleted.
+}

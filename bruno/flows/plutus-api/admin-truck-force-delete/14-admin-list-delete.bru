@@ -1,0 +1,39 @@
+meta {
+  name: Admin bulk delete: VERIFIED B, unverified C, missing id
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/admin/list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "truckIds": [{{plutusApiTruckForceDeleteBId}}, {{plutusApiTruckForceDeleteCId}}, 99999999]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.length: eq 3
+  res.body.data[0].success: eq true
+  res.body.data[1].success: eq true
+  res.body.data[2].truckId: eq 99999999
+  res.body.data[2].success: eq false
+  res.body.data[2].errorMessage: eq Vehicle not found
+}
+
+docs {
+  One result per id, in order, `{truckId, success, errorMessage}`. The missing id fails without stopping the rest.
+}

@@ -1,0 +1,27 @@
+meta {
+  name: admin-truck-force-delete
+}
+
+docs {
+  # VAHN_ADMIN force-delete of trucks (plutus-java PR #1141, branch topic/admin-truck-force-delete)
+
+  Covers `DELETE /api/trucks/admin/{id}` (204, no body) and `DELETE /api/trucks/admin/list`
+  (200, `[{truckId, success, errorMessage}]`), both VAHN_ADMIN only. They soft-delete a truck even
+  when it is VERIFIED, unassigning its driver first. The existing `DELETE /api/trucks/{id}` and
+  `/api/trucks/list` still refuse VERIFIED trucks (steps 7-8 are the contrast check).
+
+  Run requests 1-15 in order on staging. Pass the VAHN_ADMIN token at run time so it is never stored:
+
+      npx @usebruno/cli run bruno/flows/plutus-api/admin-truck-force-delete --env staging \
+        --env-var plutusApiTruckForceDeleteAdminToken=<VAHN_ADMIN token>
+
+  The static VAHN_ADMIN token (plutus-java config.yml, auth.static_tokens.role_tokens) works on
+  staging, or log in as a real VAHN_ADMIN. Step 1 logs in the torg admin `plutusApiTruckForceDeleteTorgPhone` as the
+  non-admin caller for step 9.
+
+  Test data: it creates three throwaway trucks (A verified, B verified, C unverified) in torg
+  `plutusApiTruckForceDeleteTorgId` and deletes all three. It never touches an existing truck.
+  Verification uses `mark-as-verified`, which needs a primary PAN card on that torg.
+  Not covered: the driver-unassign part (no driver is attached). All captured values are runtime
+  vars (`bru.setVar`), so nothing is written to the environment file.
+}

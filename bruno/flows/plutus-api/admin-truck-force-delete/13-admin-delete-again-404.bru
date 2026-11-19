@@ -1,0 +1,27 @@
+meta {
+  name: Deleting A again is 404
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/admin/{{plutusApiTruckForceDeleteAId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.body.statusCode: eq 404
+}
+
+docs {
+  Proves step 12 really soft-deleted the truck: findById now filters it out.
+}

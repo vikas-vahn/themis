@@ -1,0 +1,36 @@
+meta {
+  name: Admin Delete Trucks Bulk (verified included)
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/admin/list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "truckIds": []
+  }
+}
+
+docs {
+  VAHN_ADMIN only (`TruckResource.adminDeleteTruckList`). Like `DELETE /api/trucks/list` but also
+  deletes VERIFIED trucks. Fill `truckIds` with throwaway trucks only; an empty list is a 400
+  (`@NotEmpty`).
+
+  Returns `data: [{ truckId, success, errorMessage }]`, one per id in order; a failure (for example
+  "Vehicle not found") does not stop the rest.
+
+  Journey with assertions: `bruno/flows/plutus-api/admin-truck-force-delete`.
+}

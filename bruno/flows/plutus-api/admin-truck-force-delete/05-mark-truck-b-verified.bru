@@ -1,0 +1,33 @@
+meta {
+  name: Mark truck B VERIFIED
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/mark-as-verified?remarks=themis%20force-delete%20test&isConsentGiven=false
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "entityIds": [{{plutusApiTruckForceDeleteBId}}]
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  `TruckResource.markAsVerified` (VAHN_ADMIN or TORG_ADMIN). Sets verificationStatus=VERIFIED without calling RC providers. Uses the torg's primary PAN card; if the torg has none this returns a 400 'PAN card not found for torg'.
+}

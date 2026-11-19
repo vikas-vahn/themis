@@ -1,0 +1,35 @@
+meta {
+  name: Bulk delete of already-deleted B and C reports failures
+  type: http
+  seq: 15
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/admin/list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "truckIds": [{{plutusApiTruckForceDeleteBId}}, {{plutusApiTruckForceDeleteCId}}]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data[0].success: eq false
+  res.body.data[1].success: eq false
+}
+
+docs {
+  Confirms step 14 deleted both.
+}

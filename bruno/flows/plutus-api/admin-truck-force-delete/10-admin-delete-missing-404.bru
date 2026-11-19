@@ -1,0 +1,27 @@
+meta {
+  name: Admin delete of a missing id is 404
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/admin/99999999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.body.statusCode: eq 404
+}
+
+docs {
+  `TruckService.deleteTruck` throws NotFoundException('Vehicle not found'). The `{id}` path param only matches digits.
+}

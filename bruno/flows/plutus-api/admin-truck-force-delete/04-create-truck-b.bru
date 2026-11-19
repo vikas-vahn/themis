@@ -1,0 +1,42 @@
+meta {
+  name: Create throwaway truck B
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/trucks
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "registrationNumber": "{{plutusApiTruckForceDeleteBReg}}",
+    "torgId": {{plutusApiTruckForceDeleteTorgId}}
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  bru.setVar("plutusApiTruckForceDeleteBReg", "MH69AG" + String(Date.now()).slice(-4));
+}
+
+script:post-response {
+  bru.setVar("plutusApiTruckForceDeleteBId", String(res.body.data.id));
+}
+
+docs {
+  Creates throwaway truck B in the test torg (it is marked VERIFIED in the next step). Only trucks created by this flow are ever deleted by it.
+}

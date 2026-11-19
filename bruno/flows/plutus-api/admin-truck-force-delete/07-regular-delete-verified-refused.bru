@@ -1,0 +1,28 @@
+meta {
+  name: Regular DELETE /trucks/{id} still refuses a VERIFIED truck
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/api/trucks/{{plutusApiTruckForceDeleteAId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiTruckForceDeleteAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.body.statusCode: eq 400
+  res.body.message: contains is verified
+}
+
+docs {
+  Contrast check. The existing delete is unchanged: a VERIFIED truck is refused with '<label> is verified' (BadRequestException). Truck A is not deleted.
+}
