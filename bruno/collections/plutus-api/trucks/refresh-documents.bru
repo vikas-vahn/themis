@@ -1,0 +1,42 @@
+meta {
+  name: Refresh Truck Documents (VAHAN)
+  type: http
+  seq: 306
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/{{truckId}}/refresh-documents
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vahnAdminToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.truckId: isDefined
+}
+
+docs {
+  `TruckResource.refreshDocuments` (`common/controller/TruckResource.java:1252`), VAHN_ADMIN only, no request body.
+  Starts a background re-fetch from VAHAN / TGVAHAN of all the truck's documents (insurance, PUC, RC, permit,
+  fitness, road tax) and returns at once, without waiting for the fetch.
+
+  Success: HTTP 200 `{"message": "Document refresh triggered for truck <reg>", "truckId": <id>}`.
+  This endpoint returns a plain map, not the usual `{data, message, statusCode, success}` envelope,
+  so the asserts check the HTTP status and `res.body.truckId` only.
+
+  Async: a 200 only means the refresh was started. The outcome appears in the plutus-api logs as
+  "Manual document refresh for truck <reg> completed: N documents refreshed"; check the truck's
+  documents afterwards to see what changed.
+
+  Cost and side effects: every call makes a paid VAHAN provider call and rewrites the truck's document
+  data. Do not loop it, and use a throwaway truck.
+
+  Other outcomes: unknown truck -> 404 `{"error": "Truck not found"}`; service not wired -> 503
+  `{"error": "Document refresh service not available"}`.
+
+  Set `truckId` and `vahnAdminToken` in the selected environment (or pass them with --env-var); never commit the token.
+}
