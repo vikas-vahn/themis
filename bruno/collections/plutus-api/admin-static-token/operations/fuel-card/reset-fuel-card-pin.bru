@@ -1,0 +1,32 @@
+meta {
+  name: PUT /api/fuel-cards/{id}/reset-pin
+  type: http
+  seq: 35
+}
+
+put {
+  url: {{baseUrl}}/api/fuel-cards/:id/reset-pin
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelCardResource.resetFuelCardPin` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:1224`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR.
+  Risk: external-write.
+}

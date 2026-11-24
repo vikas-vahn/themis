@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/lorry-receipts/{id}/url
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/lorry-receipts/:id/url
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `LorryReceiptResource.getOrGenerateLorryReceiptUrl` in plutus-java `src/main/java/com/vahn/plutus/common/controller/LorryReceiptResource.java:147`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR, ACCOUNTANT, DRIVER.
+  Risk: read.
+}

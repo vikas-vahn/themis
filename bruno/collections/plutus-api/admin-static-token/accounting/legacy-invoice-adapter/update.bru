@@ -1,0 +1,222 @@
+meta {
+  name: PUT /api/invoices/{id}
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/invoices/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "invoiceNumber": "",
+    "invoiceDate": "2026-01-01",
+    "dueDate": "2026-01-01",
+    "lrDate": "2026-01-01",
+    "lrNumber": "",
+    "billTo": {
+      "id": 0,
+      "name": "",
+      "location": {},
+      "pickupLocationList": [
+        {}
+      ],
+      "destinationLocationList": [
+        {}
+      ],
+      "billingAddressList": [
+        {}
+      ],
+      "torgId": 0,
+      "gstId": 0,
+      "status": "CREATED",
+      "verified": false,
+      "extraInfo": {},
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "gstNumber": ""
+    },
+    "shipTo": {
+      "id": 0,
+      "name": "",
+      "location": {},
+      "pickupLocationList": [
+        {}
+      ],
+      "destinationLocationList": [
+        {}
+      ],
+      "billingAddressList": [
+        {}
+      ],
+      "torgId": 0,
+      "gstId": 0,
+      "status": "CREATED",
+      "verified": false,
+      "extraInfo": {},
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "gstNumber": ""
+    },
+    "consignor": {
+      "id": 0,
+      "name": "",
+      "addressList": [
+        {}
+      ],
+      "status": "CREATED",
+      "gstId": 0,
+      "gstNumber": "",
+      "customerId": 0,
+      "consignorType": "CONSIGNOR",
+      "isCustomer": false
+    },
+    "consignee": {
+      "id": 0,
+      "name": "",
+      "addressList": [
+        {}
+      ],
+      "status": "CREATED",
+      "gstId": 0,
+      "gstNumber": "",
+      "customerId": 0,
+      "consignorType": "CONSIGNOR",
+      "isCustomer": false
+    },
+    "invoiceUrl": "",
+    "billToAddress": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "shipToAddress": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "consignorAddress": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "consigneeAddress": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "billToCustomerId": 0,
+    "shipToCustomerId": 0,
+    "consignorId": 0,
+    "consigneeId": 0,
+    "billToAddressId": 0,
+    "shipToAddressId": 0,
+    "consignorAddressId": 0,
+    "consigneeAddressId": 0,
+    "productDetails": [
+      {
+        "productName": "",
+        "quantity": 0,
+        "unit": "",
+        "measureIn": "",
+        "rate": 0,
+        "weight": 0,
+        "hsnCode": "",
+        "amount": 0,
+        "weightCharged": 0,
+        "packagingType": "",
+        "freightCharge": 0,
+        "packageCharges": 0,
+        "extraCharges": 0
+      }
+    ],
+    "exclusive": false,
+    "tripId": 0,
+    "companyLogoUrl": "",
+    "invoiceSetting": {
+      "id": 0,
+      "torgId": 0,
+      "remarks": "",
+      "notes": "",
+      "declaration": "",
+      "signatureUrl": "",
+      "companyLogoUrl": "",
+      "companyName": "",
+      "addressLine1": "",
+      "addressLine2": "",
+      "pinCode": "",
+      "city": "",
+      "state": "",
+      "phoneNumber": "",
+      "gstNumber": "",
+      "pan": "",
+      "cin": "",
+      "signatures": [
+        {}
+      ]
+    },
+    "freightCharge": 0,
+    "otherCharges": [
+      {}
+    ],
+    "gstValues": {}
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `LegacyInvoiceAdapter.update` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/LegacyInvoiceAdapter.java:179`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER, TRUCK_MANAGER, OPERATOR.
+  Risk: external-write.
+  Body: `InvoiceDTO`.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/transactions/torg/{torgId}
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/torg/:torgId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TransactionResource.getTransactionsByTorgId` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:210`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

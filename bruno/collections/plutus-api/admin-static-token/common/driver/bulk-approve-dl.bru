@@ -1,0 +1,35 @@
+meta {
+  name: POST /api/drivers/v1/bulk-approve-dl
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/drivers/v1/bulk-approve-dl
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "driverIds": []
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `DriverResource.bulkApproveDl` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:588`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `BulkDlApprovalRequestDTO`.
+}

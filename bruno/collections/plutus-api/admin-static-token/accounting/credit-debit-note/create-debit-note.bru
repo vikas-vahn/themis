@@ -1,0 +1,50 @@
+meta {
+  name: POST /api/accounting/cn-dn/debit
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/accounting/cn-dn/debit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "originalInvoiceId": 0,
+    "noteDate": "2026-01-01",
+    "reason": "RETURN_GOODS_REJECTED",
+    "reasonText": "",
+    "items": [
+      {
+        "accountingItemId": 0,
+        "quantity": 0,
+        "itemName": "",
+        "hsnSac": "",
+        "rate": 0,
+        "gstPercent": 0
+      }
+    ],
+    "remarks": "",
+    "customDnNumber": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `CreditDebitNoteResource.createDebitNote` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/CreditDebitNoteResource.java:197`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: external-write.
+  Body: `CreateDebitNoteRequest`.
+}

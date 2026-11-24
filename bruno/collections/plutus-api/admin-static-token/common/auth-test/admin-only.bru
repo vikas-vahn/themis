@@ -1,0 +1,21 @@
+meta {
+  name: GET /api/auth-test/admin-only
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/auth-test/admin-only
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `AuthTestResource.adminOnly` in plutus-java `src/main/java/com/vahn/plutus/common/controller/AuthTestResource.java:37`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

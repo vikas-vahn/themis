@@ -1,0 +1,32 @@
+meta {
+  name: DELETE /api/v1/spend-limits/one-time-exceptions/{exceptionId}
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/spend-limits/one-time-exceptions/:exceptionId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  exceptionId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `UserSpendLimitResource.deleteOneTimeException` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/UserSpendLimitResource.java:305`.
+  Roles: TORG_ADMIN, VAHN_ADMIN, FUND_MANAGER.
+  Risk: write.
+}

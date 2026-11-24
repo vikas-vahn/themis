@@ -1,0 +1,42 @@
+meta {
+  name: POST /api/v1/spend-limits/one-time-exceptions
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/spend-limits/one-time-exceptions
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "truckId": 0,
+    "amount": 0,
+    "reason": "",
+    "userId": 0
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `UserSpendLimitResource.createOrUpdateOneTimeException` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/UserSpendLimitResource.java:264`.
+  Roles: TORG_ADMIN, VAHN_ADMIN, FUND_MANAGER.
+  Risk: write.
+  Body: `OneTimeExceptionRequest`.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/transactions/fuelcard/{fuelCardId}
+  type: http
+  seq: 27
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/fuelcard/:fuelCardId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  fuelCardId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TransactionResource.getTransactionsByFuelCardId` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:171`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR, ACCOUNTANT, DRIVER.
+  Risk: read.
+}

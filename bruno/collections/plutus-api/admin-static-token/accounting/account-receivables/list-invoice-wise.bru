@@ -1,0 +1,34 @@
+meta {
+  name: GET /api/accounting/ar/invoices
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/ar/invoices
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~tab: ALL
+  ~search: 
+  ~dateFrom: 
+  ~dateTo: 
+  ~customerId: 
+  ~ageingBucket: 
+  ~cursor: 
+  ~limit: 50
+  ~sortKey: 
+  ~sortDir: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `AccountReceivablesResource.listInvoiceWise` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/AccountReceivablesResource.java:72`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: read.
+}

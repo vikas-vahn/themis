@@ -1,0 +1,29 @@
+meta {
+  name: GET /api/transactions/admin/money-flow-report
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/admin/money-flow-report
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~fromDate: 
+  ~toDate: 
+  ~torgId: 
+  ~pageNumber: 
+  ~pageSize: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TransactionResource.getMoneyFlowReport` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:1139`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

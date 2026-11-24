@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/fuel-cards/validate
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-cards/validate
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~cardNumber: 
+  ~provider: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelCardResource.validateFuelCard` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:526`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

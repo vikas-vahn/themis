@@ -1,0 +1,33 @@
+meta {
+  name: GET /api/verification/driving-license/verify
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/verification/driving-license/verify
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~dlNumber: 
+  ~dateOfBirth: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-read call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `VerificationResource.verifyDrivingLicense` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VerificationResource.java:261`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT, TRUCK_MANAGER, OPERATOR, DRIVER, NEW_USER, FUEL_STATION_MANAGER.
+  Risk: external-read.
+}

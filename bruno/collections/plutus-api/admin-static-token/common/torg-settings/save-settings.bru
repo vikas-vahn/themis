@@ -1,0 +1,41 @@
+meta {
+  name: POST /api/torg-settings/{section}
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/torg-settings/:section
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+params:path {
+  section: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TorgSettingsResource.saveSettings` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TorgSettingsResource.java:76`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: write.
+  Body: `JsonNode`.
+}

@@ -1,0 +1,40 @@
+meta {
+  name: POST /api/trips/market-report/download
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/trips/market-report/download
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "example": {},
+    "startDate": "2026-01-01",
+    "endDate": "2026-01-01",
+    "truckIds": {},
+    "driverIds": {},
+    "customerIds": {}
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TripResource.downloadMarketTripsReport` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripResource.java:2218`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: write.
+  Body: `MarketTripReportRequestDTO`.
+}

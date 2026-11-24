@@ -1,0 +1,37 @@
+meta {
+  name: POST /api/note-categories
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/note-categories
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "entityType": "TRUCK",
+    "name": "",
+    "displayOrder": 0
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `NoteCategoryResource.createCategory` in plutus-java `src/main/java/com/vahn/plutus/common/controller/NoteCategoryResource.java:67`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `NoteCategoryRequest`.
+}

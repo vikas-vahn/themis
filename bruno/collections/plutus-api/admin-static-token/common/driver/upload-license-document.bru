@@ -1,0 +1,37 @@
+meta {
+  name: POST /api/drivers/{id}/license-document
+  type: http
+  seq: 34
+}
+
+post {
+  url: {{baseUrl}}/api/drivers/:id/license-document
+  body: multipartForm
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:multipart-form {
+  back: 
+  front: 
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `DriverResource.uploadLicenseDocument` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:673`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, DRIVER.
+  Risk: write.
+}

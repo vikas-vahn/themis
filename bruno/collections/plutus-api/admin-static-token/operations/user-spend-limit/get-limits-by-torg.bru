@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/v1/spend-limits
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/spend-limits
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `UserSpendLimitResource.getLimitsByTorg` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/UserSpendLimitResource.java:66`.
+  Roles: TORG_ADMIN, VAHN_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

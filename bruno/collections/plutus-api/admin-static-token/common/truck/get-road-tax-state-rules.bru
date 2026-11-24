@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/trucks/road-tax/state-rules
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/road-tax/state-rules
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~includeDisabled: false
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TruckResource.getRoadTaxStateRules` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:1020`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: read.
+}

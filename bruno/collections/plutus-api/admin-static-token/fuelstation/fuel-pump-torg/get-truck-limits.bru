@@ -1,0 +1,29 @@
+meta {
+  name: GET /api/fuel-pump-torg-management/truck/{truckId}/limits
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-pump-torg-management/truck/:truckId/limits
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~fuelStationId: 
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelPumpTorgResource.getTruckLimits` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpTorgResource.java:335`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: read.
+}

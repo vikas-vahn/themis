@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/payments/{id}
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/payments/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `PaymentResource.getPaymentById` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/PaymentResource.java:77`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: read.
+}

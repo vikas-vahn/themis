@@ -1,0 +1,45 @@
+meta {
+  name: POST /api/drivers/v1/verify-dl
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/api/drivers/v1/verify-dl
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~force: false
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  [
+    {
+      "example": {},
+      "licenseNumber": "",
+      "dateOfBirth": "2026-01-01",
+      "name": "",
+      "doe": "2026-01-01"
+    }
+  ]
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `DriverResource.retryDLVerificationWithEdits` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:485`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER.
+  Risk: external-write.
+  Body: `List<DlReviewRequestDTO>`.
+}

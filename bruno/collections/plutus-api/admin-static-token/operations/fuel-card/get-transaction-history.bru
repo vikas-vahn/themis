@@ -1,0 +1,30 @@
+meta {
+  name: GET /api/fuel-cards/{id}/transactions
+  type: http
+  seq: 41
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-cards/:id/transactions
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~fromDate: 
+  ~toDate: 
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelCardResource.getTransactionHistory` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:566`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

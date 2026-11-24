@@ -1,0 +1,40 @@
+meta {
+  name: PUT /api/wallets/{id}/limits
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/:id/limits
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~daily_limit: 
+  ~hourly_limit: 
+  ~fastag_recharge_limit: 
+  ~fuel_card_recharge_limit: 
+  ~payment_sent_limit: 
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `WalletResource.updateWalletLimits` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/WalletResource.java:472`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER.
+  Risk: external-write.
+}

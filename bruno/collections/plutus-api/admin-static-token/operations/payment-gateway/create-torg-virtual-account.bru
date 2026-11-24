@@ -1,0 +1,36 @@
+meta {
+  name: POST /api/payment-gateway/virtual-accounts/torg/{torgId}
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/virtual-accounts/torg/:torgId
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~name: Organization Account
+}
+
+params:path {
+  torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `PaymentGatewayResource.createTorgVirtualAccount` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/PaymentGatewayResource.java:228`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+}

@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/fuel-pump-management/gold-fuel-station-due-payment
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-pump-management/gold-fuel-station-due-payment
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~debitCutOffTime: 
+  ~creditCutOffTime: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelPumpManagementResource.getGoldFuelStationDuePayment` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpManagementResource.java:1416`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

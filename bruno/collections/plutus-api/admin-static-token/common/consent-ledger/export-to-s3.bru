@@ -1,0 +1,38 @@
+meta {
+  name: POST /api/consent-ledger/export-to-s3
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/consent-ledger/export-to-s3
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~format: 
+  ~key: 
+  ~userId: 
+  ~entityType: 
+  ~consentType: 
+  ~startDate: 
+  ~endDate: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `ConsentLedgerResource.exportToS3` in plutus-java `src/main/java/com/vahn/plutus/common/controller/ConsentLedgerResource.java:238`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: external-write.
+}

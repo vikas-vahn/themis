@@ -1,0 +1,30 @@
+meta {
+  name: GET /api/fuel-pump-torg-management/transactions
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-pump-torg-management/transactions
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~truckId: 
+  ~fuelStationId: 
+  ~driverId: 
+  ~startDate: 
+  ~endDate: 
+  ~isVahnGoldTransactions: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelPumpTorgResource.getTorgSideTransactions` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpTorgResource.java:554`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

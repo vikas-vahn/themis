@@ -1,0 +1,35 @@
+meta {
+  name: GET /api/accounting/gstr1/section/{section}
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/gstr1/section/:section
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~periodType: 
+  ~periodKey: 
+  ~sortKey: 
+  ~sortDir: 
+  ~search: 
+  ~dateFrom: 
+  ~dateTo: 
+}
+
+params:path {
+  section: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `Gstr1Resource.getSection` in plutus-java `src/main/java/com/vahn/plutus/accounting/gstr1/controller/Gstr1Resource.java:95`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: read.
+}

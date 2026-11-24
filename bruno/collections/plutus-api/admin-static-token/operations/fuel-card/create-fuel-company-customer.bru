@@ -1,0 +1,191 @@
+meta {
+  name: POST /api/fuel-cards/create-customer
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/fuel-cards/create-customer
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "torg": {
+      "id": 0,
+      "name": "",
+      "directorAadhaarId": 0,
+      "gstId": 0,
+      "panCardId": 0,
+      "torgAdminId": 0,
+      "bankAccountList": "",
+      "companyDetails": "",
+      "virtualAccountList": "",
+      "torgEmployeeList": "",
+      "status": "CREATED",
+      "vehicleType": "TRUCK",
+      "defaultCompensationDetails": {
+        "salaryType": "PERKM",
+        "salary": 0,
+        "miscellaneousExpenseType": "PERKM",
+        "miscellaneousExpense": 0,
+        "foodingType": "PERKM",
+        "fooding": 0,
+        "foodingEnabled": false
+      },
+      "tripSheetSetting": {
+        "salaryEnabled": false,
+        "foodingEnabled": false,
+        "miscellaneousExpenseEnabled": false,
+        "fullFuelEnabled": false,
+        "fastTagEnabled": false,
+        "emptyRunEnabled": false,
+        "defEnabled": false,
+        "defSettings": {}
+      },
+      "externalCustomerId": "",
+      "virtualAccountIds": [],
+      "bankAccounts": [
+        {}
+      ],
+      "panCards": [
+        {}
+      ],
+      "subscriptionDetails": {
+        "id": 0,
+        "subscriptionPlan": {},
+        "torg": {},
+        "trialDays": 0,
+        "trialStartDate": "2026-01-01",
+        "currentBillingDate": "2026-01-01",
+        "nextBillingDate": "2026-01-01",
+        "status": "ACTIVE",
+        "paymentStatus": "PENDING",
+        "cancellationDate": "2026-01-01",
+        "pauseDate": "2026-01-01",
+        "resumeDate": "2026-01-01",
+        "notes": "",
+        "pendingSubscriptionPlan": {},
+        "pendingPlanEffectiveDate": "2026-01-01"
+      },
+      "subscriptionBillings": [
+        {}
+      ],
+      "companyLogoUrl": "",
+      "fleetSize": 0,
+      "invoiceSetting": {
+        "id": 0,
+        "torg": {},
+        "remarks": "",
+        "notes": "",
+        "declaration": "",
+        "signatureUrl": "",
+        "companyName": "",
+        "addressLine1": "",
+        "addressLine2": "",
+        "pinCode": "",
+        "city": "",
+        "state": "",
+        "phoneNumber": "",
+        "gstNumber": "",
+        "pan": "",
+        "cin": "",
+        "signatures": [],
+        "companyLogoUrl": ""
+      }
+    },
+    "panCard": {
+      "id": 0,
+      "torg": {
+        "id": 0,
+        "name": "",
+        "directorAadhaarId": 0,
+        "gstId": 0,
+        "panCardId": 0,
+        "torgAdminId": 0,
+        "bankAccountList": "",
+        "companyDetails": "",
+        "virtualAccountList": "",
+        "torgEmployeeList": "",
+        "status": "CREATED",
+        "vehicleType": "TRUCK",
+        "defaultCompensationDetails": {},
+        "tripSheetSetting": {},
+        "externalCustomerId": "",
+        "virtualAccountIds": [],
+        "bankAccounts": [],
+        "panCards": [],
+        "subscriptionDetails": {},
+        "subscriptionBillings": [],
+        "companyLogoUrl": "",
+        "fleetSize": 0,
+        "invoiceSetting": {}
+      },
+      "panNumber": "",
+      "holderName": "",
+      "documentUrl": "",
+      "status": "PENDING",
+      "verificationDate": "2026-01-01T00:00:00",
+      "verificationNotes": "",
+      "phone": "",
+      "isSoleProprietor": false,
+      "businessName": ""
+    },
+    "provider": "IOCL",
+    "user": {
+      "id": 0,
+      "phone": "",
+      "name": "",
+      "image": "",
+      "email": "",
+      "torgId": 0,
+      "managerId": 0,
+      "role": "VAHN_ADMIN",
+      "status": "CREATED",
+      "verified": false,
+      "pinSet": false,
+      "pin": "",
+      "onboardingStatus": "NOT_STARTED",
+      "lastLoginAt": "2026-01-01T00:00:00",
+      "preferredLanguage": "",
+      "staticTokenUser": false
+    },
+    "aadhaar": {
+      "id": 0,
+      "torgId": 0,
+      "aadhaarNumber": "",
+      "name": "",
+      "dateOfBirth": "2026-01-01",
+      "gender": "",
+      "address": "",
+      "documentUrl": "",
+      "documentUrlBack": "",
+      "status": "PENDING",
+      "verificationDate": "2026-01-01T00:00:00",
+      "verificationNotes": ""
+    },
+    "vehicleNumber": "",
+    "year": "",
+    "make": "",
+    "vehicleType": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelCardResource.createFuelCompanyCustomer` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:898`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `CreateFuelCompanyCustomerRequest`.
+}

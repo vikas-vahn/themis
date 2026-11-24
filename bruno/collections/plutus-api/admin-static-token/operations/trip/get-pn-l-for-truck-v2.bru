@@ -1,0 +1,30 @@
+meta {
+  name: GET /api/trips/v2/truck/{truckId}/pnl
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{baseUrl}}/api/trips/v2/truck/:truckId/pnl
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~startDate: 
+  ~endDate: 
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TripResource.getPnLForTruckV2` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripResource.java:3102`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

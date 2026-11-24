@@ -1,0 +1,29 @@
+meta {
+  name: GET /api/fuel-cards/v2/all
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-cards/v2/all
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~isRecommendation: 
+  ~provider: 
+  ~includeNonDefault: 
+  ~skip: 
+  ~take: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelCardResource.getAllFuelCardsV2` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:863`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: read.
+}

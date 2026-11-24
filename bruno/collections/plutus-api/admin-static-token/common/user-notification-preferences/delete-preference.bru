@@ -1,0 +1,32 @@
+meta {
+  name: DELETE /api/notification-preferences/{id}
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/notification-preferences/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `UserNotificationPreferencesResource.deletePreference` in plutus-java `src/main/java/com/vahn/plutus/common/controller/UserNotificationPreferencesResource.java:159`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+}

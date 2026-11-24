@@ -1,0 +1,29 @@
+meta {
+  name: GET /api/trucks/v2/admin
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v2/admin
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~registrationNumber: 
+  ~ownerId: 
+  ~verificationStatus: 
+  ~skip: 
+  ~take: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TruckResource.getAllTrucksForAdminV2` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:719`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

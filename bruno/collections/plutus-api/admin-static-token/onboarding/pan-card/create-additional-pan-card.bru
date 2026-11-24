@@ -1,0 +1,51 @@
+meta {
+  name: POST /api/pan/torg/{torgId}/additional
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/pan/torg/:torgId/additional
+  body: json
+  auth: bearer
+}
+
+params:path {
+  torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "torgId": 0,
+    "message": {},
+    "holderName": "",
+    "documentUrl": "",
+    "status": "PENDING",
+    "verificationDate": "2026-01-01T00:00:00",
+    "verificationNotes": "",
+    "createdAt": "2026-01-01T00:00:00",
+    "updatedAt": "2026-01-01T00:00:00",
+    "phone": {},
+    "isSoleProprietor": false,
+    "businessName": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `PANCardResource.createAdditionalPANCard` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/PANCardResource.java:438`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: write.
+  Body: `PANCardDTO`.
+}

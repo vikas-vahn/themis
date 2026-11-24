@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/fuel-pump-management/fuel-station/{fuelStationId}/torgs
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-pump-management/fuel-station/:fuelStationId/torgs
+  body: none
+  auth: bearer
+}
+
+params:path {
+  fuelStationId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelPumpManagementResource.getTorgList` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpManagementResource.java:715`.
+  Roles: VAHN_ADMIN, FUEL_STATION_MANAGER, FUEL_STATION_ATTENDER.
+  Risk: read.
+}

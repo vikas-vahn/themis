@@ -1,0 +1,28 @@
+meta {
+  name: GET /api/transactions/admin/reconcile-wallet-balance
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/admin/reconcile-wallet-balance
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-read call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TransactionResource.reconcileWalletBalance` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:1121`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-read.
+}

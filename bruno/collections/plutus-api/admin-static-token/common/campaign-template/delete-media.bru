@@ -1,0 +1,32 @@
+meta {
+  name: DELETE /api/campaign-templates/{id}/media
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/campaign-templates/:id/media
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `CampaignTemplateResource.deleteMedia` in plutus-java `src/main/java/com/vahn/plutus/common/controller/CampaignTemplateResource.java:162`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+}

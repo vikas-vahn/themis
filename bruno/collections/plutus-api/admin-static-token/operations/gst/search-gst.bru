@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/gst/search
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/gst/search
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~gstNumber: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `GSTResource.searchGST` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/GSTResource.java:533`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

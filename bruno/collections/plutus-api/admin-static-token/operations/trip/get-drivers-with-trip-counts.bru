@@ -1,0 +1,27 @@
+meta {
+  name: GET /api/trips/drivers
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/trips/drivers
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~active: 
+  ~startDate: 
+  ~endDate: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TripResource.getDriversWithTripCounts` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripResource.java:1140`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: read.
+}

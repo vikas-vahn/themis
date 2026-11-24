@@ -1,0 +1,49 @@
+meta {
+  name: PUT /api/vahn-account-numbers/{id}
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/api/vahn-account-numbers/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "uid": "",
+    "accountNumber": "",
+    "beneficiaryName": "",
+    "accountType": "SAVINGS",
+    "bankName": "",
+    "ifscCode": "",
+    "status": "CREATED",
+    "createdAt": "2026-01-01T00:00:00",
+    "updatedAt": "2026-01-01T00:00:00",
+    "deletedAt": "2026-01-01T00:00:00"
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `VAHNAccountNumberResource.updateVAHNAccountNumber` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VAHNAccountNumberResource.java:113`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `VAHNAccountNumberDTO`.
+}

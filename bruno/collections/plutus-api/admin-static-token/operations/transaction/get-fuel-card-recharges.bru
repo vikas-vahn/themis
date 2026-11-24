@@ -1,0 +1,30 @@
+meta {
+  name: GET /api/transactions/admin/fuel-card-recharges/{fuelCardId}
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/admin/fuel-card-recharges/:fuelCardId
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~lastId: 
+  ~limit: 
+}
+
+params:path {
+  fuelCardId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TransactionResource.getFuelCardRecharges` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:878`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

@@ -1,0 +1,30 @@
+meta {
+  name: GET /api/fuel-pump-management/fuel-station/{fuelStationId}/transactions
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-pump-management/fuel-station/:fuelStationId/transactions
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~startDate: 
+  ~endDate: 
+}
+
+params:path {
+  fuelStationId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelPumpManagementResource.getFuelStationTransactionsByDateRange` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpManagementResource.java:835`.
+  Roles: VAHN_ADMIN, FUEL_STATION_MANAGER, TORG_ADMIN.
+  Risk: read.
+}

@@ -1,0 +1,37 @@
+meta {
+  name: POST /webhook/v1/razorpay/payout/admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/webhook/v1/razorpay/payout/admin
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "event": "",
+    "payoutId": "",
+    "remarks": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `RazorpayWebhookResource.handlePayoutEvent` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/RazorpayWebhookResource.java:206`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `PayoutEventRequest`.
+}

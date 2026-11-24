@@ -1,0 +1,40 @@
+meta {
+  name: POST /api/consent-master
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/consent-master
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "consentId": "",
+    "version": "",
+    "required": false,
+    "category": "",
+    "copy": "",
+    "displayHint": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `ConsentMasterResource.create` in plutus-java `src/main/java/com/vahn/plutus/common/controller/ConsentMasterResource.java:45`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `ConsentMasterDTO`.
+}

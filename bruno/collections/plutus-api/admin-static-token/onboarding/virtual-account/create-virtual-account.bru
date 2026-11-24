@@ -1,0 +1,42 @@
+meta {
+  name: POST /api/virtual-accounts
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/virtual-accounts
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "torgId": 0,
+    "accountNumber": "",
+    "ifscCode": "",
+    "bankName": "",
+    "status": "CREATED",
+    "extraInfo": "",
+    "provider": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `VirtualAccountResource.createVirtualAccount` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VirtualAccountResource.java:198`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `VirtualAccountDTO`.
+}

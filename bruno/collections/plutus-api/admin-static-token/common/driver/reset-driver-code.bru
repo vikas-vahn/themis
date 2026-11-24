@@ -1,0 +1,32 @@
+meta {
+  name: POST /api/drivers/driver-code/reset
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/drivers/driver-code/reset
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~driverId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `DriverResource.resetDriverCode` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:644`.
+  Roles: DRIVER, VAHN_ADMIN.
+  Risk: write.
+}

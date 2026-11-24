@@ -1,0 +1,197 @@
+meta {
+  name: POST /api/subscriptions/billings
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/billings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "subscriptionPlan": {
+      "id": 0,
+      "name": "",
+      "description": "",
+      "pricePerTruck": 0,
+      "taxPercentage": 0,
+      "displayPrice": 0,
+      "isTaxInclusive": false,
+      "isActive": false,
+      "features": [],
+      "cycle": "MONTH",
+      "gracePeriodDays": 0,
+      "extraInfo": {},
+      "isDefault": false,
+      "isRecommended": false,
+      "planType": "OFFERED",
+      "isCurrentPlan": false,
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "trialDays": 0
+    },
+    "torg": {
+      "id": 0,
+      "name": "",
+      "gstId": 0,
+      "panCardId": 0,
+      "directorAadhaarId": 0,
+      "torgAdminId": 0,
+      "bankAccountList": "",
+      "companyDetails": "",
+      "virtualAccountList": "",
+      "torgEmployeeList": "",
+      "externalCustomerId": "",
+      "status": "CREATED",
+      "vehicleType": "TRUCK",
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "default_compensation_details": {
+        "salaryType": "PERKM",
+        "salary": 0,
+        "miscellaneousExpenseType": "PERKM",
+        "miscellaneousExpense": 0,
+        "foodingType": "PERKM",
+        "fooding": 0,
+        "foodingEnabled": false
+      },
+      "panCardIds": [],
+      "subscriptionDetails": {
+        "id": 0,
+        "plan": {},
+        "torg": {},
+        "trialDays": 0,
+        "trialStartDate": "2026-01-01",
+        "nextBillingDate": "2026-01-01",
+        "status": "ACTIVE",
+        "paymentStatus": "PENDING",
+        "cancellationDate": "2026-01-01",
+        "pauseDate": "2026-01-01",
+        "resumeDate": "2026-01-01",
+        "notes": "",
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "billingStartDate": "2026-01-01",
+        "trialEndDate": "2026-01-01",
+        "isInTrial": false,
+        "isActive": false,
+        "isExpired": false,
+        "noOfVerifiedTrucks": 0,
+        "totalAmount": 0,
+        "netAmount": 0,
+        "taxAmount": 0,
+        "billingEndDate": "2026-01-01",
+        "pendingPlan": {},
+        "pendingPlanEffectiveDate": "2026-01-01"
+      },
+      "alertsMessage": "",
+      "alertsTitle": "",
+      "tripSheetSetting": {
+        "salaryEnabled": false,
+        "foodingEnabled": false,
+        "miscellaneousExpenseEnabled": false,
+        "fullFuelEnabled": false,
+        "fastTagEnabled": false,
+        "emptyRunEnabled": false,
+        "defEnabled": false,
+        "defSettings": {}
+      }
+    },
+    "billingStartDate": "2026-01-01",
+    "billingEndDate": "2026-01-01",
+    "totalAmount": 0,
+    "paidAmount": 0,
+    "dueAmount": 0,
+    "status": "PAID",
+    "noOfTrucks": 0,
+    "discount": 0,
+    "discountAmount": 0,
+    "paymentDueDate": "2026-01-01",
+    "paymentDate": "2026-01-01",
+    "invoiceNumber": "",
+    "invoiceUrl": "",
+    "notes": "",
+    "extraInfo": {},
+    "createdAt": "2026-01-01T00:00:00",
+    "updatedAt": "2026-01-01T00:00:00",
+    "amountAfterDiscount": 0,
+    "remainingAmount": 0,
+    "billingPeriodDays": 0,
+    "billingPeriodStatus": "",
+    "dailyRate": 0,
+    "amountPerTruck": 0,
+    "isOverdue": false,
+    "isFullyPaid": false,
+    "isPartiallyPaid": false,
+    "refundedAmount": 0,
+    "cancelledAt": "2026-01-01T00:00:00",
+    "cancelledBy": 0,
+    "cancellationReason": "",
+    "lineItems": [
+      {
+        "id": 0,
+        "itemType": "",
+        "nature": "",
+        "amount": 0,
+        "netAmount": 0,
+        "taxAmount": 0,
+        "taxPercentage": 0,
+        "quantity": 0,
+        "unitPrice": 0,
+        "periodStart": "2026-01-01",
+        "periodEnd": "2026-01-01",
+        "daysInPeriod": 0,
+        "daysCharged": 0,
+        "sourceTransactionId": 0,
+        "walletTransactionId": 0,
+        "fundingSource": "",
+        "reason": "",
+        "createdBy": 0,
+        "createdAt": "2026-01-01T00:00:00"
+      }
+    ],
+    "dueItem": {
+      "id": 0,
+      "itemType": "",
+      "nature": "",
+      "amount": 0,
+      "netAmount": 0,
+      "taxAmount": 0,
+      "taxPercentage": 0,
+      "quantity": 0,
+      "unitPrice": 0,
+      "periodStart": "2026-01-01",
+      "periodEnd": "2026-01-01",
+      "daysInPeriod": 0,
+      "daysCharged": 0,
+      "sourceTransactionId": 0,
+      "walletTransactionId": 0,
+      "fundingSource": "",
+      "reason": "",
+      "createdBy": 0,
+      "createdAt": "2026-01-01T00:00:00"
+    }
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `SubscriptionResource.createSubscriptionBilling` in plutus-java `src/main/java/com/vahn/plutus/common/controller/SubscriptionResource.java:1190`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `SubscriptionBillingDTO`.
+}

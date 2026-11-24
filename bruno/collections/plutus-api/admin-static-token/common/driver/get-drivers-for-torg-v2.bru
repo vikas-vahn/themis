@@ -1,0 +1,31 @@
+meta {
+  name: GET /api/drivers/v2/torg/{torgId}
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/v2/torg/:torgId
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~assignment: 
+  ~skip: 
+  ~take: 
+}
+
+params:path {
+  torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `DriverResource.getDriversForTorgV2` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:1388`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: read.
+}

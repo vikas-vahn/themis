@@ -1,0 +1,54 @@
+meta {
+  name: PUT /api/trips/{tripId}/multi-stop
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/trips/:tripId/multi-stop
+  body: json
+  auth: bearer
+}
+
+params:path {
+  tripId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "roundTrip": false,
+    "stopOrderIds": [],
+    "consignmentUpdates": [
+      {
+        "consignmentId": 0,
+        "dropAddressPocId": 0,
+        "revenueAmount": 0,
+        "customerId": 0,
+        "pickupAddressPocId": 0,
+        "material": "",
+        "quantity": 0,
+        "unit": "",
+        "rate": 0,
+        "clearUnitPricing": {}
+      }
+    ]
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `MultiStopTripResource.editMultiStopTrip` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/MultiStopTripResource.java:183`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR.
+  Risk: write.
+  Body: `MultiStopTripEditRequest`.
+}

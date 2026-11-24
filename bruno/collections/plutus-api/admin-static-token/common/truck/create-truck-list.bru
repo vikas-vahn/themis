@@ -1,0 +1,302 @@
+meta {
+  name: POST /api/trucks/list
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  [
+    {
+      "id": 0,
+      "message": {},
+      "make": "",
+      "model": "",
+      "year": 0,
+      "capacityTons": 0,
+      "fuelType": "",
+      "status": "AVAILABLE",
+      "lastMaintenanceDate": "2026-01-01T00:00:00",
+      "nextMaintenanceDate": "2026-01-01T00:00:00",
+      "torgId": 0,
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "driverId": 0,
+      "driver": {
+        "id": 0,
+        "name": "",
+        "message": {},
+        "example": {},
+        "email": "",
+        "licenseNumber": "",
+        "licenseExpiry": "2026-01-01",
+        "address": "",
+        "dateOfBirth": "2026-01-01",
+        "status": "AVAILABLE",
+        "ownerId": 0,
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "compensationDetails": {},
+        "profilePictureUrl": "",
+        "licenseUrl": "",
+        "bankAccountId": 0,
+        "vpas": [],
+        "truckDTO": {},
+        "lastLoginAt": "2026-01-01T00:00:00",
+        "onboardingStatus": "NOT_STARTED",
+        "aadhaarId": 0,
+        "aadhaarNumber": "",
+        "aadhaarDocumentUrl": "",
+        "aadhaarDocumentUrlBack": "",
+        "verificationStatus": "VERIFIED",
+        "dlVerificationNotes": "",
+        "dlVerificationDate": "2026-01-01T00:00:00",
+        "licenseFrontUrl": "",
+        "licenseBackUrl": "",
+        "verifiedBankAccountId": 0,
+        "dlVerificationAttemptCount": 0,
+        "dlVerificationMaxAttempts": 0,
+        "dlVerificationOutcome": "VERIFIED"
+      },
+      "truckDocuments": {},
+      "truckManagerId": 0,
+      "primaryTruckManagerId": 0,
+      "truckManagerIds": [],
+      "fundManagerId": 0,
+      "truckManager": {
+        "id": 0,
+        "message": {},
+        "name": "",
+        "image": "",
+        "email": "",
+        "torgId": 0,
+        "managerId": 0,
+        "role": "VAHN_ADMIN",
+        "status": "CREATED",
+        "verified": false,
+        "pinSet": false,
+        "vp": "",
+        "onboardingStatus": "NOT_STARTED",
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "lastLoginAt": "2026-01-01T00:00:00",
+        "referrerUserId": 0,
+        "preferredLanguage": "",
+        "fleetSize": 0,
+        "torgName": "",
+        "assignAllTrucks": false,
+        "truckIds": []
+      },
+      "fundManager": {
+        "id": 0,
+        "message": {},
+        "name": "",
+        "image": "",
+        "email": "",
+        "torgId": 0,
+        "managerId": 0,
+        "role": "VAHN_ADMIN",
+        "status": "CREATED",
+        "verified": false,
+        "pinSet": false,
+        "vp": "",
+        "onboardingStatus": "NOT_STARTED",
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "lastLoginAt": "2026-01-01T00:00:00",
+        "referrerUserId": 0,
+        "preferredLanguage": "",
+        "fleetSize": 0,
+        "torgName": "",
+        "assignAllTrucks": false,
+        "truckIds": []
+      },
+      "mileage": {},
+      "defSettings": {
+        "mileage": 0,
+        "pricePerLitre": 0
+      },
+      "unladedWeight": 0,
+      "vehicleClass": "",
+      "axleCount": 0,
+      "netcVehicleClass": "",
+      "trip": {
+        "id": 0,
+        "tripNumber": "",
+        "truckId": 0,
+        "driverId": 0,
+        "sourceLocation": {},
+        "destinationLocation": {},
+        "cargoDescription": "",
+        "cargoWeight": 0,
+        "plannedDepartureTime": "2026-01-01",
+        "actualDepartureTime": "2026-01-01",
+        "plannedArrivalTime": "2026-01-01",
+        "actualArrivalTime": "2026-01-01",
+        "actualDepartureDateTime": "2026-01-01T00:00:00",
+        "actualArrivalDateTime": "2026-01-01T00:00:00",
+        "plannedDepartureDateTime": "2026-01-01T00:00:00",
+        "plannedArrivalDateTime": "2026-01-01T00:00:00",
+        "status": "PLANNED",
+        "tripType": "SINGLE",
+        "returnTripEmpty": false,
+        "example": {},
+        "notes": {},
+        "ownerId": 0,
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "customerId": 0,
+        "customerName": "",
+        "customerNames": [],
+        "cargoType": "FOOD",
+        "tripExpenses": [],
+        "totalTripExpenses": 0,
+        "totalTransactionAmount": 0,
+        "expenseSummary": {},
+        "totalDistance": 0,
+        "tripSheetStatus": "PENDING",
+        "truck": {},
+        "truckManager": {},
+        "truckManagers": [],
+        "fundManager": {},
+        "fundManagers": [],
+        "createdById": 0,
+        "createdByName": "",
+        "managerId": 0,
+        "managerName": "",
+        "driver": {},
+        "tripTruckStatus": "UPCOMING",
+        "calculatedDistance": 0,
+        "distanceSource": "GOOGLE_MAPS",
+        "odometerStartReading": 0,
+        "odometerEndReading": 0,
+        "freightChargeDetails": {},
+        "atorgProfit": 0,
+        "atorgLoss": 0,
+        "invoiceId": 0,
+        "invoiceUrl": "",
+        "lorryReceiptId": 0,
+        "lorryReceiptUrl": "",
+        "lorryReceiptCount": 0,
+        "lorryReceipts": [],
+        "loadingAdviceId": 0,
+        "loadingAdviceNumber": "",
+        "canCreateLoadingAdvice": false,
+        "vtsOdometerStartReading": 0,
+        "vtsOdometerEndReading": 0,
+        "distanceRemaining": 0,
+        "source": "",
+        "isViewOnly": false,
+        "isAtorgViewer": false,
+        "managementMode": "OWNER_MANAGED",
+        "cancellationAvailable": {},
+        "requestingTorgId": 0,
+        "ownerName": "",
+        "marketRequestId": 0,
+        "marketAcceptedAt": {},
+        "marketRequestedAt": "2026-01-01T00:00:00",
+        "marketRequestedBy": "",
+        "marketNotes": "",
+        "marketRequestingTorgName": "",
+        "distanceCovered": 0,
+        "podSettings": {},
+        "stops": [],
+        "consignments": [],
+        "progress": {},
+        "roundTrip": false,
+        "plannedDistanceM": 0,
+        "plannedDurationS": 0,
+        "completionAvailable": false,
+        "warnings": [],
+        "confirmations": [],
+        "consignmentRequests": [],
+        "stopOrder": [],
+        "vaiuOrdering": false,
+        "only": {},
+        "intermediateStopNames": {},
+        "lastStatusChangedAt": "",
+        "requestingTorgName": ""
+      },
+      "fuelCards": [
+        {}
+      ],
+      "fastag": {},
+      "isFuelCardLowBalance": false,
+      "fuelCardBalance": 0,
+      "panCard": {
+        "id": 0,
+        "torgId": 0,
+        "message": {},
+        "holderName": "",
+        "documentUrl": "",
+        "status": "PENDING",
+        "verificationDate": "2026-01-01T00:00:00",
+        "verificationNotes": "",
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "phone": {},
+        "isSoleProprietor": false,
+        "businessName": ""
+      },
+      "ownerName": "",
+      "verificationStatus": "NOT_VERIFIED",
+      "vtsProvider": "",
+      "truckLastLocation": {
+        "id": 0,
+        "recordedAt": "2026-01-01T00:00:00",
+        "latitude": 0,
+        "longitude": 0,
+        "speed": 0,
+        "location": "",
+        "state": "MOVING",
+        "ignitionOn": false,
+        "provider": "",
+        "address": {}
+      },
+      "containerLength": 0,
+      "fuelTankCapacity": 0,
+      "truckMasterId": 0,
+      "truckMaster": {
+        "id": 0,
+        "make": "",
+        "model": "",
+        "fuelType": "",
+        "containerLength": 0,
+        "fuelTankCapacity": 0
+      },
+      "torgName": "",
+      "displayTripType": "ACCIDENT",
+      "alerts": [
+        {}
+      ],
+      "highestAlertLevel": "",
+      "otherDocuments": [
+        {}
+      ],
+      "source": ""
+    }
+  ]
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.createTruckList` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:161`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER.
+  Risk: write.
+  Body: `List<TruckDTO>`.
+}

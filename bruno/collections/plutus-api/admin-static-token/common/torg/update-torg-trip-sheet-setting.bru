@@ -1,0 +1,49 @@
+meta {
+  name: PUT /api/torgs/trip-sheet-setting
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/torgs/trip-sheet-setting
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "salaryEnabled": false,
+    "foodingEnabled": false,
+    "miscellaneousExpenseEnabled": false,
+    "fullFuelEnabled": false,
+    "fastTagEnabled": false,
+    "emptyRunEnabled": false,
+    "defEnabled": false,
+    "defSettings": {
+      "mileage": 0,
+      "pricePerLitre": 0
+    }
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TorgResource.updateTorgTripSheetSetting` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TorgResource.java:420`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER.
+  Risk: write.
+  Body: `TripSheetSetting`.
+}

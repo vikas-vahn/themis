@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/vpas/torg/{torgId}
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/vpas/torg/:torgId
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `VPAResource.getVPAsByTorg` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VPAResource.java:345`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: read.
+}

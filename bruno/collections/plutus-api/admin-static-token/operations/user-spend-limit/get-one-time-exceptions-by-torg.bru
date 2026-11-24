@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/v1/spend-limits/one-time-exceptions
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/spend-limits/one-time-exceptions
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `UserSpendLimitResource.getOneTimeExceptionsByTorg` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/UserSpendLimitResource.java:234`.
+  Roles: TORG_ADMIN, VAHN_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

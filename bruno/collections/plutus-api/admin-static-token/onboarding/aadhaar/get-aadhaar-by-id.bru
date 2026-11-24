@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/aadhaar/{id}
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/aadhaar/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `AadhaarResource.getAadhaarById` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/AadhaarResource.java:82`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: read.
+}

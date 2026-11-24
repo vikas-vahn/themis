@@ -1,0 +1,36 @@
+meta {
+  name: POST /api/bpcl/transactions/charge
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/bpcl/transactions/charge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "transactionId": 0,
+    "transactionCode": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `BPCLAdminResource.charge` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/BPCLAdminResource.java:46`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `BPCLChargeRequest`.
+}

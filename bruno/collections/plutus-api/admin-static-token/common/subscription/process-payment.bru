@@ -1,0 +1,398 @@
+meta {
+  name: POST /api/subscriptions/{torgId}/payment
+  type: http
+  seq: 44
+}
+
+post {
+  url: {{baseUrl}}/api/subscriptions/:torgId/payment
+  body: json
+  auth: bearer
+}
+
+params:path {
+  torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "payeeType": "MERCHANT_VPA",
+    "status": "PENDING",
+    "payee": {
+      "name": "",
+      "upiId": "",
+      "bankAccountId": 0,
+      "accountNumber": "",
+      "ifscCode": "",
+      "bankName": ""
+    },
+    "requestedAmount": 0,
+    "paidAmount": 0,
+    "category": {
+      "code": "",
+      "labelEn": "",
+      "labelHi": ""
+    },
+    "note": "",
+    "billUrl": "",
+    "approverRemarks": "",
+    "approverAttachmentUrl": "",
+    "approverAttachmentUrls": [],
+    "approverAttachmentKeys": [],
+    "truck": {
+      "id": 0,
+      "registrationNumber": "",
+      "make": "",
+      "model": "",
+      "year": 0,
+      "capacityTons": 0,
+      "fuelType": "",
+      "status": "AVAILABLE",
+      "lastMaintenanceDate": "2026-01-01T00:00:00",
+      "nextMaintenanceDate": "2026-01-01T00:00:00",
+      "truckDocuments": {
+        "id": 0,
+        "insurance": {},
+        "puc": {},
+        "registration": {},
+        "permit": {},
+        "fitness": {},
+        "tax": {},
+        "nationalPermit": {}
+      },
+      "driver": {
+        "id": 0,
+        "name": "",
+        "phone": "",
+        "alternatePhone": "",
+        "email": "",
+        "licenseNumber": "",
+        "licenseExpiry": "2026-01-01",
+        "alertSent": false,
+        "address": "",
+        "verified": false,
+        "dlVerificationNotes": "",
+        "dlVerificationDate": "2026-01-01T00:00:00",
+        "dlVerificationAttemptCount": 0,
+        "dlImagesUploadedAt": "2026-01-01T00:00:00",
+        "driverCode": "",
+        "licenseFrontUrl": "",
+        "licenseBackUrl": "",
+        "dateOfBirth": "2026-01-01",
+        "status": "AVAILABLE",
+        "profilePictureUrl": "",
+        "licenseUrl": "",
+        "fundAccountId": "",
+        "bankAccounts": [],
+        "compensationDetails": {},
+        "fuelCards": [],
+        "vpas": [],
+        "defaultPayoutMode": "BANK_ACCOUNT",
+        "aadhaarId": 0,
+        "verificationStatus": "VERIFIED"
+      },
+      "fastag": {
+        "id": 0,
+        "torgId": 0,
+        "truck": {},
+        "tagId": "",
+        "vehicleClass": "",
+        "issuerBank": "",
+        "issuerBankId": "",
+        "balance": 0,
+        "minBalance": 0,
+        "dailySpendLimit": 0,
+        "hourlySpendLimit": 0,
+        "linkedWalletId": 0,
+        "autoRecharge": false,
+        "autoRechargeAmount": 0,
+        "autoRechargeThreshold": 0,
+        "status": "CREATED",
+        "activationDate": "2026-01-01T00:00:00",
+        "expiryDate": "2026-01-01T00:00:00",
+        "kycCompliance": false,
+        "remarks": "",
+        "biller": {},
+        "autoSetBbps": false,
+        "balanceLastUpdatedAt": "2026-01-01T00:00:00",
+        "tagStatus": "",
+        "maxRechargeAmount": 0,
+        "minRechargeAmount": 0,
+        "idleStreak": 0,
+        "lastRechargeTime": "2026-01-01T00:00:00",
+        "lastLowBalanceTime": "2026-01-01T00:00:00",
+        "nextCheckTime": "2026-01-01T00:00:00",
+        "autoRechargeStatus": {},
+        "deactivationDetectionCount": 0,
+        "deactivationDetectedAt": "2026-01-01T00:00:00"
+      },
+      "mileage": [
+        {}
+      ],
+      "defSettings": {
+        "mileage": 0,
+        "pricePerLitre": 0
+      },
+      "unladedWeight": 0,
+      "vehicleClass": "",
+      "axleCount": 0,
+      "netcVehicleClass": "",
+      "trips": [
+        {}
+      ],
+      "ownerName": "",
+      "verificationStatus": "NOT_VERIFIED",
+      "panCard": {
+        "id": 0,
+        "torg": {},
+        "panNumber": "",
+        "holderName": "",
+        "documentUrl": "",
+        "status": "PENDING",
+        "verificationDate": "2026-01-01T00:00:00",
+        "verificationNotes": "",
+        "phone": "",
+        "isSoleProprietor": false,
+        "businessName": ""
+      },
+      "fuelCards": [
+        {}
+      ],
+      "verificationRemarks": "",
+      "truckTorgProviders": [
+        {}
+      ],
+      "truckLastLocation": {
+        "id": 0,
+        "truck": {},
+        "recordedAt": "2026-01-01T00:00:00",
+        "latitude": 0,
+        "longitude": 0,
+        "speed": 0,
+        "location": "",
+        "state": {},
+        "ignitionOn": false,
+        "provider": "",
+        "address": {}
+      },
+      "containerLength": 0,
+      "fuelTankCapacity": 0,
+      "lastDocumentRefresh": "2026-01-01T00:00:00",
+      "truckCardState": {
+        "truckId": 0,
+        "truck": {},
+        "displayTripId": 0,
+        "displayTripType": "ACCIDENT",
+        "sortTier": 0,
+        "highestAlertLevel": "",
+        "alertTypePriority": 0,
+        "oldestAlertTriggeredAt": "2026-01-01T00:00:00",
+        "alerts": [],
+        "computedAt": "2026-01-01T00:00:00"
+      },
+      "otherDocuments": [
+        {}
+      ]
+    },
+    "trip": {
+      "id": 0,
+      "tripNumber": "",
+      "sourceLocation": {
+        "Address1": "",
+        "Address2": "",
+        "Address3": "",
+        "Pincode": "",
+        "Location": "",
+        "District": "",
+        "City": "",
+        "State": "",
+        "Mobile": "",
+        "Email": ""
+      },
+      "destinationLocation": {
+        "Address1": "",
+        "Address2": "",
+        "Address3": "",
+        "Pincode": "",
+        "Location": "",
+        "District": "",
+        "City": "",
+        "State": "",
+        "Mobile": "",
+        "Email": ""
+      },
+      "actualPickupLocation": "",
+      "actualDropLocation": "",
+      "currentLocation": "",
+      "tripExpenses": [
+        {}
+      ],
+      "cargoDescription": "",
+      "cargoType": "FOOD",
+      "cargoWeight": 0,
+      "plannedDepartureTime": "2026-01-01T00:00:00",
+      "actualDepartureTime": "2026-01-01T00:00:00",
+      "plannedArrivalTime": "2026-01-01T00:00:00",
+      "actualArrivalTime": "2026-01-01T00:00:00",
+      "status": "PLANNED",
+      "tripType": "SINGLE",
+      "returnTripEmpty": false,
+      "isRoundTrip": false,
+      "vaiuOrdering": false,
+      "preExceptionStatus": "UPCOMING",
+      "freightCharge": 0,
+      "notes": "",
+      "totalDistance": 0,
+      "tripSheetStatus": "PENDING",
+      "tripTruckStatus": "UPCOMING",
+      "oldPickupAddress": {
+        "Address1": "",
+        "Address2": "",
+        "Address3": "",
+        "Pincode": "",
+        "Location": "",
+        "District": "",
+        "City": "",
+        "State": "",
+        "Mobile": "",
+        "Email": ""
+      },
+      "oldDropAddress": {
+        "Address1": "",
+        "Address2": "",
+        "Address3": "",
+        "Pincode": "",
+        "Location": "",
+        "District": "",
+        "City": "",
+        "State": "",
+        "Mobile": "",
+        "Email": ""
+      },
+      "pickupAddress": {
+        "id": 0,
+        "address": {},
+        "addressType": "PICKUP",
+        "pocName": "",
+        "pocPhone": "",
+        "nickName": "",
+        "gstin": ""
+      },
+      "dropAddress": {
+        "id": 0,
+        "address": {},
+        "addressType": "PICKUP",
+        "pocName": "",
+        "pocPhone": "",
+        "nickName": "",
+        "gstin": ""
+      },
+      "transactions": [
+        {}
+      ],
+      "tripDriverSegments": [
+        {}
+      ],
+      "calculatedDistance": 0,
+      "odometerStartReading": 0,
+      "odometerEndReading": 0,
+      "adjustedDistance": 0,
+      "distanceSource": "GOOGLE_MAPS",
+      "odoSpanStartTripId": 0,
+      "odoSpanExcessDistance": 0,
+      "freightChargeDetails": {
+        "type": "FLAT",
+        "totalAmount": 0,
+        "quantity": 0,
+        "perUnitCost": 0
+      },
+      "daysSpannedWithOverlap": 0,
+      "vtsOdometerStartReading": 0,
+      "vtsOdometerEndReading": 0,
+      "remainingDistance": 0,
+      "remainingDistanceRecordedAt": "2026-01-01T00:00:00",
+      "lastKnownLatitude": 0,
+      "lastKnownLongitude": 0,
+      "tripSource": "OWNED",
+      "managementMode": "OWNER_MANAGED",
+      "encodedPolyline": "",
+      "invoices": [
+        {}
+      ],
+      "lorryReceipts": [
+        {}
+      ]
+    },
+    "driver": {
+      "id": 0,
+      "name": "",
+      "role": "",
+      "phone": ""
+    },
+    "requestedAt": "2026-01-01T00:00:00+05:30",
+    "expiresAt": "2026-01-01T00:00:00+05:30",
+    "sentTo": [],
+    "owner": {
+      "id": 0,
+      "name": "",
+      "role": "",
+      "phone": ""
+    },
+    "processingBy": {
+      "id": 0,
+      "name": "",
+      "role": "",
+      "phone": ""
+    },
+    "approvedBy": {
+      "id": 0,
+      "name": "",
+      "role": "",
+      "phone": ""
+    },
+    "approvedAt": "2026-01-01T00:00:00+05:30",
+    "paidBy": {
+      "id": 0,
+      "name": "",
+      "role": "",
+      "phone": ""
+    },
+    "paidAt": "2026-01-01T00:00:00+05:30",
+    "rejectedBy": {
+      "id": 0,
+      "name": "",
+      "role": "",
+      "phone": ""
+    },
+    "rejectedAt": "2026-01-01T00:00:00+05:30",
+    "rejectionReason": "NO_BILL",
+    "rejectionNote": "",
+    "failedAt": "2026-01-01T00:00:00+05:30",
+    "failureReason": "",
+    "reversedAt": "2026-01-01T00:00:00+05:30",
+    "cancelledAt": "2026-01-01T00:00:00+05:30",
+    "referenceId": "",
+    "addAsTripExpense": false,
+    "resubmittedFromId": 0,
+    "payeeAccountChanged": false
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `SubscriptionResource.processPayment` in plutus-java `src/main/java/com/vahn/plutus/common/controller/SubscriptionResource.java:1457`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER.
+  Risk: external-write.
+  Body: `PaymentRequestDTO`.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/virtual-accounts/account-number/{accountNumber}
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/virtual-accounts/account-number/:accountNumber
+  body: none
+  auth: bearer
+}
+
+params:path {
+  accountNumber: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `VirtualAccountResource.getVirtualAccountByAccountNumber` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VirtualAccountResource.java:159`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

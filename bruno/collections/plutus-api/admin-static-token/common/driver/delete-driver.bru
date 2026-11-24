@@ -1,0 +1,32 @@
+meta {
+  name: DELETE /api/drivers/{id}
+  type: http
+  seq: 25
+}
+
+delete {
+  url: {{baseUrl}}/api/drivers/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `DriverResource.deleteDriver` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:709`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER.
+  Risk: write.
+}

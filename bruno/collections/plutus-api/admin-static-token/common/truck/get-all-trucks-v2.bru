@@ -1,0 +1,45 @@
+meta {
+  name: POST /api/trucks/v2
+  type: http
+  seq: 34
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/v2
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "pageNumber": 0,
+    "itemsPerPage": 0,
+    "tripTruckStatus": "RUNNING",
+    "noTripAssigned": false,
+    "noDriverAssigned": false,
+    "managerId": 0,
+    "gvw": 0,
+    "searchKey": "",
+    "sortBy": "",
+    "alertLevel": "",
+    "displayTripType": {}
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.getAllTrucksV2` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:103`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: write.
+  Body: `TruckFilterRequest`.
+}

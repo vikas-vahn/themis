@@ -1,0 +1,28 @@
+meta {
+  name: GET /api/accounting/directory/drivers
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/directory/drivers
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~page: 1
+  ~pageSize: 50
+  ~sortKey: 
+  ~sortDir: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `AccountingDirectoryResource.listDrivers` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/AccountingDirectoryResource.java:112`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: read.
+}

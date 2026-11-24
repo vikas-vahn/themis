@@ -1,0 +1,164 @@
+meta {
+  name: POST /api/torgs
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/torgs
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "name": "",
+    "gstId": 0,
+    "panCardId": 0,
+    "directorAadhaarId": 0,
+    "torgAdminId": 0,
+    "bankAccountList": "",
+    "companyDetails": "",
+    "virtualAccountList": "",
+    "torgEmployeeList": "",
+    "externalCustomerId": "",
+    "status": "CREATED",
+    "vehicleType": "TRUCK",
+    "createdAt": "2026-01-01T00:00:00",
+    "updatedAt": "2026-01-01T00:00:00",
+    "default_compensation_details": {
+      "salaryType": "PERKM",
+      "salary": 0,
+      "miscellaneousExpenseType": "PERKM",
+      "miscellaneousExpense": 0,
+      "foodingType": "PERKM",
+      "fooding": 0,
+      "foodingEnabled": false
+    },
+    "panCardIds": [],
+    "subscriptionDetails": {
+      "id": 0,
+      "plan": {
+        "id": 0,
+        "name": "",
+        "description": "",
+        "pricePerTruck": 0,
+        "taxPercentage": 0,
+        "displayPrice": 0,
+        "isTaxInclusive": false,
+        "isActive": false,
+        "features": [],
+        "cycle": "MONTH",
+        "gracePeriodDays": 0,
+        "extraInfo": {},
+        "isDefault": false,
+        "isRecommended": false,
+        "planType": "OFFERED",
+        "isCurrentPlan": false,
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "trialDays": 0
+      },
+      "torg": {
+        "id": 0,
+        "name": "",
+        "gstId": 0,
+        "panCardId": 0,
+        "directorAadhaarId": 0,
+        "torgAdminId": 0,
+        "bankAccountList": "",
+        "companyDetails": "",
+        "virtualAccountList": "",
+        "torgEmployeeList": "",
+        "externalCustomerId": "",
+        "status": "CREATED",
+        "vehicleType": "TRUCK",
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "default_compensation_details": {},
+        "panCardIds": [],
+        "subscriptionDetails": {},
+        "alertsMessage": "",
+        "alertsTitle": "",
+        "tripSheetSetting": {}
+      },
+      "trialDays": 0,
+      "trialStartDate": "2026-01-01",
+      "nextBillingDate": "2026-01-01",
+      "status": "ACTIVE",
+      "paymentStatus": "PENDING",
+      "cancellationDate": "2026-01-01",
+      "pauseDate": "2026-01-01",
+      "resumeDate": "2026-01-01",
+      "notes": "",
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "billingStartDate": "2026-01-01",
+      "trialEndDate": "2026-01-01",
+      "isInTrial": false,
+      "isActive": false,
+      "isExpired": false,
+      "noOfVerifiedTrucks": 0,
+      "totalAmount": 0,
+      "netAmount": 0,
+      "taxAmount": 0,
+      "billingEndDate": "2026-01-01",
+      "pendingPlan": {
+        "id": 0,
+        "name": "",
+        "description": "",
+        "pricePerTruck": 0,
+        "taxPercentage": 0,
+        "displayPrice": 0,
+        "isTaxInclusive": false,
+        "isActive": false,
+        "features": [],
+        "cycle": "MONTH",
+        "gracePeriodDays": 0,
+        "extraInfo": {},
+        "isDefault": false,
+        "isRecommended": false,
+        "planType": "OFFERED",
+        "isCurrentPlan": false,
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "trialDays": 0
+      },
+      "pendingPlanEffectiveDate": "2026-01-01"
+    },
+    "alertsMessage": "",
+    "alertsTitle": "",
+    "tripSheetSetting": {
+      "salaryEnabled": false,
+      "foodingEnabled": false,
+      "miscellaneousExpenseEnabled": false,
+      "fullFuelEnabled": false,
+      "fastTagEnabled": false,
+      "emptyRunEnabled": false,
+      "defEnabled": false,
+      "defSettings": {
+        "mileage": 0,
+        "pricePerLitre": 0
+      }
+    }
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TorgResource.createTorg` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TorgResource.java:228`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `TorgDTO`.
+}

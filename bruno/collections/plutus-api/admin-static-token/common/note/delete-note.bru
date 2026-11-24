@@ -1,0 +1,32 @@
+meta {
+  name: DELETE /api/notes/{id}
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/notes/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `NoteResource.deleteNote` in plutus-java `src/main/java/com/vahn/plutus/common/controller/NoteResource.java:200`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: write.
+}

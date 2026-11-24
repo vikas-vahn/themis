@@ -1,0 +1,94 @@
+meta {
+  name: POST /api/fuel-cards/with-provider/{provider}
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{baseUrl}}/api/fuel-cards/with-provider/:provider
+  body: json
+  auth: bearer
+}
+
+params:path {
+  provider: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "vehicleNumber": "",
+    "mobileNumber": "",
+    "nameOnCard": "",
+    "isPhysical": false,
+    "customer": {
+      "id": 0,
+      "externalCustomerId": "",
+      "panCard": {
+        "id": 0,
+        "torg": {},
+        "panNumber": "",
+        "holderName": "",
+        "documentUrl": "",
+        "status": "PENDING",
+        "verificationDate": "2026-01-01T00:00:00",
+        "verificationNotes": "",
+        "phone": "",
+        "isSoleProprietor": false,
+        "businessName": ""
+      },
+      "torg": {
+        "id": 0,
+        "name": "",
+        "directorAadhaarId": 0,
+        "gstId": 0,
+        "panCardId": 0,
+        "torgAdminId": 0,
+        "bankAccountList": "",
+        "companyDetails": "",
+        "virtualAccountList": "",
+        "torgEmployeeList": "",
+        "status": "CREATED",
+        "vehicleType": "TRUCK",
+        "defaultCompensationDetails": {},
+        "tripSheetSetting": {},
+        "externalCustomerId": "",
+        "virtualAccountIds": [],
+        "bankAccounts": [],
+        "panCards": [],
+        "subscriptionDetails": {},
+        "subscriptionBillings": [],
+        "companyLogoUrl": "",
+        "fleetSize": 0,
+        "invoiceSetting": {}
+      },
+      "fuelCards": [
+        {}
+      ],
+      "provider": "IOCL",
+      "status": "CREATED",
+      "balance": 0,
+      "extraInfo": {}
+    },
+    "customerId": 0,
+    "make": "",
+    "year": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelCardResource.createFuelCardWithProvider` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:198`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `CreateFuelCardRequest`.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/accounting/receipt-vouchers/excel
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/receipt-vouchers/excel
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~invoiceId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `ReceiptVoucherResource.getExcel` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/ReceiptVoucherResource.java:185`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: read.
+}

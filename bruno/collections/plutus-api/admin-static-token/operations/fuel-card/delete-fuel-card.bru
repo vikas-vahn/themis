@@ -1,0 +1,32 @@
+meta {
+  name: DELETE /api/fuel-cards/{id}
+  type: http
+  seq: 25
+}
+
+delete {
+  url: {{baseUrl}}/api/fuel-cards/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelCardResource.deleteFuelCard` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:248`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+}

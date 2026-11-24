@@ -1,0 +1,32 @@
+meta {
+  name: PUT /api/vpas/{id}/deactivate
+  type: http
+  seq: 19
+}
+
+put {
+  url: {{baseUrl}}/api/vpas/:id/deactivate
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `VPAResource.deactivateVPA` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VPAResource.java:469`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: write.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: DELETE /api/vpas/{id}
+  type: http
+  seq: 16
+}
+
+delete {
+  url: {{baseUrl}}/api/vpas/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `VPAResource.deleteVPA` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VPAResource.java:307`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, DRIVER.
+  Risk: write.
+}

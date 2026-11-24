@@ -1,0 +1,21 @@
+meta {
+  name: GET /api/referral/stats
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/referral/stats
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `ReferralResource.getReferralStats` in plutus-java `src/main/java/com/vahn/plutus/referral/controller/ReferralResource.java:151`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

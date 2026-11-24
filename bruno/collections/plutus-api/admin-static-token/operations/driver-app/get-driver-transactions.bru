@@ -1,0 +1,27 @@
+meta {
+  name: GET /api/driver-app/transactions
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/driver-app/transactions
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~startDate: 
+  ~endDate: 
+  ~limit: 50
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `DriverAppResource.getDriverTransactions` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/DriverAppResource.java:108`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, DRIVER, ACCOUNTANT.
+  Risk: read.
+}

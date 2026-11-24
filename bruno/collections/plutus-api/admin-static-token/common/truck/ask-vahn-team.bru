@@ -1,0 +1,39 @@
+meta {
+  name: POST /api/trucks/{truckId}/road-tax/help-request
+  type: http
+  seq: 66
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/:truckId/road-tax/help-request
+  body: json
+  auth: bearer
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "remarks": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.askVahnTeam` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:1095`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER.
+  Risk: write.
+  Body: `RoadTaxHelpRequest`.
+}

@@ -1,0 +1,36 @@
+meta {
+  name: PUT /api/gst/{id}/reject
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{baseUrl}}/api/gst/:id/reject
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~reason: 
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `GSTResource.rejectGST` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/GSTResource.java:412`.
+  Roles: VAHN_ADMIN, FUND_MANAGER.
+  Risk: write.
+}

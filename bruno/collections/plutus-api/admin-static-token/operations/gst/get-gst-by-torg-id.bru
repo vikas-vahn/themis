@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/gst/torg/{torgId}
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/gst/torg/:torgId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `GSTResource.getGSTByTorgId` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/GSTResource.java:122`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

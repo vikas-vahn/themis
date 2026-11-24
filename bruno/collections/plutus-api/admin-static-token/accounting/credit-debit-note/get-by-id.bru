@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/accounting/cn-dn/{type}/{id}
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/cn-dn/:type/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  type: 
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `CreditDebitNoteResource.getById` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/CreditDebitNoteResource.java:169`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: read.
+}

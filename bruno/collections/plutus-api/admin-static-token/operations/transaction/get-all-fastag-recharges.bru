@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/transactions/admin/fastag-recharges
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/admin/fastag-recharges
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~lastId: 
+  ~limit: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TransactionResource.getAllFastagRecharges` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:918`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

@@ -1,0 +1,43 @@
+meta {
+  name: PUT /api/languages/{id}
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/languages/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "name": "",
+    "enabled": false,
+    "createdAt": "2026-01-01T00:00:00",
+    "updatedAt": "2026-01-01T00:00:00"
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `LanguageResource.updateLanguage` in plutus-java `src/main/java/com/vahn/plutus/common/controller/LanguageResource.java:138`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `LanguageDTO`.
+}

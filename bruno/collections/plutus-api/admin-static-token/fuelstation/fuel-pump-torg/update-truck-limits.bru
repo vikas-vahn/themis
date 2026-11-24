@@ -1,0 +1,42 @@
+meta {
+  name: PUT /api/fuel-pump-torg-management/truck-limits/{limitsId}
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{baseUrl}}/api/fuel-pump-torg-management/truck-limits/:limitsId
+  body: json
+  auth: bearer
+}
+
+params:path {
+  limitsId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "truckId": 0,
+    "cashLimit": 0,
+    "fuelLimitLitres": 0,
+    "goldFuelLimitLitres": 0
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelPumpTorgResource.updateTruckLimits` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpTorgResource.java:468`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: write.
+  Body: `FuelStationTruckLimitsRequestDTO`.
+}

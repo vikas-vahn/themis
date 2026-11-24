@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/invoice-settings
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/invoice-settings
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `InvoiceSettingResource.getByTorgId` in plutus-java `src/main/java/com/vahn/plutus/common/controller/InvoiceSettingResource.java:47`.
+  Roles: any signed-in user.
+  Risk: read.
+}

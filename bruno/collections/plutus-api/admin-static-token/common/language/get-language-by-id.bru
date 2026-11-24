@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/languages/{id}
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/languages/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `LanguageResource.getLanguageById` in plutus-java `src/main/java/com/vahn/plutus/common/controller/LanguageResource.java:90`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

@@ -1,0 +1,27 @@
+meta {
+  name: GET /api/admin/collections/torgs
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/admin/collections/torgs
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~activeProvider: RAZORPAY_SMART_COLLECT
+  ~offset: 0
+  ~limit: 50
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `CollectionAdminResource.listTorgs` in plutus-java `src/main/java/com/vahn/plutus/collection/controller/CollectionAdminResource.java:140`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

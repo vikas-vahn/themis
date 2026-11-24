@@ -1,0 +1,32 @@
+meta {
+  name: GET /api/verification/gst/search-by-pan
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/verification/gst/search-by-pan
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~panNumber: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-read call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `VerificationResource.searchGstByPan` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VerificationResource.java:176`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT, TRUCK_MANAGER, OPERATOR, DRIVER, NEW_USER, FUEL_STATION_MANAGER.
+  Risk: external-read.
+}

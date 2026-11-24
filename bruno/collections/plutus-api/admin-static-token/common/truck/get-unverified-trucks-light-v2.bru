@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/trucks/v2/unverified
+  type: http
+  seq: 41
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/v2/unverified
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~skip: 
+  ~take: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TruckResource.getUnverifiedTrucksLightV2` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:826`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: read.
+}

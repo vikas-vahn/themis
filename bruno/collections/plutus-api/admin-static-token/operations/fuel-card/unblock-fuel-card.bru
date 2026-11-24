@@ -1,0 +1,32 @@
+meta {
+  name: PUT /api/fuel-cards/{id}/unblock
+  type: http
+  seq: 43
+}
+
+put {
+  url: {{baseUrl}}/api/fuel-cards/:id/unblock
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelCardResource.unblockFuelCard` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:763`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: external-write.
+}

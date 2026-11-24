@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/trips/date-range
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/trips/date-range
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~startDate: 
+  ~endDate: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TripResource.getTripsByDateRange` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripResource.java:1088`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: read.
+}

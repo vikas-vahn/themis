@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/subscriptions/details/expiring/{days}
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/details/expiring/:days
+  body: none
+  auth: bearer
+}
+
+params:path {
+  days: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `SubscriptionResource.getExpiringSubscriptions` in plutus-java `src/main/java/com/vahn/plutus/common/controller/SubscriptionResource.java:609`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

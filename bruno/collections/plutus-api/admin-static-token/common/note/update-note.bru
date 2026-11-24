@@ -1,0 +1,48 @@
+meta {
+  name: PUT /api/notes/{id}
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/notes/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "content": "",
+    "categoryId": 0,
+    "attachments": [
+      {
+        "key": "",
+        "fileName": "",
+        "contentType": "",
+        "size": 0
+      }
+    ]
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `NoteResource.updateNote` in plutus-java `src/main/java/com/vahn/plutus/common/controller/NoteResource.java:185`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: write.
+  Body: `UpdateNoteRequest`.
+}

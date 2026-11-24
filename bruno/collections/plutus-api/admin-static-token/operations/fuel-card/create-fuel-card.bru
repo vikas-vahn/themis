@@ -1,0 +1,62 @@
+meta {
+  name: POST /api/fuel-cards
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/fuel-cards
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "mobileNumber": "",
+    "cardNumber": "",
+    "provider": "IOCL",
+    "balance": 0,
+    "status": "CREATED",
+    "blockedAt": "2026-01-01T00:00:00",
+    "expiryDate": "2026-01-01",
+    "truckId": 0,
+    "createdAt": "2026-01-01T00:00:00",
+    "updatedAt": "2026-01-01T00:00:00",
+    "isDefault": false,
+    "isLowBalance": false,
+    "torgId": 0,
+    "pin": "",
+    "truckNumber": "",
+    "driverName": "",
+    "isGenericCard": false,
+    "ledgerBalance": 0,
+    "isPinSet": false,
+    "mode": "PHYSICAL",
+    "last_changed_by": 0,
+    "last_changed_by_name": "",
+    "charge_from_user": 0,
+    "charge_from_user_name": "",
+    "limitTripId": 0,
+    "limitScope": "",
+    "fuelCompanyCustomerId": 0
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelCardResource.createFuelCard` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:117`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `FuelCardDTO`.
+}

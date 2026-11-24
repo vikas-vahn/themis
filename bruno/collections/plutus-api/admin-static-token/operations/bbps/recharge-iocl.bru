@@ -1,0 +1,41 @@
+meta {
+  name: POST /api/bbps/bills/iocl/recharge
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/bbps/bills/iocl/recharge
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "mobileNumber": "",
+    "accountNumber": "",
+    "amount": 0,
+    "custConvFee": 0,
+    "pan": "",
+    "email": "",
+    "remitterName": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `BBPSResource.rechargeIOCL` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/BBPSResource.java:185`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `IOCLRechargeRequest`.
+}

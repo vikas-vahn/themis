@@ -1,0 +1,29 @@
+meta {
+  name: GET /api/torg-settings/{section}
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/torg-settings/:section
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+params:path {
+  section: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TorgSettingsResource.getSettings` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TorgSettingsResource.java:58`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER.
+  Risk: read.
+}

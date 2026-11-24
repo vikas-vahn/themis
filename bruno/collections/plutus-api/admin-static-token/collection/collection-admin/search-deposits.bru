@@ -1,0 +1,36 @@
+meta {
+  name: GET /api/admin/collections/deposits
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/admin/collections/deposits
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~state: 
+  ~settlementStatus: 
+  ~provider: 
+  ~holdReason: 
+  ~inReview: 
+  ~torgId: 
+  ~from: 
+  ~to: 
+  ~q: 
+  ~overdue: false
+  ~offset: 0
+  ~limit: 50
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `CollectionAdminResource.searchDeposits` in plutus-java `src/main/java/com/vahn/plutus/collection/controller/CollectionAdminResource.java:206`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

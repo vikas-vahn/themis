@@ -1,0 +1,46 @@
+meta {
+  name: PUT /api/trucks/{truckId}/road-tax
+  type: http
+  seq: 65
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/:truckId/road-tax
+  body: json
+  auth: bearer
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "taxType": "PERIODIC",
+    "validFrom": "2026-01-01",
+    "paidFor": "MONTHLY",
+    "validUpto": {},
+    "paidOn": "2026-01-01",
+    "documentFront": "",
+    "documentBack": "",
+    "confirmLongPeriod": false
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.saveRoadTax` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:1062`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER.
+  Risk: write.
+  Body: `RoadTaxEntryRequest`.
+}

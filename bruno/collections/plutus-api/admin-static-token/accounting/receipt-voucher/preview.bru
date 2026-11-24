@@ -1,0 +1,40 @@
+meta {
+  name: POST /api/accounting/receipt-vouchers/preview
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/accounting/receipt-vouchers/preview
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "customerId": 0,
+    "receiptDate": "2026-01-01",
+    "amount": 0,
+    "mode": "BANK",
+    "referenceNumber": "",
+    "againstInvoiceIds": []
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `ReceiptVoucherResource.preview` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/ReceiptVoucherResource.java:113`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: write.
+  Body: `VoucherPreviewRequest`.
+}

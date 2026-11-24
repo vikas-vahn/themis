@@ -1,0 +1,21 @@
+meta {
+  name: GET /api/v1/rewards/iocl/customer-summary
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/rewards/iocl/customer-summary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `RewardsResource.getIOCLCustomerWiseSummary` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/RewardsResource.java:493`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

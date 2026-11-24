@@ -1,0 +1,36 @@
+meta {
+  name: POST /api/teammates/{id}/photo
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/teammates/:id/photo
+  body: multipartForm
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:multipart-form {
+  file: 
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TeammateResource.uploadPhoto` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TeammateResource.java:196`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+}

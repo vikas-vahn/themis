@@ -1,0 +1,27 @@
+meta {
+  name: GET /api/accounting/directory/drivers/report/download
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/directory/drivers/report/download
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+  ~driverIds: 
+  ~truckIds: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `AccountingDirectoryResource.downloadDriverDlReport` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/AccountingDirectoryResource.java:150`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: read.
+}

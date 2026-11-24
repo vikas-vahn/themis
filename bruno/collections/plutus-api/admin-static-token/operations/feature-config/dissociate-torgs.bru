@@ -1,0 +1,39 @@
+meta {
+  name: DELETE /api/features/config/{configId}/torgs
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{baseUrl}}/api/features/config/:configId/torgs
+  body: json
+  auth: bearer
+}
+
+params:path {
+  configId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "torgIds": []
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FeatureConfigResource.dissociateTorgs` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FeatureConfigResource.java:260`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `DissociateTorgsRequest`.
+}

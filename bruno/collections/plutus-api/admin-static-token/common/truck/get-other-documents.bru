@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/trucks/{truckId}/other-documents
+  type: http
+  seq: 56
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/:truckId/other-documents
+  body: none
+  auth: bearer
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TruckResource.getOtherDocuments` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:969`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: read.
+}

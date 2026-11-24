@@ -1,0 +1,57 @@
+meta {
+  name: POST /api/customers/{id}/address
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/customers/:id/address
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~addressType: 
+  ~isPickup: true
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": "",
+    "addressId": "",
+    "city": "",
+    "state": "",
+    "stateCode": "",
+    "latitude": 0,
+    "longitude": 0,
+    "address": "",
+    "pincode": "",
+    "pocName": "",
+    "pocPhone": "",
+    "nickName": "",
+    "addressType": "PICKUP",
+    "gstin": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `CustomerResource.addAddressToCustomer` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/CustomerResource.java:423`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: write.
+  Body: `AddressPocDTO`.
+}

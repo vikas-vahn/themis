@@ -1,0 +1,42 @@
+meta {
+  name: POST /api/fuel-pump-torg-management/transactions/download
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/fuel-pump-torg-management/transactions/download
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "truckId": 0,
+    "fuelStationId": 0,
+    "driverId": 0,
+    "startDate": "",
+    "endDate": "",
+    "isVahnGoldTransactions": false,
+    "documentType": "PDF",
+    "documentDestination": "DOWNLOAD"
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelPumpTorgResource.downloadTransactions` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpTorgResource.java:612`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT.
+  Risk: external-write.
+  Body: `FuelOnCreditTransactionDownloadDTO`.
+}

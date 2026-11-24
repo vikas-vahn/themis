@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/transient-wallets/running-status/{runningStatus}
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/transient-wallets/running-status/:runningStatus
+  body: none
+  auth: bearer
+}
+
+params:path {
+  runningStatus: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TransientWalletResource.getTransientWalletsByRunningStatus` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransientWalletResource.java:138`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

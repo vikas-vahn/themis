@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/accounting/customers/{customerId}/receipt-vouchers
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/customers/:customerId/receipt-vouchers
+  body: none
+  auth: bearer
+}
+
+params:path {
+  customerId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `CustomerReceiptVoucherResource.listByCustomer` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/CustomerReceiptVoucherResource.java:29`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: read.
+}

@@ -1,0 +1,83 @@
+meta {
+  name: PUT /api/accounting/invoices/{id}
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/api/accounting/invoices/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "billToCustomerId": 0,
+    "shipToCustomerId": 0,
+    "billToAddressId": 0,
+    "shipToAddressId": 0,
+    "consignorId": 0,
+    "consignorAddressId": 0,
+    "consigneeId": 0,
+    "consigneeAddressId": 0,
+    "placeOfSupplyStateCode": "",
+    "invoiceDate": "2026-01-01",
+    "dueDate": "2026-01-01",
+    "lrNumber": "",
+    "lrDate": "2026-01-01",
+    "customInvoiceNumber": "",
+    "items": [
+      {
+        "id": 0,
+        "itemId": 0,
+        "itemName": "",
+        "hsnSacCode": "",
+        "quantity": 0,
+        "unit": "",
+        "unitPrice": 0,
+        "taxableValue": 0,
+        "cgstRate": 0,
+        "sgstRate": 0,
+        "igstRate": 0,
+        "cgstAmount": 0,
+        "sgstAmount": 0,
+        "igstAmount": 0,
+        "lineTotal": 0,
+        "sortOrder": 0,
+        "suggestedCategory": "",
+        "rowType": "",
+        "chargeItemId": 0,
+        "chargeKey": "",
+        "chargeLabel": "",
+        "chargedPer": "",
+        "quantityLabel": "",
+        "quantityHidden": false,
+        "gstRate": 0,
+        "gstRateEditable": false
+      }
+    ],
+    "remarks": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `SalesInvoiceResource.update` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/SalesInvoiceResource.java:312`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: external-write.
+  Body: `UpdateInvoiceRequest`.
+}

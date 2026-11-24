@@ -1,0 +1,51 @@
+meta {
+  name: POST /api/torgs/{torgId}/external-payments
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/torgs/:torgId/external-payments
+  body: json
+  auth: bearer
+}
+
+params:path {
+  torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "amount": 0,
+    "mode": "BANK_TRANSFER",
+    "referenceNumber": "",
+    "paymentDate": "2026-01-01",
+    "proofKey": "",
+    "remarks": "",
+    "requestId": "",
+    "allocations": [
+      {
+        "managerRequirements": {},
+        "totalFundAvailable": 0
+      }
+    ]
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TorgResource.recordExternalPayment` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TorgResource.java:542`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `RecordExternalPaymentRequestDTO`.
+}

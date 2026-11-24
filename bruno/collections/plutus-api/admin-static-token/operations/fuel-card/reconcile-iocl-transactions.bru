@@ -1,0 +1,33 @@
+meta {
+  name: POST /api/fuel-cards/reconcile-iocl-transactions
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/fuel-cards/reconcile-iocl-transactions
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~fromDate: 
+  ~toDate: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelCardResource.reconcileIOCLTransactions` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:678`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+}

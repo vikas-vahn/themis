@@ -1,0 +1,39 @@
+meta {
+  name: POST /api/features/config/{configId}/plans
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/features/config/:configId/plans
+  body: json
+  auth: bearer
+}
+
+params:path {
+  configId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "planIds": []
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FeatureConfigResource.associatePlans` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FeatureConfigResource.java:274`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `AssociatePlansRequest`.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: POST /api/transactions/admin/iocl/trigger-scan
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/transactions/admin/iocl/trigger-scan
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TransactionResource.triggerIOCLScan` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:1424`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+}

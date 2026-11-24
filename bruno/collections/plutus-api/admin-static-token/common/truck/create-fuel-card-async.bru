@@ -1,0 +1,37 @@
+meta {
+  name: POST /api/trucks/{truckId}/fuel-card/async
+  type: http
+  seq: 53
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/:truckId/fuel-card/async
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~alternateMobileNumber: 
+  ~provider: 
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.createFuelCardAsync` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:437`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, DRIVER, ACCOUNTANT.
+  Risk: external-write.
+}

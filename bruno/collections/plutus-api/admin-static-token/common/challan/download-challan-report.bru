@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/challans/report/download
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/challans/report/download
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+  ~truckIds: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `ChallanResource.downloadChallanReport` in plutus-java `src/main/java/com/vahn/plutus/common/controller/ChallanResource.java:266`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

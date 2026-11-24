@@ -1,0 +1,61 @@
+meta {
+  name: POST /api/consignors
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/consignors
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "name": "",
+    "addressList": [
+      {
+        "id": "",
+        "addressId": "",
+        "city": "",
+        "state": "",
+        "stateCode": "",
+        "latitude": 0,
+        "longitude": 0,
+        "address": "",
+        "pincode": "",
+        "pocName": "",
+        "pocPhone": ""
+      }
+    ],
+    "status": "CREATED",
+    "gstId": 0,
+    "gstNumber": "",
+    "customerId": 0,
+    "consignorType": "CONSIGNOR",
+    "isCustomer": false
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `ConsignorResource.createConsignor` in plutus-java `src/main/java/com/vahn/plutus/common/controller/ConsignorResource.java:160`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR.
+  Risk: write.
+  Body: `ConsignorDTO`.
+}

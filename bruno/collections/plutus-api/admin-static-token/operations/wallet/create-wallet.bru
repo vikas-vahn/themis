@@ -1,0 +1,140 @@
+meta {
+  name: POST /api/wallets
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/wallets
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "user_id": {
+      "id": 0,
+      "message": {},
+      "name": "",
+      "image": "",
+      "email": "",
+      "torgId": 0,
+      "managerId": 0,
+      "role": "VAHN_ADMIN",
+      "status": "CREATED",
+      "verified": false,
+      "pinSet": false,
+      "vp": "",
+      "onboardingStatus": "NOT_STARTED",
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "lastLoginAt": "2026-01-01T00:00:00",
+      "referrerUserId": 0,
+      "preferredLanguage": "",
+      "fleetSize": 0,
+      "torgName": "",
+      "assignAllTrucks": false,
+      "truckIds": []
+    },
+    "torg_id": {
+      "id": 0,
+      "name": "",
+      "gstId": 0,
+      "panCardId": 0,
+      "directorAadhaarId": 0,
+      "torgAdminId": 0,
+      "bankAccountList": "",
+      "companyDetails": "",
+      "virtualAccountList": "",
+      "torgEmployeeList": "",
+      "externalCustomerId": "",
+      "status": "CREATED",
+      "vehicleType": "TRUCK",
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "default_compensation_details": {
+        "salaryType": "PERKM",
+        "salary": 0,
+        "miscellaneousExpenseType": "PERKM",
+        "miscellaneousExpense": 0,
+        "foodingType": "PERKM",
+        "fooding": 0,
+        "foodingEnabled": false
+      },
+      "panCardIds": [],
+      "subscriptionDetails": {
+        "id": 0,
+        "plan": {},
+        "torg": {},
+        "trialDays": 0,
+        "trialStartDate": "2026-01-01",
+        "nextBillingDate": "2026-01-01",
+        "status": "ACTIVE",
+        "paymentStatus": "PENDING",
+        "cancellationDate": "2026-01-01",
+        "pauseDate": "2026-01-01",
+        "resumeDate": "2026-01-01",
+        "notes": "",
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "billingStartDate": "2026-01-01",
+        "trialEndDate": "2026-01-01",
+        "isInTrial": false,
+        "isActive": false,
+        "isExpired": false,
+        "noOfVerifiedTrucks": 0,
+        "totalAmount": 0,
+        "netAmount": 0,
+        "taxAmount": 0,
+        "billingEndDate": "2026-01-01",
+        "pendingPlan": {},
+        "pendingPlanEffectiveDate": "2026-01-01"
+      },
+      "alertsMessage": "",
+      "alertsTitle": "",
+      "tripSheetSetting": {
+        "salaryEnabled": false,
+        "foodingEnabled": false,
+        "miscellaneousExpenseEnabled": false,
+        "fullFuelEnabled": false,
+        "fastTagEnabled": false,
+        "emptyRunEnabled": false,
+        "defEnabled": false,
+        "defSettings": {}
+      }
+    },
+    "balance": 0,
+    "blocked_amount": 0,
+    "running_status": "ACTIVE",
+    "status": "CREATED",
+    "created_at": "2026-01-01T00:00:00",
+    "updated_at": "2026-01-01T00:00:00",
+    "wallet_daily_spend_limit": 0,
+    "wallet_hourly_spend_limit": 0,
+    "fastag_daily_recharge_limit": 0,
+    "fastag_hourly_recharge_limit": 0,
+    "fuel_card_daily_recharge_limit": 0,
+    "fuel_card_hourly_recharge_limit": 0,
+    "payment_daily_sent_limit": 0,
+    "payment_hourly_sent_limit": 0
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `WalletResource.createWallet` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/WalletResource.java:228`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `WalletDTO`.
+}

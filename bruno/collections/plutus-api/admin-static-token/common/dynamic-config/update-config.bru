@@ -1,0 +1,40 @@
+meta {
+  name: PUT /api/v1/config/{namespace}
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/v1/config/:namespace
+  body: json
+  auth: bearer
+}
+
+params:path {
+  namespace: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "config": {},
+    "reason": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `DynamicConfigResource.updateConfig` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DynamicConfigResource.java:125`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `ConfigUpdateRequest`.
+}

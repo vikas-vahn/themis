@@ -1,0 +1,29 @@
+meta {
+  name: GET /api/accounting/invoices/drafts
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/invoices/drafts
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~sortKey: 
+  ~sortDir: 
+  ~search: 
+  ~dateFrom: 
+  ~dateTo: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `SalesInvoiceResource.listDrafts` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/SalesInvoiceResource.java:160`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER, TRUCK_MANAGER.
+  Risk: read.
+}

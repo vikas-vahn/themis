@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/fuel-cards/torg/{torgId}
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-cards/torg/:torgId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelCardResource.getFuelCardsByTorgId` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/FuelCardResource.java:479`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: read.
+}

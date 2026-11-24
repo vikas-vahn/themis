@@ -1,0 +1,32 @@
+meta {
+  name: POST /api/v1/vahn-gold-fuel-station/calculate-rewards
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/vahn-gold-fuel-station/calculate-rewards
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~litres: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `VahnGoldFuelStationResource.calculateRewards` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/VahnGoldFuelStationResource.java:100`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT.
+  Risk: external-write.
+}

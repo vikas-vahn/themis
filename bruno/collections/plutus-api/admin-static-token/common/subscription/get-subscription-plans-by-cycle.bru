@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/subscriptions/plans/cycle/{cycle}
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{baseUrl}}/api/subscriptions/plans/cycle/:cycle
+  body: none
+  auth: bearer
+}
+
+params:path {
+  cycle: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `SubscriptionResource.getSubscriptionPlansByCycle` in plutus-java `src/main/java/com/vahn/plutus/common/controller/SubscriptionResource.java:253`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

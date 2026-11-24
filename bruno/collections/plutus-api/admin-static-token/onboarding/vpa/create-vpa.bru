@@ -1,0 +1,72 @@
+meta {
+  name: POST /api/vpas
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/vpas
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "vpa": {},
+    "name": "",
+    "status": "CREATED",
+    "remarks": "",
+    "verified": false,
+    "verificationNotes": "",
+    "verificationStatus": "PENDING",
+    "relationType": "SELF",
+    "relationRemarks": "",
+    "isDefault": false,
+    "driverId": 0,
+    "driverName": "",
+    "torgId": 0,
+    "verificationDocumentUrl": "",
+    "verificationDocumentUrlBack": "",
+    "rejectionReason": "",
+    "source": "PHONE_LOOKUP",
+    "requiresIdProof": false,
+    "proofSubmissionsRemaining": 0,
+    "idProofs": [
+      {
+        "id": 0,
+        "idProofUrl": "",
+        "idProofName": "",
+        "submissionRound": 0,
+        "rejectionReason": "",
+        "rejectedAt": "2026-01-01T00:00:00",
+        "createdAt": "2026-01-01T00:00:00"
+      }
+    ],
+    "createdAt": "2026-01-01T00:00:00",
+    "warnings": [
+      {
+        "code": "DRIVER_NOT_LINKED",
+        "message": ""
+      }
+    ]
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `VPAResource.createVPA` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VPAResource.java:115`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, DRIVER.
+  Risk: write.
+  Body: `VpaDTO`.
+}

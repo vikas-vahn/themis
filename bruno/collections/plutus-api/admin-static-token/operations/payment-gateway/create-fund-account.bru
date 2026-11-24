@@ -1,0 +1,38 @@
+meta {
+  name: POST /api/payment-gateway/fund-accounts
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/fund-accounts
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~contactId: 
+  ~accountType: bank_account
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `PaymentGatewayResource.createFundAccount` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/PaymentGatewayResource.java:404`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `Map<String, Object>`.
+}

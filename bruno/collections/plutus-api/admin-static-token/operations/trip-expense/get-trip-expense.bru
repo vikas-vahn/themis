@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/trip-expenses/{id}
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/trip-expenses/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TripExpenseResource.getTripExpense` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripExpenseResource.java:55`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: read.
+}

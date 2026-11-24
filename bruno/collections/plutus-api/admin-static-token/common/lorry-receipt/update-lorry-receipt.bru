@@ -1,0 +1,167 @@
+meta {
+  name: PUT /api/lorry-receipts/{id}
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{baseUrl}}/api/lorry-receipts/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "lrNumber": "",
+    "userLrNumber": "",
+    "tripNumber": "",
+    "tripId": 0,
+    "consignmentId": 0,
+    "date": "2026-01-01",
+    "dispatchDateTime": "2026-01-01",
+    "eWayBillId": 0,
+    "eWayBillNumber": "",
+    "eWayBillValidDate": "2026-01-01",
+    "consignorId": 0,
+    "consigneeId": 0,
+    "consignorAddressId": 0,
+    "consigneeAddressId": 0,
+    "weightCharged": 0,
+    "actualWeight": 0,
+    "productDetails": [
+      {
+        "hsnCode": "",
+        "productName": "",
+        "packagingType": "",
+        "measureIn": "",
+        "quantity": 0,
+        "amount": 0
+      }
+    ],
+    "lorryReceiptUrl": "",
+    "totalAmount": 0,
+    "status": "DRAFT",
+    "paymentType": "TO_PAY",
+    "freightPaidBy": "",
+    "isInsuranceOwners": false,
+    "notes": "",
+    "vehicleNumber": "",
+    "tripType": "SINGLE",
+    "returnTripEmpty": false,
+    "sourceLocation": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "destinationLocation": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "driver": {
+      "id": 0,
+      "name": "",
+      "phone": "",
+      "alternatePhone": "",
+      "licenseNumber": "",
+      "licenseExpiry": "2026-01-01",
+      "dateOfBirth": "2026-01-01",
+      "status": "AVAILABLE",
+      "ownerId": 0,
+      "profilePictureUrl": ""
+    },
+    "consignor": {
+      "id": 0,
+      "name": "",
+      "addressList": [
+        {}
+      ],
+      "status": "CREATED",
+      "gstId": 0,
+      "gstNumber": "",
+      "customerId": 0,
+      "consignorType": "CONSIGNOR",
+      "isCustomer": false
+    },
+    "consignee": {
+      "id": 0,
+      "name": "",
+      "addressList": [
+        {}
+      ],
+      "status": "CREATED",
+      "gstId": 0,
+      "gstNumber": "",
+      "customerId": 0,
+      "consignorType": "CONSIGNOR",
+      "isCustomer": false
+    },
+    "consignorAddress": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "consigneeAddress": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "customerId": 0,
+    "customerName": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `LorryReceiptResource.updateLorryReceipt` in plutus-java `src/main/java/com/vahn/plutus/common/controller/LorryReceiptResource.java:67`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR.
+  Risk: write.
+  Body: `LorryReceiptDTO`.
+}

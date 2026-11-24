@@ -1,0 +1,32 @@
+meta {
+  name: GET /api/transactions/v2/driver/{driverId}
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/v2/driver/:driverId
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~lastId: 
+  ~limit: 50
+  ~sortBy: 
+  ~sortDirection: 
+}
+
+params:path {
+  driverId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TransactionResource.getTransactionsByDriverIdV2` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:378`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR, ACCOUNTANT, DRIVER.
+  Risk: read.
+}

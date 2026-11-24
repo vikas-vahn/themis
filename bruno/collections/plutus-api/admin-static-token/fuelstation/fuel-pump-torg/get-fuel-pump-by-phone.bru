@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/fuel-pump-torg-management/fuel-pump/phone/{phone}
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-pump-torg-management/fuel-pump/phone/:phone
+  body: none
+  auth: bearer
+}
+
+params:path {
+  phone: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelPumpTorgResource.getFuelPumpByPhone` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpTorgResource.java:136`.
+  Roles: VAHN_ADMIN, FUEL_STATION_MANAGER, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: read.
+}

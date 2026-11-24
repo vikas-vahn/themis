@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/subscription-billing/due-subscriptions/{date}
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/subscription-billing/due-subscriptions/:date
+  body: none
+  auth: bearer
+}
+
+params:path {
+  date: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `SubscriptionBillingResource.getDueSubscriptions` in plutus-java `src/main/java/com/vahn/plutus/common/controller/SubscriptionBillingResource.java:106`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

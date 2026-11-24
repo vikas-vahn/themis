@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/vendors
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/vendors
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~type: 
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `VendorResource.listVendors` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VendorResource.java:36`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT, OPERATOR.
+  Risk: read.
+}

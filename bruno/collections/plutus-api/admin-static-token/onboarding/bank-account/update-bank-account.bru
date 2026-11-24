@@ -1,0 +1,68 @@
+meta {
+  name: PUT /api/bank-accounts/{id}
+  type: http
+  seq: 15
+}
+
+put {
+  url: {{baseUrl}}/api/bank-accounts/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "beneficiaryName": "",
+    "accountNumber": "",
+    "accountType": "SAVINGS",
+    "ifscCode": "",
+    "bankName": "",
+    "status": "CREATED",
+    "verified": false,
+    "verificationNotes": "",
+    "rejectionReason": "",
+    "requiresIdProof": false,
+    "proofSubmissionsRemaining": 0,
+    "torgId": 0,
+    "driverId": 0,
+    "driverName": "",
+    "fuelStationId": 0,
+    "enteredName": "",
+    "idProofs": [
+      {
+        "id": 0,
+        "idProofUrl": "",
+        "idProofName": "",
+        "submissionRound": 0,
+        "rejectionReason": "",
+        "rejectedAt": "2026-01-01T00:00:00",
+        "createdAt": "2026-01-01T00:00:00"
+      }
+    ],
+    "isDefault": false,
+    "createdAt": "2026-01-01T00:00:00"
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `BankAccountResource.updateBankAccount` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/BankAccountResource.java:404`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER.
+  Risk: write.
+  Body: `BankAccountDTO`.
+}

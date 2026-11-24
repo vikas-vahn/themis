@@ -1,0 +1,61 @@
+meta {
+  name: PUT /api/invoice-settings/{id}
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/invoice-settings/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "torgId": 0,
+    "remarks": "",
+    "notes": "",
+    "declaration": "",
+    "signatureUrl": "",
+    "companyLogoUrl": "",
+    "companyName": "",
+    "addressLine1": "",
+    "addressLine2": "",
+    "pinCode": "",
+    "city": "",
+    "state": "",
+    "phoneNumber": "",
+    "gstNumber": "",
+    "pan": "",
+    "cin": "",
+    "signatures": [
+      {
+        "url": "",
+        "isDefault": false
+      }
+    ]
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `InvoiceSettingResource.update` in plutus-java `src/main/java/com/vahn/plutus/common/controller/InvoiceSettingResource.java:75`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: external-write.
+  Body: `InvoiceSettingDTO`.
+}

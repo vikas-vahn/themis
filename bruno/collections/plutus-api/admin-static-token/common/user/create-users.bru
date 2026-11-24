@@ -1,0 +1,58 @@
+meta {
+  name: POST /api/users/list
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/users/list
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  [
+    {
+      "id": 0,
+      "message": {},
+      "name": "",
+      "image": "",
+      "email": "",
+      "torgId": 0,
+      "managerId": 0,
+      "role": "VAHN_ADMIN",
+      "status": "CREATED",
+      "verified": false,
+      "pinSet": false,
+      "vp": "",
+      "onboardingStatus": "NOT_STARTED",
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "lastLoginAt": "2026-01-01T00:00:00",
+      "referrerUserId": 0,
+      "preferredLanguage": "",
+      "fleetSize": 0,
+      "torgName": "",
+      "assignAllTrucks": false,
+      "truckIds": []
+    }
+  ]
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `UserResource.createUsers` in plutus-java `src/main/java/com/vahn/plutus/common/controller/UserResource.java:266`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: write.
+  Body: `List<UserDTO>`.
+}

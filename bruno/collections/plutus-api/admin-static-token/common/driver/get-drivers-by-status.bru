@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/drivers/status/{status}
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/status/:status
+  body: none
+  auth: bearer
+}
+
+params:path {
+  status: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `DriverResource.getDriversByStatus` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:749`.
+  Roles: any signed-in user.
+  Risk: read.
+}

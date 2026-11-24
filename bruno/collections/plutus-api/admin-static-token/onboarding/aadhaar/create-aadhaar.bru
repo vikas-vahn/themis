@@ -1,0 +1,60 @@
+meta {
+  name: POST /api/aadhaar
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/aadhaar
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "torgId": 0,
+    "message": {},
+    "name": "",
+    "dateOfBirth": "2026-01-01",
+    "gender": "",
+    "address": {
+      "country": "",
+      "dist": "",
+      "state": "",
+      "po": "",
+      "loc": "",
+      "vtc": "",
+      "subdist": "",
+      "street": "",
+      "house": "",
+      "landmark": "",
+      "pincode": ""
+    },
+    "documentUrl": "",
+    "documentUrlBack": "",
+    "status": "PENDING",
+    "verificationDate": "2026-01-01T00:00:00",
+    "verificationNotes": "",
+    "createdAt": "2026-01-01T00:00:00",
+    "updatedAt": "2026-01-01T00:00:00"
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `AadhaarResource.createAadhaar` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/AadhaarResource.java:227`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: write.
+  Body: `AadhaarDTO`.
+}

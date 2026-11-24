@@ -1,0 +1,27 @@
+meta {
+  name: GET /api/fuel-pump-management/gold-fuel-station-payment-transactions
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/fuel-pump-management/gold-fuel-station-payment-transactions
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~fuelStationId: 
+  ~startDate: 
+  ~endDate: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `FuelPumpManagementResource.getGoldFuelStationPaymentTransactions` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpManagementResource.java:1055`.
+  Roles: VAHN_ADMIN, FUEL_STATION_MANAGER.
+  Risk: read.
+}

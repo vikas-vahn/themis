@@ -1,0 +1,39 @@
+meta {
+  name: DELETE /api/trips/{id}
+  type: http
+  seq: 37
+}
+
+delete {
+  url: {{baseUrl}}/api/trips/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "pin": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TripResource.deleteTrip` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripResource.java:564`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR.
+  Risk: write.
+  Body: `com.vahn.plutus.operations.model.ActionDecisionDTO`.
+}

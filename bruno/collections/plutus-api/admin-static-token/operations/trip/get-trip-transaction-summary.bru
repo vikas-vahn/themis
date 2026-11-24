@@ -1,0 +1,33 @@
+meta {
+  name: POST /api/trips/transaction-summary
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseUrl}}/api/trips/transaction-summary
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  []
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TripResource.getTripTransactionSummary` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripResource.java:1544`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: external-write.
+  Body: `List<Long>`.
+}

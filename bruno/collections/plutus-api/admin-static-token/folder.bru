@@ -1,0 +1,23 @@
+meta {
+  name: admin-static-token
+}
+
+docs {
+  Every plutus-api endpoint the VAHN_ADMIN static token can call, one request per endpoint,
+  grouped as <module>/<resource>. Generated from plutus-java `develop` @ 3e8d8f094.
+
+  Set `adminStaticToken` in your local environment (never commit it). The token acts as VAHN_ADMIN for
+  every company, so treat each request here as a cross-company admin action.
+
+  Folder runs are guarded by two opt-in flags, passed for one run only (`--env-var name=true`):
+  - `adminStaticAllowWrites`: every non-GET request skips itself unless it is `true`.
+  - `adminStaticAllowExternal`: requests tagged external (they move money, send SMS/WhatsApp/push/email,
+    or call a paid provider such as a penny drop, PAN/DL/RC/VPA verification or a balance lookup) skip
+    themselves unless it is `true`. External GETs need only this flag; external writes need both.
+  A plain folder run therefore sends only the read-only GETs. Never run writes against production.
+
+  Path params are empty and query params are disabled: fill in what the call needs. Bodies are
+  skeletons built from the request DTO's fields; check the DTO before sending.
+
+  Regenerate rather than hand-edit: see the knowledge note `vahn-admin-static-token.md`.
+}

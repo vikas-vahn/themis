@@ -1,0 +1,39 @@
+meta {
+  name: PUT /api/trucks/{id}/status
+  type: http
+  seq: 50
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/:id/status
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "status": "AVAILABLE"
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.updateTruckStatus` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:251`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR.
+  Risk: write.
+  Body: `UpdateTruckStatusRequest`.
+}

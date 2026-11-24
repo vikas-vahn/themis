@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/admin/toll-master/backfill-geocode/{jobId}
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/admin/toll-master/backfill-geocode/:jobId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  jobId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TollMasterAdminResource.getBackfillStatus` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TollMasterAdminResource.java:269`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

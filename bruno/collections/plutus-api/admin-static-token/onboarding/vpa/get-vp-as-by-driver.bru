@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/vpas/driver/{driverId}
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/vpas/driver/:driverId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  driverId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `VPAResource.getVPAsByDriver` in plutus-java `src/main/java/com/vahn/plutus/onboarding/controller/VPAResource.java:90`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, ACCOUNTANT, OPERATOR, DRIVER.
+  Risk: read.
+}

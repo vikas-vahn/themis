@@ -1,0 +1,41 @@
+meta {
+  name: PUT /api/drivers/v1/{id}/reject-dl
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{baseUrl}}/api/drivers/v1/:id/reject-dl
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "reasonCode": "BLURRY_IMAGE",
+    "description": {},
+    "example": {}
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `DriverResource.rejectDlV1` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:556`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: write.
+  Body: `DlRejectionRequestDTO`.
+}

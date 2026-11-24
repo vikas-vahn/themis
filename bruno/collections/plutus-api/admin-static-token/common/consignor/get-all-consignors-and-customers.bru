@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/consignors
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/consignors
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `ConsignorResource.getAllConsignorsAndCustomers` in plutus-java `src/main/java/com/vahn/plutus/common/controller/ConsignorResource.java:55`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: read.
+}

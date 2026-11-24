@@ -1,0 +1,32 @@
+meta {
+  name: PUT /api/lorry-receipts/{id}/cancel
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{baseUrl}}/api/lorry-receipts/:id/cancel
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `LorryReceiptResource.cancelLorryReceipt` in plutus-java `src/main/java/com/vahn/plutus/common/controller/LorryReceiptResource.java:266`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER, OPERATOR.
+  Risk: write.
+}

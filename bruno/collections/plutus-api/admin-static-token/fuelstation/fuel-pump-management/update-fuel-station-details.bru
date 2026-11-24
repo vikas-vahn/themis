@@ -1,0 +1,156 @@
+meta {
+  name: PUT /api/fuel-pump-management/fuel-station/details
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/fuel-pump-management/fuel-station/details
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": 0,
+    "name": "",
+    "fuelReferenceId": "",
+    "ownerName": "",
+    "ownerEmail": "",
+    "fuelCompany": "",
+    "primaryPhone": "",
+    "pincode": "",
+    "state": "",
+    "city": "",
+    "pumpManagerId": 0,
+    "isGoldFuelStation": false,
+    "address": {
+      "id": "",
+      "addressId": "",
+      "city": "",
+      "state": "",
+      "stateCode": "",
+      "latitude": 0,
+      "longitude": 0,
+      "address": "",
+      "pincode": "",
+      "pocName": "",
+      "pocPhone": ""
+    },
+    "roDetails": {
+      "id": 0,
+      "provider": "IOCL",
+      "roId": "",
+      "address": {
+        "id": "",
+        "addressId": "",
+        "city": "",
+        "state": "",
+        "stateCode": "",
+        "latitude": 0,
+        "longitude": 0,
+        "address": "",
+        "pincode": "",
+        "pocName": "",
+        "pocPhone": ""
+      },
+      "roName": "",
+      "discount": 0,
+      "cutOffTime": "10:00:00",
+      "roType": "",
+      "roStatus": "",
+      "roStatusDescription": "",
+      "bankAccount": {
+        "id": 0,
+        "beneficiaryName": "",
+        "accountNumber": "",
+        "accountType": "SAVINGS",
+        "ifscCode": "",
+        "bankName": "",
+        "status": "CREATED",
+        "verified": false,
+        "verificationNotes": "",
+        "rejectionReason": "",
+        "requiresIdProof": false,
+        "proofSubmissionsRemaining": 0,
+        "torgId": 0,
+        "driverId": 0,
+        "driverName": "",
+        "fuelStationId": 0,
+        "enteredName": "",
+        "idProofs": [],
+        "isDefault": false,
+        "createdAt": "2026-01-01T00:00:00"
+      }
+    },
+    "roDetailsId": 0,
+    "pumpManager": {
+      "id": 0,
+      "message": {},
+      "name": "",
+      "image": "",
+      "email": "",
+      "torgId": 0,
+      "managerId": 0,
+      "role": "VAHN_ADMIN",
+      "status": "CREATED",
+      "verified": false,
+      "pinSet": false,
+      "vp": "",
+      "onboardingStatus": "NOT_STARTED",
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "lastLoginAt": "2026-01-01T00:00:00",
+      "referrerUserId": 0,
+      "preferredLanguage": "",
+      "fleetSize": 0,
+      "torgName": "",
+      "assignAllTrucks": false,
+      "truckIds": []
+    },
+    "goldDiscountPerLiter": 0,
+    "cutOffTime": "10:00:00",
+    "defaultBankAccount": {
+      "id": 0,
+      "beneficiaryName": "",
+      "accountNumber": "",
+      "accountType": "SAVINGS",
+      "ifscCode": "",
+      "bankName": "",
+      "status": "CREATED",
+      "verified": false,
+      "verificationNotes": "",
+      "rejectionReason": "",
+      "requiresIdProof": false,
+      "proofSubmissionsRemaining": 0,
+      "torgId": 0,
+      "driverId": 0,
+      "driverName": "",
+      "fuelStationId": 0,
+      "enteredName": "",
+      "idProofs": [
+        {}
+      ],
+      "isDefault": false,
+      "createdAt": "2026-01-01T00:00:00"
+    }
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `FuelPumpManagementResource.updateFuelStationDetails` in plutus-java `src/main/java/com/vahn/plutus/fuelstation/controller/FuelPumpManagementResource.java:188`.
+  Roles: VAHN_ADMIN, FUEL_STATION_MANAGER.
+  Risk: write.
+  Body: `FuelStationDetailsDTO`.
+}

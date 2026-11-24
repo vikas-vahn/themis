@@ -1,0 +1,32 @@
+meta {
+  name: GET /api/consent-ledger
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/consent-ledger
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~userId: 
+  ~entityType: 
+  ~consentType: 
+  ~startDate: 
+  ~endDate: 
+  ~limit: 100
+  ~offset: 0
+  ~export: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `ConsentLedgerResource.getConsentLogs` in plutus-java `src/main/java/com/vahn/plutus/common/controller/ConsentLedgerResource.java:54`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: read.
+}

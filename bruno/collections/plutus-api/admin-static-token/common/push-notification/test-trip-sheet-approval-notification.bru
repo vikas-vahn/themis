@@ -1,0 +1,41 @@
+meta {
+  name: POST /api/internal/notifications/push/test/trip-sheet-approval
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/internal/notifications/push/test/trip-sheet-approval
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "userId": 0,
+    "driverId": 0,
+    "truckId": 0,
+    "truckRegistration": "",
+    "driverName": "",
+    "driverImage": "",
+    "tripNumber": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `PushNotificationResource.testTripSheetApprovalNotification` in plutus-java `src/main/java/com/vahn/plutus/common/controller/PushNotificationResource.java:277`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `TestTripSheetApprovalRequest`.
+}

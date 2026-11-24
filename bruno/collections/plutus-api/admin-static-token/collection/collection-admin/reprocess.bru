@@ -1,0 +1,32 @@
+meta {
+  name: POST /api/admin/collections/deposits/{id}/process
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/admin/collections/deposits/:id/process
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `CollectionAdminResource.reprocess` in plutus-java `src/main/java/com/vahn/plutus/collection/controller/CollectionAdminResource.java:243`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+}

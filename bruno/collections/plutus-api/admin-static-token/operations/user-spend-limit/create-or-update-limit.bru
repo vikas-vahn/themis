@@ -1,0 +1,46 @@
+meta {
+  name: POST /api/v1/spend-limits
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/spend-limits
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~category: 
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "enabled": false,
+    "dailyLimit": 0,
+    "monthlyLimit": 0,
+    "dailyTransactionLimit": 0,
+    "monthlyTransactionLimit": 0,
+    "reason": "",
+    "scope": "TRUCK"
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `UserSpendLimitResource.createOrUpdateLimit` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/UserSpendLimitResource.java:90`.
+  Roles: TORG_ADMIN, VAHN_ADMIN, FUND_MANAGER.
+  Risk: write.
+  Body: `TorgSpendLimitRequest`.
+}

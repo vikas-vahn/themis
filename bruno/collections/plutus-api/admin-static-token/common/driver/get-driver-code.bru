@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/drivers/driver-code
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/drivers/driver-code
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~driverId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `DriverResource.getDriverCode` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:615`.
+  Roles: DRIVER, VAHN_ADMIN.
+  Risk: read.
+}

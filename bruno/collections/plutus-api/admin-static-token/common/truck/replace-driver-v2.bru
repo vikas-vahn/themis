@@ -1,0 +1,135 @@
+meta {
+  name: PUT /api/trucks/{truckId}/v2/replace-driver
+  type: http
+  seq: 69
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/:truckId/v2/replace-driver
+  body: json
+  auth: bearer
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "driverId": 0,
+    "driverDTO": {
+      "id": 0,
+      "name": "",
+      "message": {},
+      "example": {},
+      "email": "",
+      "licenseNumber": "",
+      "licenseExpiry": "2026-01-01",
+      "address": "",
+      "dateOfBirth": "2026-01-01",
+      "status": "AVAILABLE",
+      "ownerId": 0,
+      "createdAt": "2026-01-01T00:00:00",
+      "updatedAt": "2026-01-01T00:00:00",
+      "compensationDetails": {
+        "salaryType": "PERKM",
+        "salary": 0,
+        "miscellaneousExpenseType": "PERKM",
+        "miscellaneousExpense": 0,
+        "foodingType": "PERKM",
+        "fooding": 0,
+        "foodingEnabled": false
+      },
+      "profilePictureUrl": "",
+      "licenseUrl": "",
+      "bankAccountId": 0,
+      "vpas": [
+        {}
+      ],
+      "truckDTO": {
+        "id": 0,
+        "message": {},
+        "make": "",
+        "model": "",
+        "year": 0,
+        "capacityTons": 0,
+        "fuelType": "",
+        "status": "AVAILABLE",
+        "lastMaintenanceDate": "2026-01-01T00:00:00",
+        "nextMaintenanceDate": "2026-01-01T00:00:00",
+        "torgId": 0,
+        "createdAt": "2026-01-01T00:00:00",
+        "updatedAt": "2026-01-01T00:00:00",
+        "driverId": 0,
+        "driver": {},
+        "truckDocuments": {},
+        "truckManagerId": 0,
+        "primaryTruckManagerId": 0,
+        "truckManagerIds": [],
+        "fundManagerId": 0,
+        "truckManager": {},
+        "fundManager": {},
+        "mileage": {},
+        "defSettings": {},
+        "unladedWeight": 0,
+        "vehicleClass": "",
+        "axleCount": 0,
+        "netcVehicleClass": "",
+        "trip": {},
+        "fuelCards": [],
+        "fastag": {},
+        "isFuelCardLowBalance": false,
+        "fuelCardBalance": 0,
+        "panCard": {},
+        "ownerName": "",
+        "verificationStatus": "NOT_VERIFIED",
+        "vtsProvider": "",
+        "truckLastLocation": {},
+        "containerLength": 0,
+        "fuelTankCapacity": 0,
+        "truckMasterId": 0,
+        "truckMaster": {},
+        "torgName": "",
+        "displayTripType": "ACCIDENT",
+        "alerts": [],
+        "highestAlertLevel": "",
+        "otherDocuments": [],
+        "source": ""
+      },
+      "lastLoginAt": "2026-01-01T00:00:00",
+      "onboardingStatus": "NOT_STARTED",
+      "aadhaarId": 0,
+      "aadhaarNumber": "",
+      "aadhaarDocumentUrl": "",
+      "aadhaarDocumentUrlBack": "",
+      "verificationStatus": "VERIFIED",
+      "dlVerificationNotes": "",
+      "dlVerificationDate": "2026-01-01T00:00:00",
+      "licenseFrontUrl": "",
+      "licenseBackUrl": "",
+      "verifiedBankAccountId": 0,
+      "dlVerificationAttemptCount": 0,
+      "dlVerificationMaxAttempts": 0,
+      "dlVerificationOutcome": "VERIFIED"
+    },
+    "reason": ""
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.replaceDriverV2` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:915`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER.
+  Risk: write.
+  Body: `DriverReplacementRequestDTO`.
+}

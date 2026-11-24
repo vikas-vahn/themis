@@ -1,0 +1,32 @@
+meta {
+  name: GET /api/transactions/admin/aggregator-balance/{provider}
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/admin/aggregator-balance/:provider
+  body: none
+  auth: bearer
+}
+
+params:path {
+  provider: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-read call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TransactionResource.getAggregatorBalance` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:1299`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-read.
+}

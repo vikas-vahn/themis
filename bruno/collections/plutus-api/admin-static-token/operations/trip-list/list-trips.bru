@@ -1,0 +1,32 @@
+meta {
+  name: GET /api/v2/trips
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~source: ALL
+  ~visibility: DEFAULT
+  ~completedWindowHours: 24
+  ~tripStatus: 
+  ~days: 0
+  ~search: 
+  ~lastId: 
+  ~limit: 30
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TripListResource.listTrips` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripListResource.java:104`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT.
+  Risk: read.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: GET /api/drivers
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/drivers
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~name: 
+  ~pageNumber: 1
+  ~pageSize: 100
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `DriverResource.getAllDrivers` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:97`.
+  Roles: any signed-in user.
+  Risk: read.
+}

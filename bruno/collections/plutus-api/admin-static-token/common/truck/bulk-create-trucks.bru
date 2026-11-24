@@ -1,0 +1,47 @@
+meta {
+  name: POST /api/trucks/bulk
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/bulk
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~torgId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  [
+    {
+      "message": {},
+      "driver": {
+        "name": "",
+        "phone": "",
+        "licenseNumber": "",
+        "dateOfBirth": ""
+      }
+    }
+  ]
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.bulkCreateTrucks` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:199`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, TRUCK_MANAGER.
+  Risk: write.
+  Body: `List<BulkTruckCreateRow>`.
+}

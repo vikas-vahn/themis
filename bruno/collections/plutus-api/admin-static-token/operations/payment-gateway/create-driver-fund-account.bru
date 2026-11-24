@@ -1,0 +1,42 @@
+meta {
+  name: POST /api/payment-gateway/fund-accounts/driver/{driverId}
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/payment-gateway/fund-accounts/driver/:driverId
+  body: json
+  auth: bearer
+}
+
+params:query {
+  ~contactId: 
+  ~accountType: bank_account
+}
+
+params:path {
+  driverId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `PaymentGatewayResource.createDriverFundAccount` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/PaymentGatewayResource.java:356`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+  Body: `Map<String, Object>`.
+}

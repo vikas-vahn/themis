@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/accounting/cn-dn/{type}/{id}/pdf
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/accounting/cn-dn/:type/:id/pdf
+  body: none
+  auth: bearer
+}
+
+params:path {
+  type: 
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `CreditDebitNoteResource.getPdf` in plutus-java `src/main/java/com/vahn/plutus/accounting/controller/CreditDebitNoteResource.java:243`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, ACCOUNTANT, FUND_MANAGER.
+  Risk: read.
+}

@@ -1,0 +1,33 @@
+meta {
+  name: DELETE /api/drivers/{id}/bank-accounts/{bankAccountId}
+  type: http
+  seq: 33
+}
+
+delete {
+  url: {{baseUrl}}/api/drivers/:id/bank-accounts/:bankAccountId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 
+  bankAccountId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `DriverResource.removeDriverBankAccount` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DriverResource.java:1294`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER.
+  Risk: write.
+}

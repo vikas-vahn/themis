@@ -1,0 +1,21 @@
+meta {
+  name: GET /api/teammates
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/teammates
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TeammateResource.getAllTeammates` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TeammateResource.java:54`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

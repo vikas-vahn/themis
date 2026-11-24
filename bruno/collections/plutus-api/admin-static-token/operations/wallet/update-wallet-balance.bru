@@ -1,0 +1,36 @@
+meta {
+  name: PUT /api/wallets/{id}/balance
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/api/wallets/:id/balance
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~amount: 
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `WalletResource.updateWalletBalance` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/WalletResource.java:300`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: external-write.
+}

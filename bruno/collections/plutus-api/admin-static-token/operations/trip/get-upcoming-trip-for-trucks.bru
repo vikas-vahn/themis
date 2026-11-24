@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/trips/truck/{truckId}/upcoming-trips
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{baseUrl}}/api/trips/truck/:truckId/upcoming-trips
+  body: none
+  auth: bearer
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TripResource.getUpcomingTripForTrucks` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TripResource.java:1757`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, DRIVER, ACCOUNTANT, OPERATOR.
+  Risk: read.
+}

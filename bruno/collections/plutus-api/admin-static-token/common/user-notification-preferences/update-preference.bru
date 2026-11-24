@@ -1,0 +1,43 @@
+meta {
+  name: PUT /api/notification-preferences/{id}
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/notification-preferences/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "id": "",
+    "userId": 0,
+    "channel": "SMS",
+    "notificationType": "TRANSACTIONAL",
+    "enabled": false
+  }
+}
+
+script:pre-request {
+  // Folder runs skip this external-write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true" || bru.getEnvVar("adminStaticAllowExternal") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `UserNotificationPreferencesResource.updatePreference` in plutus-java `src/main/java/com/vahn/plutus/common/controller/UserNotificationPreferencesResource.java:125`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: external-write.
+  Body: `UserNotificationPreferencesDTO`.
+}

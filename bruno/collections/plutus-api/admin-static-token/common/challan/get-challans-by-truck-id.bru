@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/challans/truck/{truckId}
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/challans/truck/:truckId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  truckId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `ChallanResource.getChallansByTruckId` in plutus-java `src/main/java/com/vahn/plutus/common/controller/ChallanResource.java:148`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT, OPERATOR, DRIVER.
+  Risk: read.
+}

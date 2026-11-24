@@ -1,0 +1,25 @@
+meta {
+  name: GET /api/v1/config/{namespace}
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/config/:namespace
+  body: none
+  auth: bearer
+}
+
+params:path {
+  namespace: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `DynamicConfigResource.getConfigByNamespace` in plutus-java `src/main/java/com/vahn/plutus/common/controller/DynamicConfigResource.java:72`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}

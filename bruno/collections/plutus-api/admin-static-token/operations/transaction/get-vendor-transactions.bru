@@ -1,0 +1,28 @@
+meta {
+  name: GET /api/transactions/vendor
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{baseUrl}}/api/transactions/vendor
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~truckId: 
+  ~torgId: 
+  ~startDate: 
+  ~endDate: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TransactionResource.getVendorTransactions` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/TransactionResource.java:230`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, ACCOUNTANT.
+  Risk: read.
+}

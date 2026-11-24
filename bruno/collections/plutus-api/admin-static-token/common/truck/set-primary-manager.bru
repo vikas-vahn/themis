@@ -1,0 +1,33 @@
+meta {
+  name: PUT /api/trucks/{truckId}/managers/{userId}/primary
+  type: http
+  seq: 55
+}
+
+put {
+  url: {{baseUrl}}/api/trucks/:truckId/managers/:userId/primary
+  body: none
+  auth: bearer
+}
+
+params:path {
+  truckId: 
+  userId: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  // Folder runs skip this write call unless the opt-in flags are set (see the admin-static-token folder docs).
+  if (bru.getEnvVar("adminStaticAllowWrites") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.setPrimaryManager` in plutus-java `src/main/java/com/vahn/plutus/common/controller/TruckResource.java:1154`.
+  Roles: VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER.
+  Risk: write.
+}

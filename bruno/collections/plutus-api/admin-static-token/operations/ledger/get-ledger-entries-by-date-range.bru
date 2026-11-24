@@ -1,0 +1,26 @@
+meta {
+  name: GET /api/ledger/date
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/ledger/date
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~startDate: 
+  ~endDate: 
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `LedgerResource.getLedgerEntriesByDateRange` in plutus-java `src/main/java/com/vahn/plutus/operations/controller/LedgerResource.java:105`.
+  Roles: VAHN_ADMIN, TORG_ADMIN.
+  Risk: read.
+}

@@ -1,0 +1,21 @@
+meta {
+  name: GET /api/announcements
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/announcements
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `AnnouncementResource.getAllAnnouncements` in plutus-java `src/main/java/com/vahn/plutus/common/controller/AnnouncementResource.java:49`.
+  Roles: VAHN_ADMIN (admin-only).
+  Risk: read.
+}
