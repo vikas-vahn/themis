@@ -1,0 +1,110 @@
+opencollection: 1.0.0
+
+info:
+  name: cashfree
+  version: "1"
+
+request:
+  headers:
+    - name: x-client-id
+      value: "{{cashfreeClientId}}"
+    - name: x-client-secret
+      value: "{{cashfreeClientSecret}}"
+    - name: x-api-version
+      value: "{{cashfreeApiVersion}}"
+  scripts:
+    - type: before-request
+      code: |-
+        // Every Cashfree call needs a verification_id it has never seen (a repeat is a 409).
+        bru.setVar("cashfreeVerificationId", "themis-" + Date.now() + "-" + Math.floor(Math.random() * 1000));
+
+        // 2FA with a public key: x-cf-signature = base64(RSA-OAEP-SHA1("<clientId>.<unix seconds>")),
+        // fresh per request (valid ~5 min). Skipped when no key path is set (IP-whitelisted account).
+        // Needs Node's crypto and fs, so run with --sandbox=developer (Bruno app: Developer Mode).
+        const keyPath = bru.interpolate(bru.getEnvVar("cashfreePublicKeyPath") || "");
+        if (keyPath) {
+          const crypto = require("crypto");
+          const fs = require("fs");
+          const clientId = bru.interpolate(bru.getEnvVar("cashfreeClientId"));
+          const payload = clientId + "." + Math.floor(Date.now() / 1000);
+          const signature = crypto.publicEncrypt(
+            { key: fs.readFileSync(keyPath, "utf8"), padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: "sha1" },
+            Buffer.from(payload)
+          ).toString("base64");
+          req.setHeader("x-cf-signature", signature);
+        }
+    - type: tests
+      code: |-
+        // Cashfree reports "invalid" as HTTP 200 with status INVALID; errors come as 4xx/5xx with
+        // {"type","code","message"}.
+        test("HTTP 200", function () {
+          expect(res.getStatus(), JSON.stringify(res.getBody())).to.equal(200);
+        });
+
+docs:
+  content: |-
+    # Cashfree Secure ID (verification API)
+
+    Direct calls to Cashfree Secure ID, evaluated in Nov 2026 as an alternate provider for the three
+    Surepass APIs that fail most (rc-full, driving-license, mobile-to-multiple-upi). plutus-java
+    does not call Cashfree yet. Docs: https://www.cashfree.com/docs/api-reference/vrs/overview
+    (`/upi/mobile` exists only in the OpenAPI spec, https://www.cashfree.com/docs/openapi/vrs/vrsv2.yaml).
+
+    | Request | Cashfree | Surepass equivalent |
+    |---|---|---|
+    | `vehicle-rc/01-verify-vehicle-rc` | `POST /vehicle-rc` | `/api/v1/rc/rc-full` |
+    | `vehicle-rc/02-get-vehicle-rc` | `GET /vehicle-rc?verification_id=` | none (re-reads 01's result) |
+    | `driving-license/01-verify-driving-license` | `POST /driving-license` | `/api/v1/driving-license/driving-license` |
+    | `upi/01-mobile-to-vpa` | `POST /upi/mobile` | `/api/v1/bank-verification/mobile-to-multiple-upi` |
+
+    ## Credentials
+
+    Read from `bruno/collections/cashfree/.env` (gitignored). Create it locally:
+
+    ```
+    CASHFREE_SANDBOX_CLIENT_ID=<sandbox client id>
+    CASHFREE_SANDBOX_CLIENT_SECRET=<sandbox client secret>
+    CASHFREE_SANDBOX_PUBLIC_KEY_PATH=<absolute path to the sandbox public key .pem>
+    CASHFREE_PROD_CLIENT_ID=<prod client id>
+    CASHFREE_PROD_CLIENT_SECRET=<prod client secret>
+    CASHFREE_PROD_PUBLIC_KEY_PATH=<absolute path to the prod public key .pem; empty if IP-whitelisted>
+    CASHFREE_PROD_VEHICLE_NUMBER=<plate>
+    CASHFREE_PROD_DL_NUMBER=<licence number>
+    CASHFREE_PROD_DOB=<licence holder's date of birth, YYYY-MM-DD>
+    CASHFREE_PROD_UPI_MOBILE=<10-digit mobile>
+    ```
+
+    Keep the `.pem` files in `bruno/collections/cashfree/.keys/` (gitignored). The prod key file
+    Cashfree issues is password-protected; export the plain public key before pointing the path at it.
+
+    2FA is on in every environment. With a public key, each request needs a fresh `x-cf-signature`
+    (made by the collection's pre-request script), which uses Node's `crypto`, so:
+
+    ```bash
+    npx @usebruno/cli run bruno/collections/cashfree --env staging --sandbox=developer
+    npx @usebruno/cli run bruno/collections/cashfree/vehicle-rc --env prod --sandbox=developer -r
+    ```
+
+    In the Bruno app, switch the collection to Developer Mode (JavaScript sandbox setting).
+
+    ## Environments
+
+    - `staging`: Cashfree sandbox (`sandbox.cashfree.com/verification`). Only the documented test
+      values work there: https://www.cashfree.com/docs/api-reference/vrs/data-to-test-integration
+    - `prod`: live Cashfree (`api.cashfree.com/verification`). **Every call is billed** and looks up
+      a real person or vehicle; inputs come from `.env`.
+
+    ## Reading responses
+
+    - "Invalid" is HTTP 200 with `status: INVALID` (Surepass uses 422).
+    - `422 insufficient_balance` means the Cashfree account balance ran out, not a bad document.
+    - `/upi/mobile` answers HTTP 200 `SUCCESS` even for "No UPI ID found" and "Unable to validate,
+      please retry later"; read `account_status` and `message`.
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+      - .keys

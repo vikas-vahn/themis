@@ -1,0 +1,44 @@
+info:
+  name: verify-vehicle-rc
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{cashfreeBaseUrl}}/vehicle-rc"
+  body:
+    type: json
+    data: |-
+      {
+        "verification_id": "{{cashfreeVerificationId}}",
+        "vehicle_number": "{{cashfreeVehicleNumber}}"
+      }
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.getStatus() === 200) bru.setVar("cashfreeRcVerificationId", res.getBody().verification_id);
+    - type: tests
+      code: |-
+        test("RC is VALID with an owner", function () {
+          const body = res.getBody();
+          expect(body.status, JSON.stringify(body)).to.equal("VALID");
+          expect(body.owner).to.be.a("string").and.not.empty;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: |-
+  `POST /vehicle-rc`. plutus-java reads these from Surepass rc-full; Cashfree's names differ:
+  owner_name → `owner`, rc_number → `reg_no`, registration_date → `reg_date`,
+  maker_description/maker_model → `vehicle_manufacturer_name`/`model`, insurance_number/insurance_upto →
+  `vehicle_insurance_policy_number`/`vehicle_insurance_upto`, vehicle_gross_weight → `gross_vehicle_weight`,
+  tax_upto → `vehicle_tax_upto`, manufacturing_date_formatted → `vehicle_manufacturing_month_year`.
+  Same names: `permit_*`, `national_permit_*`, `pucc_number`, `pucc_upto`, `unladen_weight`.
+  No fit_up_to (nearest: `rc_expiry_date`) and no fuel_type (fuel is in `type`).

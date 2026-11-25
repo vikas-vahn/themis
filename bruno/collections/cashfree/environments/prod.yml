@@ -1,0 +1,20 @@
+name: prod
+variables:
+  - name: cashfreeBaseUrl
+    value: https://api.cashfree.com/verification
+  - name: cashfreeClientId
+    value: "{{process.env.CASHFREE_PROD_CLIENT_ID}}"
+  - name: cashfreeClientSecret
+    value: "{{process.env.CASHFREE_PROD_CLIENT_SECRET}}"
+  - name: cashfreePublicKeyPath
+    value: "{{process.env.CASHFREE_PROD_PUBLIC_KEY_PATH}}"
+  - name: cashfreeApiVersion
+    value: 2024-12-01
+  - name: cashfreeVehicleNumber
+    value: "{{process.env.CASHFREE_PROD_VEHICLE_NUMBER}}"
+  - name: cashfreeDlNumber
+    value: "{{process.env.CASHFREE_PROD_DL_NUMBER}}"
+  - name: cashfreeDob
+    value: "{{process.env.CASHFREE_PROD_DOB}}"
+  - name: cashfreeUpiMobile
+    value: "{{process.env.CASHFREE_PROD_UPI_MOBILE}}"

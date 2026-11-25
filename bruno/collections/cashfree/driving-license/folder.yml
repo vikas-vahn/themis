@@ -1,0 +1,9 @@
+info:
+  name: driving-license
+  type: folder
+
+docs:
+  content: |-
+    Driving licence by number and date of birth: the Cashfree counterpart of Surepass
+    `driving-license`, which plutus-java has no fallback for today.
+  type: text/markdown

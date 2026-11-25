@@ -1,0 +1,10 @@
+info:
+  name: vehicle-rc
+  type: folder
+
+docs:
+  content: |-
+    Vehicle RC by registration number: the Cashfree counterpart of Surepass `rc-full`, the last
+    step of plutus-java's TG VAHAN → VAHAN → Surepass cascade. 02 re-reads 01's result by its
+    `verification_id`, so run 01 first.
+  type: text/markdown

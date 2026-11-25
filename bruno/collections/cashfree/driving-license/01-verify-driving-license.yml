@@ -1,0 +1,40 @@
+info:
+  name: verify-driving-license
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{cashfreeBaseUrl}}/driving-license"
+  body:
+    type: json
+    data: |-
+      {
+        "verification_id": "{{cashfreeVerificationId}}",
+        "dl_number": "{{cashfreeDlNumber}}",
+        "dob": "{{cashfreeDob}}"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("DL is VALID with a holder name", function () {
+          const body = res.getBody();
+          expect(body.status, JSON.stringify(body)).to.equal("VALID");
+          expect(body.details_of_driving_licence.name).to.be.a("string").and.not.empty;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: |-
+  `POST /driving-license` (`dob` is YYYY-MM-DD). plutus-java reads name, dob, doe,
+  permanent_address and a base64 profile_image from Surepass. Here: `details_of_driving_licence.name`,
+  `dob`, `dl_validity.transport.to` / `dl_validity.non_transport.to` (no single expiry),
+  `details_of_driving_licence.address_list[type=permanent]`, and `details_of_driving_licence.photo`
+  (a URL valid for 24 hours, not base64).

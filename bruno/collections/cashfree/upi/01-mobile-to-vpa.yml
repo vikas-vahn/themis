@@ -1,0 +1,41 @@
+info:
+  name: mobile-to-vpa
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{cashfreeBaseUrl}}/upi/mobile"
+  body:
+    type: json
+    data: |-
+      {
+        "verification_id": "{{cashfreeVerificationId}}",
+        "mobile_number": "{{cashfreeUpiMobile}}",
+        "additional_vpas": true
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("finds at least one VPA with a bank name", function () {
+          const body = res.getBody();
+          expect(body.account_status, JSON.stringify(body)).to.equal("VALID");
+          expect(body.vpa).to.be.a("string").and.not.empty;
+          expect(body.name_at_bank).to.be.a("string").and.not.empty;
+          expect(body.additional_vpas).to.be.an("array");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: |-
+  `POST /upi/mobile`. Surepass returns `data.name` and `data.upi_id[]`; here the name is `name_at_bank`
+  and the ids are `vpa` (primary) plus `additional_vpas[]`. "No UPI ID found" and "Unable to validate,
+  please retry later" both come back as HTTP 200 with `status: SUCCESS`: check `account_status`
+  (`VALID`, or `UNABLE_TO_VALIDATE` on failure) and `message`.

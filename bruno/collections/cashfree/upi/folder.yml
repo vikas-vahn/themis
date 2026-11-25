@@ -1,0 +1,9 @@
+info:
+  name: upi
+  type: folder
+
+docs:
+  content: |-
+    Mobile number to UPI ids: the Cashfree counterpart of Surepass `mobile-to-multiple-upi`.
+    Cashfree documents this endpoint only in its OpenAPI spec (operation `VrsUpiMobileVerification`).
+  type: text/markdown

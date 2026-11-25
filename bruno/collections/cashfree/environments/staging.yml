@@ -1,0 +1,20 @@
+name: staging
+variables:
+  - name: cashfreeBaseUrl
+    value: https://sandbox.cashfree.com/verification
+  - name: cashfreeClientId
+    value: "{{process.env.CASHFREE_SANDBOX_CLIENT_ID}}"
+  - name: cashfreeClientSecret
+    value: "{{process.env.CASHFREE_SANDBOX_CLIENT_SECRET}}"
+  - name: cashfreePublicKeyPath
+    value: "{{process.env.CASHFREE_SANDBOX_PUBLIC_KEY_PATH}}"
+  - name: cashfreeApiVersion
+    value: 2024-12-01
+  - name: cashfreeVehicleNumber
+    value: HJ01ME5678
+  - name: cashfreeDlNumber
+    value: KA0120198900984
+  - name: cashfreeDob
+    value: 1994-08-05
+  - name: cashfreeUpiMobile
+    value: "9999999999"
