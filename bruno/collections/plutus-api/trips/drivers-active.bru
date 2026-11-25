@@ -1,0 +1,40 @@
+meta {
+  name: Trips drivers (active) with amountDue and lastPaidAt
+  type: http
+  seq: 237
+}
+
+get {
+  url: {{baseUrl}}/api/trips/drivers?active=true
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("rows carry amountDue and lastPaidAt", function () {
+    expect(res.body.data).to.be.an("array");
+    res.body.data.forEach(function (r) {
+      expect(r.driver, "driver").to.be.an("object");
+      expect(r.count, "count").to.be.a("number");
+      expect(r, "amountDue").to.have.property("amountDue");
+      expect(r, "lastPaidAt").to.have.property("lastPaidAt");
+      if (r.amountDue !== null && r.amountDue !== undefined) { expect(r.amountDue).to.be.a("number"); }
+      if (r.lastPaidAt) { expect(r.lastPaidAt).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2}$/); }
+    });
+  });
+}
+
+docs {
+  GET /api/trips/drivers?active=true (TripResource.getDriversWithTripCounts): drivers with any non-approved
+  trip. DriverTripCountDTO gains amountDue (rupees, the Settle screen's "Amount due to Driver", only filled
+  for active=true) and lastPaidAt (newest successful payout from the caller's organisation, IST offset).
+}

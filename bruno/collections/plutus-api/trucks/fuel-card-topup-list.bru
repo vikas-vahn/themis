@@ -1,0 +1,53 @@
+meta {
+  name: Trucks fuel-card-topup-list (Home picker)
+  type: http
+  seq: 412
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/fuel-card-topup-list
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("array of picker rows", function () {
+    expect(res.body.data).to.be.an("array");
+    res.body.data.forEach(function (r) {
+      expect(r.truck, "truck").to.be.an("object");
+      expect(r.fuelCardId, "fuelCardId").to.be.a("number");
+      expect(r.onRunningTrip, "onRunningTrip").to.be.a("boolean");
+      expect(r, "balance").to.have.property("balance");
+      expect(r, "PIN is left out").to.not.have.property("cardPin");
+    });
+  });
+
+  test("running-trip rows first, then balance ascending within each group", function () {
+    const rows = res.body.data;
+    const firstOff = rows.findIndex(function (r) { return !r.onRunningTrip; });
+    if (firstOff >= 0) {
+      rows.slice(firstOff).forEach(function (r) { expect(r.onRunningTrip, "running row after an off-trip row").to.equal(false); });
+    }
+    [true, false].forEach(function (running) {
+      const b = rows.filter(function (r) { return r.onRunningTrip === running && r.balance !== null && r.balance !== undefined; })
+                    .map(function (r) { return Number(r.balance); });
+      for (let i = 1; i < b.length; i++) { expect(b[i], "balance asc at " + i).to.be.at.least(b[i - 1]); }
+    });
+  });
+}
+
+docs {
+  Home Top Up Fuel Card picker (FuelCardTopUpPickerItem, order PickerOrder.FUEL_CARD_TOP_UP): every truck
+  of the caller with a default fuel card, no paging. Same roles as pay-driver-list. Running-trip vehicles
+  first, then lowest balance, then most recently topped up, then vehicle number A-Z. Balance is the last
+  provider sync. Read only. Needs the "Home revamp login" token (homeRevampToken).
+}

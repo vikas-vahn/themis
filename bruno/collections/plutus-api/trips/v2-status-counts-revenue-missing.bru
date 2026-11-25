@@ -1,0 +1,36 @@
+meta {
+  name: Trips v2 status-counts - revenueMissing
+  type: http
+  seq: 234
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/status-counts?visibility=ALL&revenueMissing=true
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("totalCount equals the number of rows the list returns for the same filters", function () {
+    const d = res.body.data;
+    expect(d.totalCount).to.be.a("number");
+    expect(Object.values(d.statusCounts).reduce(function (a, b) { return a + b; }, 0)).to.equal(d.totalCount);
+    bru.setVar("homeRevampStatusCountsTotal", d.totalCount);
+  });
+}
+
+docs {
+  GET /api/v2/trips/status-counts with the same revenueMissing/completedFrom/completedTo filters as the
+  list. Every bucket is a derived displayStatus, so a COMPLETED trip that is flagged ACCIDENT counts in
+  ACCIDENT, not COMPLETED; totalCount still equals the list's row count (all rows have status COMPLETED).
+  The sibling request v2-status-counts-revenue-missing-matches-list compares the two.
+}

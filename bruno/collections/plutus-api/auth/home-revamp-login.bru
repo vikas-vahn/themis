@@ -1,0 +1,40 @@
+meta {
+  name: Home revamp login (TORG_ADMIN)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{torgPhone}}",
+    "otp": "{{torgOtp}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.data.role: eq TORG_ADMIN
+}
+
+script:post-response {
+  // Runtime var, never written into environments/staging.bru.
+  bru.setVar("homeRevampToken", res.body.data.accessToken);
+}
+
+docs {
+  Logs in the staging QA TORG_ADMIN ({{torgPhone}}, torg {{torgId}}) with the fixed staging OTP and keeps
+  the token in the runtime var homeRevampToken (not on disk). The home-revamp requests below
+  (check-user is public) use it. Run this first: `bru run auth/home-revamp-login.bru <request.bru> ... --env staging`.
+  A folder run goes alphabetically (auth first), so `bru run bruno/collections/plutus-api/auth ...` also works.
+}

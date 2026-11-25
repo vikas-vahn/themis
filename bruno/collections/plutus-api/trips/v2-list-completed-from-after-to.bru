@@ -1,0 +1,30 @@
+meta {
+  name: Trips v2 list - completedFrom after completedTo (400)
+  type: http
+  seq: 233
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips?visibility=ALL&completedFrom=2026-11-10&completedTo=2026-11-01
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+  res.body.success: eq false
+}
+
+tests {
+  test("message", function () {
+    expect(res.body.message).to.contain("must not be after");
+  });
+}
+
+docs {
+  completedFrom later than completedTo gives 400.
+}

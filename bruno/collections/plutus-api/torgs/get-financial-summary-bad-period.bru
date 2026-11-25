@@ -1,0 +1,30 @@
+meta {
+  name: Torg financial summary - unknown period (400)
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{torgId}}/financial-summary?period=LAST_WEEK
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+  res.body.success: eq false
+}
+
+tests {
+  test("message names the periods", function () {
+    expect(res.body.message).to.contain("Unknown period");
+  });
+}
+
+docs {
+  An unknown period gives 400 (delivered as HTTP 200 with statusCode 400 in the body).
+}

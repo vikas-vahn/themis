@@ -1,0 +1,39 @@
+meta {
+  name: Torg setup progress
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{torgId}}/setup-progress
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("8 steps in Home order plus the counts", function () {
+    const d = res.body.data;
+    expect(d.steps.map(function (s) { return s.key; })).to.eql(
+      ["PHONE", "PAN", "VEHICLE", "DRIVER", "TRIPSHEET", "FIRST_TRIP", "ADD_MONEY", "FIRST_PAYMENT"]);
+    expect(d.totalCount).to.equal(8);
+    expect(d.completedCount).to.equal(d.steps.filter(function (s) { return s.done; }).length);
+    expect(["NOT_STARTED", "IN_REVIEW", "FAILED", "VERIFIED"]).to.include(d.pan.state);
+    ["vehicleCount", "rcFailedCount", "unverifiedRcCount", "driverCount", "dlPendingCount"].forEach(function (k) { expect(d.fleet[k], k).to.be.a("number"); });
+    ["readyToStart", "pendingMarketRequests", "pendingVehicleRequests", "completed"].forEach(function (k) { expect(d.trips[k], k).to.be.a("number"); });
+    expect(d, "lastTopUpAmount").to.have.property("lastTopUpAmount");
+  });
+}
+
+docs {
+  GET /api/torgs/{id}/setup-progress (SetupProgressDTO, atlas-rn Home). Roles VAHN_ADMIN, TORG_ADMIN; a torg
+  admin can read only their own torg ({{torgId}}, the QA torg of "Home revamp login"). Read only.
+}

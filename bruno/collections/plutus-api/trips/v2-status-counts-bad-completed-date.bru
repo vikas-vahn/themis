@@ -1,0 +1,30 @@
+meta {
+  name: Trips v2 status-counts - bad completedTo (400)
+  type: http
+  seq: 236
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/status-counts?visibility=ALL&completedTo=2026-13-45
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+  res.body.success: eq false
+}
+
+tests {
+  test("message", function () {
+    expect(res.body.message).to.contain("Invalid completedTo");
+  });
+}
+
+docs {
+  A bad date on status-counts gives 400 too.
+}

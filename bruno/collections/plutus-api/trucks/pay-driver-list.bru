@@ -1,0 +1,50 @@
+meta {
+  name: Trucks pay-driver-list (Home picker)
+  type: http
+  seq: 410
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/pay-driver-list
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("array of picker rows", function () {
+    expect(res.body.data).to.be.an("array");
+    res.body.data.forEach(function (r) {
+      expect(r.driver, "driver").to.be.an("object");
+      expect(r.onRunningTrip, "onRunningTrip").to.be.a("boolean");
+      expect(r, "amountDue").to.have.property("amountDue");
+      expect(r, "lastPaidAt").to.have.property("lastPaidAt");
+    });
+  });
+
+  test("group order: running trip, then amountDue > 0 descending, then the rest", function () {
+    const rows = res.body.data;
+    const group = function (r) { return r.onRunningTrip ? 0 : (Number(r.amountDue) > 0 ? 1 : 2); };
+    const groups = rows.map(group);
+    for (let i = 1; i < groups.length; i++) { expect(groups[i], "group at row " + i).to.be.at.least(groups[i - 1]); }
+    const owed = rows.filter(function (r) { return group(r) === 1; }).map(function (r) { return Number(r.amountDue); });
+    for (let i = 1; i < owed.length; i++) { expect(owed[i], "owed desc at " + i).to.be.at.most(owed[i - 1]); }
+  });
+}
+
+docs {
+  Home Pay Driver picker (PayDriverPickerItem, order PickerOrder.PAY_DRIVER). The whole fleet, no paging.
+  Roles: TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT. Group order: drivers on a running
+  trip first (soonest ETA), then off-trip drivers owed money (highest first), then the rest (most recently
+  paid first). Runs with the TORG_ADMIN token of "Home revamp login" (runtime var homeRevampToken).
+
+  VAHN_ADMIN is refused: see pay-driver-list-static-token (403).
+}

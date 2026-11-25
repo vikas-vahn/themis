@@ -1,0 +1,30 @@
+meta {
+  name: Trips v2 list - bad completedFrom (400)
+  type: http
+  seq: 232
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips?visibility=ALL&completedFrom=abc
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.body.statusCode: eq 400
+  res.body.success: eq false
+}
+
+tests {
+  test("message", function () {
+    expect(res.body.message).to.contain("Invalid completedFrom");
+  });
+}
+
+docs {
+  A non yyyy-MM-dd date gives 400 (HTTP 200, statusCode 400 in the body).
+}

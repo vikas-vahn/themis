@@ -1,0 +1,30 @@
+meta {
+  name: Trips v2 list - completedFrom/completedTo
+  type: http
+  seq: 231
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips?visibility=ALL&tripStatus=COMPLETED&completedFrom=2020-01-01&completedTo=2099-12-31&limit=100
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("rows are COMPLETED", function () {
+    res.body.data.data.forEach(function (r) { expect(r.displayStatus === "COMPLETED" || r.status === "COMPLETED", "trip " + r.id).to.equal(true); });
+  });
+}
+
+docs {
+  A wide completedFrom..completedTo window (inclusive IST days). See v2-list-revenue-missing.
+}

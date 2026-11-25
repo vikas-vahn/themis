@@ -1,0 +1,34 @@
+meta {
+  name: Trips v2 status-counts - total matches the list
+  type: http
+  seq: 235
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips?visibility=ALL&revenueMissing=true&limit=100
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("list row count equals status-counts totalCount", function () {
+    const total = bru.getVar("homeRevampStatusCountsTotal");
+    if (total === undefined || total === null) { return; }
+    expect(res.body.data.hasMore).to.equal(false);
+    expect(res.body.data.data.length).to.equal(total);
+  });
+}
+
+docs {
+  Run right after v2-status-counts-revenue-missing (it stores the total in a runtime var); the check is
+  skipped when that var is absent. Fails if the list spills onto a second page (limit 100).
+}

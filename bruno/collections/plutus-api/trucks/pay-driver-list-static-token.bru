@@ -1,0 +1,36 @@
+meta {
+  name: Trucks pay-driver-list - VAHN_ADMIN static token refused
+  type: http
+  seq: 411
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/pay-driver-list
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+script:pre-request {
+  if (!bru.getEnvVar("adminStaticToken")) { bru.runner.skipRequest(); }
+}
+
+assert {
+  res.body.statusCode: eq 403
+  res.body.success: eq false
+}
+
+tests {
+  test("refused", function () {
+    expect(res.body.data === undefined || res.body.data === null).to.equal(true);
+  });
+}
+
+docs {
+  The role gate is TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT, so the VAHN_ADMIN static
+  token gets 403 (in the body; HTTP is 200). Skipped when {{adminStaticToken}} is blank: pass it with
+  `--env-var adminStaticToken=...` (never stored in the env file).
+}

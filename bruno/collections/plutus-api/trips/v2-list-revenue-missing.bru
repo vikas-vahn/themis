@@ -1,0 +1,35 @@
+meta {
+  name: Trips v2 list - revenueMissing
+  type: http
+  seq: 230
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips?visibility=ALL&revenueMissing=true&limit=100
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("every row is COMPLETED", function () {
+    const rows = res.body.data.data;
+    expect(rows).to.be.an("array");
+    rows.forEach(function (r) { expect(r.status, "trip " + r.id).to.equal("COMPLETED"); });
+  });
+}
+
+docs {
+  GET /api/v2/trips gains revenueMissing, completedFrom and completedTo (yyyy-MM-dd, IST, inclusive).
+  revenueMissing=true narrows to COMPLETED trips whose revenue is null, zero or negative (the Home
+  Financial Report's tripsWithoutRevenue); use visibility=ALL, since DEFAULT shows COMPLETED of the last 24 h only.
+  The response is {data:{data:[...], hasMore, lastId, ...}}. Needs the "Home revamp login" token.
+}

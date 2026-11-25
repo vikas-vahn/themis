@@ -1,0 +1,51 @@
+meta {
+  name: Check user - rate limit (429, opt-in)
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/auth/check-user
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{torgPhone}}"
+  }
+}
+
+script:pre-request {
+  if (bru.getEnvVar("homeRevampRunRateLimit") !== "true" && bru.getVar("homeRevampRunRateLimit") !== "true") {
+    bru.runner.skipRequest();
+  } else {
+    const axios = require("axios");
+    const url = bru.getEnvVar("baseUrl") + "/api/auth/check-user";
+    for (let i = 0; i < 6; i++) {
+      // Calls past the limit throw on the 429; that is the point, so ignore it here.
+      try { await axios.post(url, { phone: bru.getEnvVar("torgPhone") }); } catch (e) { /* 429 */ }
+    }
+  }
+}
+
+assert {
+  res.body.statusCode: eq 429
+  res.body.success: eq false
+}
+
+tests {
+  test("message", function () {
+    expect(res.body.message).to.equal("Too many attempts, try again in a minute");
+  });
+}
+
+docs {
+  OPT-IN: skipped unless run with `--env-var homeRevampRunRateLimit=true`. Sends 7 check-user calls in a
+  row from this IP (limit 5 per 60 s) and asserts the last answer is 429 "Too many attempts, try again in
+  a minute". Burns the IP's budget for a minute, so run it alone.
+}

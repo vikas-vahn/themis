@@ -1,0 +1,42 @@
+meta {
+  name: Check user - exists
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/auth/check-user
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{torgPhone}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("exists=true and role is null", function () {
+    expect(res.body.data.exists).to.equal(true);
+    expect(res.body.data.role).to.equal(null);
+  });
+}
+
+docs {
+  POST /api/auth/check-user (AuthResource.checkUser). Public. Body {phone}; answers data {exists, role}.
+  role is always null (an anonymous caller must not learn a number's role). Uses the QA torg admin's phone.
+
+  Rate limit: 5 calls per IP per 60 s, counted before validation (so the 400 request spends one too).
+  The three normal requests (exists, not-exists, bad phone) use 3 of the 5; wait a minute between runs.
+  The 429 request is opt-in.
+}

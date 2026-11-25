@@ -1,0 +1,39 @@
+meta {
+  name: Torg financial summary
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{baseUrl}}/api/torgs/{{torgId}}/financial-summary?period=LAST_30_DAYS
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("period echoed, amounts consistent", function () {
+    const d = res.body.data;
+    expect(d.period).to.equal("LAST_30_DAYS");
+    expect(d.periodStart).to.be.a("string");
+    expect(d.periodEnd).to.be.a("string");
+    expect(Number(d.netProfit)).to.be.closeTo(Number(d.revenue) - Number(d.expenses), 0.011);
+    expect(d.countedTrips).to.be.a("number");
+    expect(d.completedTrips).to.equal(d.countedTrips);
+    expect(d.tripsWithoutRevenue).to.be.a("number");
+  });
+}
+
+docs {
+  GET /api/torgs/{id}/financial-summary?period= (FinancialSummaryDTO). period is LAST_30_DAYS, THIS_MONTH
+  (default), LAST_MONTH or LAST_3_MONTHS. Roles VAHN_ADMIN, TORG_ADMIN, FUND_MANAGER, ACCOUNTANT of the
+  own torg. tripsWithoutRevenue is what trips?revenueMissing=true lists (see trips/v2-list-revenue-missing).
+}
