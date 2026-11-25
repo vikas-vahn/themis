@@ -1,0 +1,69 @@
+meta {
+  name: Hide Axis collection account (prod, 25 Nov 2026)
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/v1/config/collection
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "Hide the Axis (Razorpay Smart Collect) top-up account from the app",
+    "config": {
+      "reviewSlaHours": 12,
+      "defaultProvider": "YES_BANK",
+      "razorpayEnabled": true,
+      "alternateDisplay": "OFF",
+      "alternateProvider": "RAZORPAY_SMART_COLLECT",
+      "autoRefundEnabled": true,
+      "reviewBeforeRefund": true,
+      "settlementHolidays": [],
+      "migrationCutoffDate": null,
+      "reviewReminderPercent": 75,
+      "settlementWorkingDays": 1,
+      "autoRefundDelayMinutes": 0,
+      "settlementReconEnabled": true,
+      "defaultAcceptancePolicy": "POST_CREDIT_VERIFY",
+      "provisionAlternateOnWalletCreate": true
+    }
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("alternateDisplay is OFF and Razorpay stays on", function() {
+    const d = res.body.data || {};
+    const c = d.config || d;
+    expect(c.alternateDisplay).to.equal("OFF");
+    expect(c.razorpayEnabled).to.equal(true);
+  });
+}
+
+docs {
+  One-off: hides the Axis (Razorpay Smart Collect) wallet top-up account from the app for every torg. The body is the
+  prod `collection` config as read on 25 Nov 2026 with only `alternateDisplay` changed from `AVAILABLE` to `OFF`.
+
+  `PUT /api/v1/config/collection` REPLACES the whole namespace, so this fixed body is only right while prod still holds
+  those values. If the config may have changed since, run "Get collection (top-up account) config" first and compare,
+  or use "Set collection alternate display", which reads the live config before writing.
+
+  Razorpay stays enabled: payments into an Axis account a customer already saved are still credited. Undo by sending
+  the same body with `"alternateDisplay": "AVAILABLE"`. Check with "Get torg collection accounts".
+
+  Select the prod environment and put a VAHN_ADMIN token in `accessToken`.
+}
