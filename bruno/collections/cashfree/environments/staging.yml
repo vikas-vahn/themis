@@ -2,10 +2,12 @@ name: staging
 variables:
   - name: cashfreeBaseUrl
     value: https://sandbox.cashfree.com/verification
-  - name: cashfreeClientId
-    value: "{{process.env.CASHFREE_SANDBOX_CLIENT_ID}}"
-  - name: cashfreeClientSecret
-    value: "{{process.env.CASHFREE_SANDBOX_CLIENT_SECRET}}"
+  - secret: true
+    name: cashfreeClientId
+  - secret: true
+    name: cashfreeClientSecret
+  - name: cashfreeEnvFilePrefix
+    value: CASHFREE_SANDBOX
   - name: cashfreePublicKeyPath
     value: "{{process.env.CASHFREE_SANDBOX_PUBLIC_KEY_PATH}}"
   - name: cashfreeApiVersion

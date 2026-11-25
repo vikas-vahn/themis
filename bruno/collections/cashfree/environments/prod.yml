@@ -6,6 +6,8 @@ variables:
     value: "{{process.env.CASHFREE_PROD_CLIENT_ID}}"
   - name: cashfreeClientSecret
     value: "{{process.env.CASHFREE_PROD_CLIENT_SECRET}}"
+  - name: cashfreeEnvFilePrefix
+    value: CASHFREE_PROD
   - name: cashfreePublicKeyPath
     value: "{{process.env.CASHFREE_PROD_PUBLIC_KEY_PATH}}"
   - name: cashfreeApiVersion

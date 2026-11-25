@@ -18,6 +18,15 @@ request:
         // Every Cashfree call needs a verification_id it has never seen (a repeat is a 409).
         bru.setVar("cashfreeVerificationId", "themis-" + Date.now() + "-" + Math.floor(Math.random() * 1000));
 
+        // Client id/secret: staging keeps them as Bruno secret vars (values stored by the Bruno app,
+        // never in the file). When those are empty (CLI runs, or not entered yet), fall back to
+        // .env <cashfreeEnvFilePrefix>_CLIENT_ID / _CLIENT_SECRET as runtime vars.
+        const prefix = bru.getEnvVar("cashfreeEnvFilePrefix");
+        for (const [name, suffix] of [["cashfreeClientId", "_CLIENT_ID"], ["cashfreeClientSecret", "_CLIENT_SECRET"]]) {
+          const fromEnv = bru.interpolate(bru.getEnvVar(name) || "");
+          if (!fromEnv && prefix) bru.setVar(name, bru.getProcessEnv(prefix + suffix) || "");
+        }
+
         // 2FA with a public key: x-cf-signature = base64(RSA-OAEP-SHA1("<clientId>.<unix seconds>")),
         // fresh per request (valid ~5 min). Skipped when no key path is set (IP-whitelisted account).
         // Needs Node's crypto and fs, so run with --sandbox=developer (Bruno app: Developer Mode).
@@ -25,7 +34,7 @@ request:
         if (keyPath) {
           const crypto = require("crypto");
           const fs = require("fs");
-          const clientId = bru.interpolate(bru.getEnvVar("cashfreeClientId"));
+          const clientId = bru.getVar("cashfreeClientId") || bru.interpolate(bru.getEnvVar("cashfreeClientId"));
           const payload = clientId + "." + Math.floor(Date.now() / 1000);
           const signature = crypto.publicEncrypt(
             { key: fs.readFileSync(keyPath, "utf8"), padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: "sha1" },
@@ -59,7 +68,11 @@ docs:
 
     ## Credentials
 
-    Read from `bruno/collections/cashfree/.env` (gitignored). Create it locally:
+    In `staging`, `cashfreeClientId` and `cashfreeClientSecret` are Bruno **secret** variables: paste
+    the sandbox values once in the environment editor and Bruno keeps them on your machine, not in
+    `staging.yml`. Left empty (and always in `prod`), the collection script reads them from
+    `bruno/collections/cashfree/.env` (gitignored), using the `cashfreeEnvFilePrefix` env var
+    (`CASHFREE_SANDBOX` / `CASHFREE_PROD`). Create `.env` locally:
 
     ```
     CASHFREE_SANDBOX_CLIENT_ID=<sandbox client id>
