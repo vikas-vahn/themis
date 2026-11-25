@@ -20,11 +20,13 @@ request:
 
         // Client id/secret: staging keeps them as Bruno secret vars (values stored by the Bruno app,
         // never in the file). When those are empty (CLI runs, or not entered yet), fall back to
-        // .env <cashfreeEnvFilePrefix>_CLIENT_ID / _CLIENT_SECRET as runtime vars.
+        // .env <cashfreeEnvFilePrefix>_CLIENT_ID / _CLIENT_SECRET.
+        // Always (re)set the runtime var: runtime vars outlive an environment switch and win over
+        // env vars, so a value left from a staging run would otherwise reach prod.
         const prefix = bru.getEnvVar("cashfreeEnvFilePrefix");
         for (const [name, suffix] of [["cashfreeClientId", "_CLIENT_ID"], ["cashfreeClientSecret", "_CLIENT_SECRET"]]) {
           const fromEnv = bru.interpolate(bru.getEnvVar(name) || "");
-          if (!fromEnv && prefix) bru.setVar(name, bru.getProcessEnv(prefix + suffix) || "");
+          bru.setVar(name, fromEnv || (prefix ? bru.getProcessEnv(prefix + suffix) || "" : ""));
         }
 
         // 2FA with a public key: x-cf-signature = base64(RSA-OAEP-SHA1("<clientId>.<unix seconds>")),
@@ -34,7 +36,7 @@ request:
         if (keyPath) {
           const crypto = require("crypto");
           const fs = require("fs");
-          const clientId = bru.getVar("cashfreeClientId") || bru.interpolate(bru.getEnvVar("cashfreeClientId"));
+          const clientId = bru.getVar("cashfreeClientId");
           const payload = clientId + "." + Math.floor(Date.now() / 1000);
           const signature = crypto.publicEncrypt(
             { key: fs.readFileSync(keyPath, "utf8"), padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: "sha1" },
