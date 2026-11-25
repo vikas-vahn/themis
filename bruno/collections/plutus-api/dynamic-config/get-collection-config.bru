@@ -1,0 +1,44 @@
+meta {
+  name: Get collection (top-up account) config
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/config/collection
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+assert {
+  res.body.statusCode: isDefined
+}
+
+tests {
+  test("prints each collection setting", function() {
+    expect(res.body.statusCode).to.equal(200);
+    const d = res.body.data || {};
+    const c = d.config || d;
+    Object.keys(c).forEach(k => console.log(k + ": " + JSON.stringify(c[k])));
+  });
+}
+
+docs {
+  The wallet top-up (collection) account settings (`CollectionSettings`, DynamicConfig namespace `collection`). Each plutus
+  server re-reads them on its polling interval, so a change reaches every server without a deploy.
+
+  The keys that decide what the app shows on `GET /api/virtual-accounts/torg/{torgId}/collection-accounts`:
+
+  | Key | Meaning |
+  |---|---|
+  | `defaultProvider` | the primary account's provider, `YES_BANK` unless a torg has an override |
+  | `alternateDisplay` | how the second account (Razorpay Smart Collect, Axis IFSC `UTIB`) is shown: `OFF` hidden, `HIDDEN` hidden, `COMING_SOON` without number, `AVAILABLE` in full |
+  | `razorpayEnabled` | Razorpay kill switch. Don't use it just to hide the account: it also stops Razorpay settlement recon |
+  | `provisionAlternateOnWalletCreate` | new torgs also get a (hidden) Razorpay account at wallet creation |
+
+  Needs a VAHN_ADMIN token in `accessToken`. To change `alternateDisplay`, use "Set collection alternate display".
+}

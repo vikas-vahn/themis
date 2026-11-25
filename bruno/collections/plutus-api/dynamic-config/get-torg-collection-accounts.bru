@@ -1,0 +1,43 @@
+meta {
+  name: Get torg collection accounts
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/virtual-accounts/torg/{{plutusApiCollectionTorgId}}/collection-accounts
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+vars:pre-request {
+  plutusApiCollectionTorgId: {{torgId}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("prints the accounts the app shows", function() {
+    const b = res.body || {};
+    const v = b.data !== undefined && b.primary === undefined ? b.data : b;
+    const show = (a) => a ? a.provider + " " + a.bankName + " " + (a.ifscCode || "") + (a.display ? " (" + a.display + ")" : "") : "none";
+    console.log("primary: " + show(v && v.primary));
+    console.log("alternate: " + show(v && v.alternate));
+  });
+}
+
+docs {
+  What one torg's app shows for wallet top-up (`VirtualAccountResource.getCollectionAccounts`): the primary account and,
+  depending on `alternateDisplay`, the alternate one.
+
+  After "Set collection alternate display" with `OFF`, the response has only `primary` (Yes Bank) and no `alternate`.
+
+  Set `plutusApiCollectionTorgId` on the Vars tab (defaults to the environment's `torgId`). Roles: VAHN_ADMIN, or the
+  torg's own TORG_ADMIN, FUND_MANAGER or ACCOUNTANT.
+}

@@ -1,0 +1,125 @@
+meta {
+  name: Set collection alternate display
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/v1/config/collection
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "config": {},
+    "reason": "set by the pre-request script"
+  }
+}
+
+vars:pre-request {
+  plutusApiCollectionAlternateDisplay: OFF
+  plutusApiCollectionProvisionAlternate: 
+  plutusApiCollectionReason: Hide the Axis (Razorpay Smart Collect) top-up account from the app
+}
+
+script:pre-request {
+  // PUT replaces the whole namespace, so read what is stored and change only alternateDisplay
+  // (and provisionAlternateOnWalletCreate when asked). Sending a single key would reset every other
+  // collection setting to its code default, including razorpayEnabled and the refund/review rules.
+  const modes = ["OFF", "HIDDEN", "COMING_SOON", "AVAILABLE"];
+  const mode = String(bru.getRequestVar("plutusApiCollectionAlternateDisplay") || "").trim().toUpperCase();
+  const provision = String(bru.getRequestVar("plutusApiCollectionProvisionAlternate") || "").trim().toLowerCase();
+  const reason = String(bru.getRequestVar("plutusApiCollectionReason") || "").trim();
+  if (!modes.includes(mode)) {
+    throw new Error("plutusApiCollectionAlternateDisplay must be one of: " + modes.join(", "));
+  }
+  if (provision !== "" && provision !== "true" && provision !== "false") {
+    throw new Error("plutusApiCollectionProvisionAlternate must be empty (leave as is), true or false");
+  }
+  if (!reason) {
+    throw new Error("plutusApiCollectionReason is empty: say why; it goes into dynamic_config_history");
+  }
+
+  const token = bru.interpolate("{{accessToken}}");
+  if (!token || token === "{{accessToken}}") {
+    throw new Error("accessToken is empty: set a VAHN_ADMIN token; nothing sent");
+  }
+  let current;
+  try {
+    current = await bru.sendRequest({
+      method: "GET",
+      url: bru.interpolate("{{baseUrl}}/api/v1/config/collection"),
+      headers: { Authorization: "Bearer " + token }
+    });
+  } catch (e) {
+    current = e.response || { status: "no response", data: {} };
+  }
+  const body = current.data || {};
+  const status = body.statusCode || current.status;
+  if (status === 401) {
+    throw new Error("Reading the current config got 401: accessToken is expired or not a plutus token; nothing sent");
+  }
+  if (status !== 200) {
+    // A missing namespace (404) is not filled in from scratch here: on prod it would wipe real settings.
+    throw new Error("Could not read the current collection config (status " + status + "); nothing sent");
+  }
+  const d = body.data || {};
+  const config = JSON.parse(JSON.stringify(d.config || d));
+  if (!("razorpayEnabled" in config) || !("defaultProvider" in config)) {
+    throw new Error("The config read back has no razorpayEnabled/defaultProvider; refusing to overwrite it");
+  }
+
+  console.log("alternateDisplay: " + config.alternateDisplay + " -> " + mode);
+  config.alternateDisplay = mode;
+  if (provision !== "") {
+    console.log("provisionAlternateOnWalletCreate: " + config.provisionAlternateOnWalletCreate + " -> " + provision);
+    config.provisionAlternateOnWalletCreate = provision === "true";
+  }
+  bru.setVar("plutusApiCollectionConfigSent", JSON.stringify(config));
+  req.setBody({ config: config, reason: reason });
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("stored config equals what was sent", function() {
+    const sent = JSON.parse(bru.getVar("plutusApiCollectionConfigSent"));
+    const d = res.body.data || {};
+    const c = d.config || d;
+    Object.keys(sent).forEach(k => expect(JSON.stringify(c[k]), k).to.equal(JSON.stringify(sent[k])));
+  });
+}
+
+docs {
+  Changes how the second wallet top-up account (Razorpay Smart Collect, issued on an Axis Bank IFSC) is shown in the
+  app, for every torg at once, and leaves every other collection setting as it is. Works on whichever environment is
+  selected (staging or prod). It takes one config polling interval to reach every server.
+
+  Edit the request vars (Vars tab):
+  - `plutusApiCollectionAlternateDisplay`: `OFF` hides the Axis account (the app shows only the Yes Bank primary);
+    `AVAILABLE` shows it again. Also `HIDDEN`, `COMING_SOON`.
+  - `plutusApiCollectionProvisionAlternate`: empty leaves it as is; `false` stops creating a (hidden) Razorpay account
+    for new torgs at wallet creation; `true` turns that back on.
+  - `plutusApiCollectionReason`: why. Stored in `dynamic_config_history` and the admin audit log.
+
+  `OFF` does not switch Razorpay off: money paid into an Axis account a customer already saved is still credited, and
+  settlement recon keeps running. Don't use `razorpayEnabled: false` to hide the account; it also stops that recon.
+
+  Why the script: `PUT /api/v1/config/collection` REPLACES the whole namespace (`DynamicConfigService.updateConfig`). The
+  script reads the stored config first, changes only the chosen keys, and sends the full set. If the read is not a 200
+  with the expected keys, nothing is sent. The console shows the old and new values.
+
+  Needs a VAHN_ADMIN token in `accessToken`. Check the result with "Get torg collection accounts". Undo by running again
+  with `AVAILABLE`.
+}
