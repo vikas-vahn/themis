@@ -1,0 +1,50 @@
+meta {
+  name: Add secondary PAN to the torg
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/pan/torg/{{plutusApiSecondaryPanTorgId}}/additional
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiSecondaryPanAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "panNumber": "{{plutusApiSecondaryPanNumber}}",
+    "phone": "{{plutusApiSecondaryPanPhone}}",
+    "holderName": "{{plutusApiSecondaryPanHolderName}}",
+    "businessName": "{{plutusApiSecondaryPanBusinessName}}",
+    "isSoleProprietor": false
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.id: isNumber
+  res.body.data.panNumber: eq {{plutusApiSecondaryPanNumber}}
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setVar("plutusApiSecondaryPanCardId", String(res.body.data.id));
+  }
+}
+
+docs {
+  `PANCardResource.createAdditionalPANCard` (VAHN_ADMIN, TORG_ADMIN) -> `PANCardService.createAdditionalPANCard`.
+  Body is `PANCardDTO`: `panNumber` (^[A-Z]{5}[0-9]{4}[A-Z]$) and `phone` are required, and both must be
+  unused on every PAN card in the system (400 "PAN number already exists" / "PAN card already exists for
+  this phone number"). An empty `holderName` falls back to the provider's name. The PAN is verified with
+  the provider straight away (paid call); a failed verification leaves it PENDING.
+  Use `POST /api/pan/without-verification` instead to skip verification.
+}

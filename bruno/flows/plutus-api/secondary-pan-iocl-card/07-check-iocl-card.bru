@@ -1,0 +1,32 @@
+meta {
+  name: Check truck has an ACTIVE IOCL card
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{plutusApiSecondaryPanTruckId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiSecondaryPanAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+tests {
+  test("truck has an ACTIVE IOCL fuel card", function () {
+    const cards = (res.body.data && res.body.data.fuelCards) || [];
+    const iocl = cards.filter((c) => c.provider === "IOCL" && c.status === "ACTIVE");
+    expect(iocl.length).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  `TruckResource.getTruckById`; `fuelCards` lists every card on the truck. If step 3's queued creation is
+  still running, re-run this step after a few seconds.
+}

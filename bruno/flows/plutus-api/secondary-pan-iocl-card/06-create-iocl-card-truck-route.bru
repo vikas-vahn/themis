@@ -1,0 +1,36 @@
+meta {
+  name: Create IOCL fuel card via truck route (alternative to 05)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/{{plutusApiSecondaryPanTruckId}}/fuel-card?provider=IOCL
+  body: none
+  auth: bearer
+}
+
+params:query {
+  provider: IOCL
+  ~alternateMobileNumber: 
+}
+
+auth:bearer {
+  token: {{plutusApiSecondaryPanAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+script:pre-request {
+  if (bru.getEnvVar("plutusApiSecondaryPanUseTruckRoute") !== "true") {
+    bru.runner.skipRequest();
+  }
+}
+
+docs {
+  `TruckResource.createFuelCard` (VAHN_ADMIN and the truck roles) -> `TruckService.createFuelCard`. Same
+  creation as step 5. Runs only with `plutusApiSecondaryPanUseTruckRoute=true`, and step 5 then skips.
+  Enabling `alternateMobileNumber` also stores it on the driver as their alternate phone.
+}

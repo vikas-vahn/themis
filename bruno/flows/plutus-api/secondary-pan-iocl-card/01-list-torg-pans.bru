@@ -1,0 +1,24 @@
+meta {
+  name: List the torg's PAN cards
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/pan/torg/{{plutusApiSecondaryPanTorgId}}/all
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiSecondaryPanAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  `PANCardResource.getAllPanCardsByTorgId` (VAHN_ADMIN, TORG_ADMIN). Returns every PAN on the torg, primary
+  and additional. Check the new PAN isn't already there before step 2.
+}

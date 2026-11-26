@@ -1,0 +1,27 @@
+meta {
+  name: Check truck carries the secondary PAN
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/trucks/{{plutusApiSecondaryPanTruckId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiSecondaryPanAdminToken}}
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.panCard.panNumber: eq {{plutusApiSecondaryPanNumber}}
+  res.body.data.verificationStatus: eq VERIFIED
+}
+
+docs {
+  `TruckResource.getTruckById`. Fuel card creation needs `verificationStatus` VERIFIED and a driver. If the
+  ownership check left the truck in PAN_CARD_NOT_VALID (RC owner name doesn't match the PAN holder),
+  mark it verified with `PUT /api/trucks/mark-as-verified` before step 5.
+}

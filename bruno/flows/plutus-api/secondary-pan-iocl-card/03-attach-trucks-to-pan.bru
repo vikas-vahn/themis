@@ -1,0 +1,39 @@
+meta {
+  name: Attach trucks to the secondary PAN
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/attach-to-pan
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiSecondaryPanAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "panNumber": "{{plutusApiSecondaryPanNumber}}",
+    "truckIds": [{{plutusApiSecondaryPanTruckId}}]
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.count: gte 1
+}
+
+docs {
+  `TruckResource.attachTrucksToPan` (VAHN_ADMIN, TORG_ADMIN) -> `TruckService.attachTrucksToPANCard`.
+  For more than one truck, edit `truckIds` (e.g. `[101, 102]`). As VAHN_ADMIN there is no torg check, so
+  make sure the trucks belong to the PAN's torg. It replaces any PAN the trucks had, re-runs
+  `verifyOwnership`, and queues `createFuelCardAsync` (provider order IOCL then BPCL) for each truck
+  that is VERIFIED and has a driver.
+}

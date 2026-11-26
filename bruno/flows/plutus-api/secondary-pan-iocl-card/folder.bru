@@ -1,0 +1,50 @@
+meta {
+  name: secondary-pan-iocl-card
+}
+
+docs {
+  # Add a secondary PAN to a torg and create IOCL fuel cards on it, as VAHN_ADMIN
+
+  1. `GET /api/pan/torg/{torgId}/all`: the PANs the torg already has.
+  2. `POST /api/pan/torg/{torgId}/additional`: add the secondary PAN. It is verified with the PAN
+     provider straight away (a paid call). `panNumber` and `phone` must not be on any other PAN card
+     in the system, or it returns statusCode 400.
+  3. `POST /api/trucks/attach-to-pan`: link the trucks to the new PAN. IOCL creates the customer from
+     the truck's PAN, not the torg's primary PAN, so this step is what makes the secondary PAN count.
+     It overwrites any PAN the trucks already had, re-runs the ownership check and queues an
+     automatic fuel card creation (IOCL first, then BPCL) for verified trucks with a driver.
+  4. `GET /api/trucks/{truckId}`: check the truck now carries the new PAN and is VERIFIED.
+  5. `POST /api/fuel-cards/create-card` (VAHN_ADMIN only): create the IOCL card. This is also how you
+     retrigger a failed IOCL creation.
+  6. `POST /api/trucks/{truckId}/fuel-card?provider=IOCL`: the same creation through the truck route,
+     with an optional `alternateMobileNumber`. Steps 5 and 6 are alternatives: by default 5 runs and
+     6 skips; pass `plutusApiSecondaryPanUseTruckRoute=true` to run 6 instead.
+  7. `GET /api/trucks/{truckId}`: check for an ACTIVE IOCL card.
+
+  Run on staging, passing the VAHN_ADMIN token at run time so it is never stored:
+
+      npx @usebruno/cli run bruno/flows/plutus-api/secondary-pan-iocl-card --env staging \
+        --env-var plutusApiSecondaryPanAdminToken=<VAHN_ADMIN token> \
+        --env-var plutusApiSecondaryPanTorgId=<torg id> \
+        --env-var plutusApiSecondaryPanNumber=<new PAN> \
+        --env-var plutusApiSecondaryPanPhone=<phone unused on any PAN> \
+        --env-var plutusApiSecondaryPanTruckId=<truck id in that torg>
+
+  Optional: `plutusApiSecondaryPanHolderName`, `plutusApiSecondaryPanBusinessName`,
+  `plutusApiSecondaryPanIoclMobile` (IOCL card mobile; defaults to the driver's phone).
+  To skip creating the PAN (it already exists), pass the existing number and run from step 3:
+  run the single request files.
+
+  Preconditions: the truck is VERIFIED, has a driver, and the torg has Aadhaar details (IOCL customer
+  creation needs them). On staging the IOCL UAT `CreateCustomer` often times out at 30 s and leaves an
+  orphaned customer; see knowledge `repos/plutus-java/payments-and-fuel.md` "Orphaned IOCL customer trap".
+
+  Step 5 answering statusCode 400 "Active fuel card already exists for all attempted providers"
+  means the queued creation from step 3 already made the card; step 7 shows it.
+  Errors from IOCL come back as a generic statusCode 500. Find the cause in Loki with
+  `{job="plutus"} |= "for IOCL XtraPower for customer with pan card ID"`.
+
+  All captured values are runtime vars (`bru.setVar`), so nothing is written to the environment file.
+  2xx, 400 and 422 come back as HTTP 200 with the real code in the body's `statusCode` (any 2xx
+  becomes 200); 5xx keep their HTTP status.
+}
