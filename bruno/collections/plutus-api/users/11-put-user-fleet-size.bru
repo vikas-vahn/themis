@@ -1,0 +1,42 @@
+meta {
+  name: Users put fleetSize 5-20
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{baseUrl}}/api/users/{{homeRevampUserId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+body:json {
+  {
+    "fleetSize": "5-20"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("fleetSize is the range label", function () {
+    const u = res.body.data || res.body;
+    expect(u.fleetSize).to.equal("5-20");
+  });
+}
+
+docs {
+  PUT /api/users/{id} with { fleetSize }. Accepts a label ("1-4", "5-20", "21-50", "51-200", "200+") or a
+  plain number, which maps to its range (7 becomes "5-20"). Only the TORG_ADMIN updating itself changes the
+  torg's fleet size. Needs 10-get-user-fleet-size first.
+}

@@ -1,0 +1,31 @@
+meta {
+  name: Users get own fleetSize (remember original)
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/users/{{homeRevampUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+assert {
+  res.status: eq 200
+}
+
+script:post-response {
+  // Runtime vars only, nothing lands in environments/staging.bru.
+  const fs = res.body.fleetSize !== undefined ? res.body.fleetSize : (res.body.data || {}).fleetSize;
+  bru.setVar("homeRevampOriginalFleetSize", fs === undefined || fs === null ? "" : String(fs));
+}
+
+docs {
+  First step of the fleetSize round trip (10 get, 11 set 5-20, 12 bad value, 13 restore). Reads the QA
+  TORG_ADMIN (user {{homeRevampUserId}}, set by "Home revamp login") and keeps its current fleetSize in the
+  runtime var homeRevampOriginalFleetSize ("" when null). Run after auth/home-revamp-login.
+}

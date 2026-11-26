@@ -1,0 +1,42 @@
+meta {
+  name: Users put fleetSize invalid (400)
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{baseUrl}}/api/users/{{homeRevampUserId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+body:json {
+  {
+    "fleetSize": "banana"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq false
+  res.body.statusCode: eq 400
+}
+
+tests {
+  test("message names the bad value and the valid ranges", function () {
+    expect(res.body.message).to.equal("Invalid fleet size: banana. Use one of 1-4, 5-20, 21-50, 51-200, 200+");
+  });
+}
+
+docs {
+  A value that is neither a label nor a number is refused. Errors arrive as HTTP 200 with success false and
+  the real code in statusCode, so the asserts read the body. Nothing is changed.
+}

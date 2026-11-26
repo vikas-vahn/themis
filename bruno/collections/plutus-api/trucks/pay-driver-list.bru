@@ -27,6 +27,9 @@ tests {
       expect(r.onRunningTrip, "onRunningTrip").to.be.a("boolean");
       expect(r, "amountDue").to.have.property("amountDue");
       expect(r, "lastPaidAt").to.have.property("lastPaidAt");
+      expect(r.dlVerified, "dlVerified").to.be.a("boolean");
+      expect(r.hasVerifiedPayoutAccount, "hasVerifiedPayoutAccount").to.be.a("boolean");
+      expect(r.driverPaymentsDisabled, "driverPaymentsDisabled").to.be.a("boolean");
     });
   });
 
@@ -45,6 +48,8 @@ docs {
   Roles: TORG_ADMIN, TRUCK_MANAGER, FUND_MANAGER, OPERATOR, ACCOUNTANT. Group order: drivers on a running
   trip first (soonest ETA), then off-trip drivers owed money (highest first), then the rest (most recently
   paid first). Runs with the TORG_ADMIN token of "Home revamp login" (runtime var homeRevampToken).
+
+  Every row also carries the booleans dlVerified, hasVerifiedPayoutAccount and driverPaymentsDisabled.
 
   VAHN_ADMIN is refused: see pay-driver-list-static-token (403).
 }

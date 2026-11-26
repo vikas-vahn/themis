@@ -30,6 +30,7 @@ assert {
 script:post-response {
   // Runtime var, never written into environments/staging.bru.
   bru.setVar("homeRevampToken", res.body.data.accessToken);
+  bru.setVar("homeRevampUserId", res.body.data.userId);
 }
 
 docs {

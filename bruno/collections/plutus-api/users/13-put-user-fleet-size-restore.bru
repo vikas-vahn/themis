@@ -1,0 +1,47 @@
+meta {
+  name: Users put fleetSize restore original
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/api/users/{{homeRevampUserId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{homeRevampToken}}
+}
+
+body:json {
+  {
+    "fleetSize": "{{homeRevampRestoreFleetSize}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("fleetSize is back to the restore value", function () {
+    const u = res.body.data || res.body;
+    expect(u.fleetSize).to.equal(bru.getVar("homeRevampRestoreFleetSize"));
+  });
+}
+
+script:pre-request {
+  // The original value, or "1-4" (the closest valid value; the API cannot clear it) when it was null.
+  const o = bru.getVar("homeRevampOriginalFleetSize");
+  bru.setVar("homeRevampRestoreFleetSize", o ? o : "1-4");
+}
+
+docs {
+  Puts back the fleetSize remembered by 10-get-user-fleet-size. The API cannot set it to null (blank is
+  ignored), so a null original is replaced by "1-4".
+}
