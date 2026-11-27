@@ -1,0 +1,43 @@
+meta {
+  name: POST /api/pan/torg/{torgId}/additional
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/pan/torg/:torgId/additional
+  body: json
+  auth: bearer
+}
+
+params:path {
+  torgId: 7869
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "panNumber": "",
+    "holderName": "",
+    "phone": "",
+    "isSoleProprietor": true,
+    "businessName": ""
+  }
+}
+
+docs {
+  `PANCardResource.createAdditionalPANCard` (plutus-java `onboarding/controller/PANCardResource.java:438`), called as VAHN_ADMIN.
+  Adds a second PAN to an existing torg and verifies it with the PAN provider in the same call (a paid provider call).
+  - `panNumber` must not exist on any PAN yet.
+  - `phone` is required and must not be on any other PAN, in any torg. It becomes the IOCL customer mobile
+    when the first IOCL card is created for a truck on this PAN, so it must also be new to IOCL.
+  - Errors come back as HTTP 400 with the message as a plain string.
+  Next step: move the trucks onto the new PAN (`admin-static-token/common/truck/attach-trucks-to-pan.bru`), then create cards.
+}
