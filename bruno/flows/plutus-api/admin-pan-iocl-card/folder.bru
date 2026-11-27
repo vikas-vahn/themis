@@ -1,0 +1,51 @@
+meta {
+  name: admin-pan-iocl-card
+}
+
+docs {
+  # Add a PAN to a torg and create IOCL fuel cards on it, as VAHN_ADMIN (PAN verified by hand in zeus)
+
+  1. `POST /api/pan/without-verification`: add the PAN to the torg as PENDING. No provider call.
+  2. (manual) Verify the PAN in zeus. Step 3 needs it VERIFIED.
+  3. `POST /api/trucks/attach-to-pan`: point the trucks at the new PAN. IOCL builds the customer from
+     the truck's PAN, so without this the card would be made on the torg's old PAN. Attaching also
+     queues an automatic fuel card creation for every VERIFIED truck with a driver (IOCL first, then
+     BPCL if IOCL fails).
+  4. `POST /api/fuel-cards/create-card`: create the IOCL card for one truck. Run it once per truck. If
+     the queued creation from step 3 already made the card, it answers statusCode 400 "Active fuel
+     card already exists for all attempted providers".
+
+  Run each step on its own (01, then zeus, then 02, then 03 per truck). Pass every input at run time
+  so no token or customer data is stored:
+
+      npx @usebruno/cli run bruno/flows/plutus-api/admin-pan-iocl-card/01-add-pan-to-torg.bru --env staging \
+        --env-var plutusApiAdminPanIoclAdminToken=<VAHN_ADMIN token> \
+        --env-var plutusApiAdminPanIoclTorgId=<torg id> \
+        --env-var plutusApiAdminPanIoclPanNumber=<PAN> \
+        --env-var plutusApiAdminPanIoclPhone=<phone> \
+        --env-var plutusApiAdminPanIoclHolderName="<name as on PAN>"
+
+      npx @usebruno/cli run bruno/flows/plutus-api/admin-pan-iocl-card/02-attach-trucks-to-pan.bru --env staging \
+        --env-var plutusApiAdminPanIoclAdminToken=<token> \
+        --env-var plutusApiAdminPanIoclPanNumber=<PAN> \
+        --env-var plutusApiAdminPanIoclTruckIds=101,102
+
+      npx @usebruno/cli run bruno/flows/plutus-api/admin-pan-iocl-card/03-create-iocl-card.bru --env staging \
+        --env-var plutusApiAdminPanIoclAdminToken=<token> \
+        --env-var plutusApiAdminPanIoclTruckId=101
+
+  On production add `--env-var baseUrl=https://sapi.vahn.in` (the prod env file has no `baseUrl`).
+
+  Traps:
+  - `without-verification` checks neither duplicate PAN numbers nor duplicate phones, and an empty
+    `phone` falls back to the caller's (the admin's) phone. Step 1 refuses to send without a phone.
+    Check `GET /api/pan/number/{pan}` first if unsure.
+  - Do not use `?additional=true` as VAHN_ADMIN: it links the PAN to the admin's own torg. Linking
+    through `torgId` in the body keeps the torg's primary PAN as it is.
+  - IOCL refuses a mobile it already has ("Mobile Number in permanent address is already exist").
+    The IOCL mobile is the PAN's phone.
+  - Attach one truck first and wait for its card, then the rest: several queued creations at once can
+    race to create the same IOCL customer.
+  - IOCL errors come back as a generic 500. Find the cause in Loki with
+    `{job="plutus"} |= "for IOCL XtraPower for customer with pan card ID"`.
+}

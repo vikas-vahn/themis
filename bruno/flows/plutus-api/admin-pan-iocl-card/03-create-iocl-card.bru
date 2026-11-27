@@ -1,0 +1,42 @@
+meta {
+  name: Create IOCL fuel card for a truck (VAHN_ADMIN)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/fuel-cards/create-card
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiAdminPanIoclAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "truckId": {{plutusApiAdminPanIoclTruckId}},
+    "provider": "IOCL",
+    "mobileNumber": "{{plutusApiAdminPanIoclCardMobile}}"
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+}
+
+docs {
+  `FuelCardResource.createFuelCard` (VAHN_ADMIN only) -> `FuelCardService.createFuelCardForTruckV2`.
+  Run once per truck. It skips IOCL if the truck already has an ACTIVE IOCL card (a FAILED card does not
+  block a retry), reuses the IOCL customer of the truck's PAN or creates one from the PAN and the
+  torg's Aadhaar, then creates the card. `plutusApiAdminPanIoclCardMobile` is optional; empty uses the
+  driver's phone.
+  statusCode 400 "Active fuel card already exists for all attempted providers": the queued creation
+  from step 2 already made it. A retry won't help for "PAN already exists for this Partner" (orphaned
+  customer after a timeout) or "PAN Number already exists against an IOCL-onboarded customer".
+}

@@ -1,0 +1,56 @@
+meta {
+  name: Add PAN to torg without verification (VAHN_ADMIN)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/pan/without-verification
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusApiAdminPanIoclAdminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "torgId": {{plutusApiAdminPanIoclTorgId}},
+    "panNumber": "{{plutusApiAdminPanIoclPanNumber}}",
+    "phone": "{{plutusApiAdminPanIoclPhone}}",
+    "holderName": "{{plutusApiAdminPanIoclHolderName}}",
+    "isSoleProprietor": true
+  }
+}
+
+assert {
+  res.body.statusCode: eq 200
+  res.body.data.id: isNumber
+  res.body.data.status: eq PENDING
+}
+
+script:pre-request {
+  const phone = bru.getEnvVar("plutusApiAdminPanIoclPhone");
+  if (!phone || !/^[0-9]{10}$/.test(phone)) {
+    throw new Error("Pass --env-var plutusApiAdminPanIoclPhone=<10 digits>; an empty phone falls back to the admin's own phone");
+  }
+}
+
+script:post-response {
+  if (res.body && res.body.data && res.body.data.id) {
+    bru.setVar("plutusApiAdminPanIoclPanCardId", String(res.body.data.id));
+  }
+}
+
+docs {
+  `PANCardResource.createPANCardWithoutVerification` (VAHN_ADMIN, TORG_ADMIN) ->
+  `PANCardService.createPANCardWithoutVerification`. Saves the PAN as PENDING with no provider call, and
+  links it to the torg in `torgId`. The torg's primary PAN (`torgs.pan_card_id`) is only set when the
+  torg has none, so an existing primary stays primary. It also writes a consent ledger row for the
+  caller. It does not check for a duplicate PAN number or phone. Verify the PAN in zeus before step 2.
+}
