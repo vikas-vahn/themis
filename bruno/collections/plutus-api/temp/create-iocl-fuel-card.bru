@@ -1,0 +1,32 @@
+meta {
+  name: POST /api/trucks/{truckId}/fuel-card (IOCL)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/:truckId/fuel-card?provider=IOCL&alternateMobileNumber=
+  body: none
+  auth: bearer
+}
+
+params:query {
+  provider: IOCL
+  alternateMobileNumber: 
+}
+
+params:path {
+  truckId: 9901
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+docs {
+  `TruckResource.createFuelCard` (plutus-java `common/controller/TruckResource.java:389`), called as VAHN_ADMIN.
+  Real external write: creates the IOCL customer (if the truck's PAN has none) and the card.
+  - Set `alternateMobileNumber` to the driver's number; leaving it blank clears the driver's alternate phone.
+  - The IOCL customer mobile comes from the truck PAN's `pan_card.phone`, not from this param.
+  Errors come back as HTTP 500 with `message: "Failed to create fuel card"`; the real cause is in the plutus logs.
+}
