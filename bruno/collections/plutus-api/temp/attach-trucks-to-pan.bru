@@ -1,0 +1,34 @@
+meta {
+  name: POST /api/trucks/attach-to-pan
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/trucks/attach-to-pan
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{adminStaticToken}}
+}
+
+body:json {
+  {
+    "panNumber": "",
+    "truckIds": [9810, 9811, 9813, 9814, 9820]
+  }
+}
+
+docs {
+  `TruckResource.attachTrucksToPan` (plutus-java `common/controller/TruckResource.java:476`), called as VAHN_ADMIN.
+  Moves the listed trucks onto the PAN with this `panNumber` (the PAN must already exist, e.g. from create-additional-pan).
+  Side effect: for every truck that is VERIFIED and has a driver, it queues fuel card creation with no provider,
+  which tries IOCL first and falls back to BPCL (`defaultProviderOrder` in config.yml), using the driver's phone.
+  Fuel card creation keys on the truck's PAN, so run this before create-iocl-fuel-card when switching PANs.
+}
