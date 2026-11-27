@@ -1,0 +1,39 @@
+meta {
+  name: Manager changing the rate: 409 RATE_EDIT_NOT_ALLOWED
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/loading
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceManagerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "type": "PERTONNE",
+    "quantity": 10,
+    "perUnitCost": 1200
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 409
+  res.body.success: eq false
+  res.body.data.errorCode: eq RATE_EDIT_NOT_ALLOWED
+}
+
+docs {
+  A manager-view caller may change quantities only. A rate that differs from the stored one (1000) is refused with
+    HTTP 200, body statusCode 409, data.errorCode RATE_EDIT_NOT_ALLOWED. Nothing is written.
+}

@@ -1,0 +1,37 @@
+meta {
+  name: Set salary back to TRIP_SHEET
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/salary
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "method": "TRIP_SHEET"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.salary.method: eq TRIP_SHEET
+}
+
+docs {
+  Restores the trip's salary to the driver's own settings (undoes "Set salary MANUAL 1500"). Needs the trip's
+    driver to have salary settings, else 409 NO_DRIVER_SALARY.
+}

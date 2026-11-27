@@ -1,0 +1,34 @@
+meta {
+  name: Clear unloading
+  type: http
+  seq: 12
+}
+
+delete {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/unloading
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.shortage.status: eq NOT_APPLICABLE
+}
+
+tests {
+  test("unloading is gone", function () {
+    expect(res.body.data).to.not.have.property("unloading");
+  });
+}
+
+docs {
+  `DELETE /api/v2/trips/{tripId}/unloading`. Nothing recorded is not an error. After this the shortage is
+    NOT_APPLICABLE. While useUnloadingForPnl is still true the P&L falls back to ACTUAL_FREIGHT and the warning
+    UNLOADING_BASIS_MISSING is sent; the next step switches the setting off.
+}

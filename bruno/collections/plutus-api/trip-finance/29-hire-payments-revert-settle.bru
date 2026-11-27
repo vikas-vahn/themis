@@ -1,0 +1,41 @@
+meta {
+  name: Revert the settle payment: balance reopens
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceMarketTripId}}/hire-payments/{{plutusTripFinanceSettlePaymentId}}/revert
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "themis flow: revert the settle payment"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.hirePaid: eq 2000
+  res.body.data.balance: eq 3000
+  res.body.data.status: eq PARTIALLY_PAID
+  res.body.data.entries.length: eq 1
+}
+
+docs {
+  `POST /api/v2/trips/{tripId}/hire-payments/{paymentId}/revert`, body `{"reason": "..."}` (required, at most 500
+    characters). The hirer only. The payment is kept, marked reverted with who and why, and drops out of entries, so
+    the balance reopens to 3000.
+}

@@ -1,0 +1,42 @@
+meta {
+  name: Manager view of financials
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/financials
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceManagerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.hiddenFields[0]: eq loading.perUnitCost
+}
+
+tests {
+  test("manager view: rates and P&L left out and named in hiddenFields", function () {
+    const d = res.body.data;
+    ["loading.perUnitCost", "unloading.perUnitCost", "unloading.totalAmount", "shortage.lossInFreight", "actualFreight", "pnl"]
+      .forEach(function (f) { expect(d.hiddenFields, f).to.include(f); });
+    expect(d).to.not.have.property("pnl");
+    expect(d).to.not.have.property("actualFreight");
+    expect(d.loading).to.not.have.property("perUnitCost");
+    expect(d.loading).to.have.property("totalAmount");
+    expect(d.loading).to.have.property("quantity");
+    if (d.shortage) { expect(d.shortage).to.not.have.property("lossInFreight"); }
+  });
+}
+
+docs {
+  A TRUCK_MANAGER (or an OPERATOR under one) reads the trip of a truck they manage in the manager view. Left out
+    and named in hiddenFields: loading.perUnitCost, unloading.perUnitCost, unloading.totalAmount,
+    shortage.lossInFreight, actualFreight and pnl. The loading rate is still derivable as totalAmount / quantity.
+}

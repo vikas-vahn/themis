@@ -1,0 +1,38 @@
+meta {
+  name: Repeat the settle: 409 HIRE_ALREADY_PAID
+  type: http
+  seq: 27
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceMarketTripId}}/hire-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "paidVia": "CASH",
+    "paidOn": "2026-11-27T10:06:00"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 409
+  res.body.success: eq false
+  res.body.data.errorCode: eq HIRE_ALREADY_PAID
+}
+
+docs {
+  The balance is already zero, so a repeated 'settle' tap is refused: HTTP 200, body statusCode 409,
+    data.errorCode HIRE_ALREADY_PAID. Nothing is recorded.
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Driver payment summary, manager view
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/driver-payment-summary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceManagerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.hiddenFields[0]: eq vahnBalance
+}
+
+tests {
+  test("vahnBalance hidden", function () { expect(res.body.data).to.not.have.property("vahnBalance"); });
+}
+
+docs {
+  The manager view leaves out vahnBalance and names it in hiddenFields.
+}

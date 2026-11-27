@@ -1,0 +1,36 @@
+meta {
+  name: Get a truck's expense settings
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trucks/{{plutusTripFinanceTruckId}}/expense-settings
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.truckId: eq {{plutusTripFinanceTruckId}}
+}
+
+tests {
+  test("settings shape", function () {
+    const d = res.body.data;
+    expect(["TRIP_SHEET", "PERCENT_OF_FREIGHT"]).to.include(d.salaryMethod);
+    expect(d).to.have.property("gvw");
+    expect(d).to.have.property("mileage");
+  });
+}
+
+docs {
+  `GET /api/v2/trucks/{truckId}/expense-settings`. salaryMethod reads TRIP_SHEET when never set. gvw is
+    trucks.capacity_tons, the key apply-to-same-gvw matches on.
+}

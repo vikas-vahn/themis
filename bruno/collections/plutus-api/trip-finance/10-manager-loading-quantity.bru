@@ -1,0 +1,46 @@
+meta {
+  name: Manager changing the quantity only
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/loading
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceManagerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "type": "PERTONNE",
+    "quantity": 10
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.loading.quantity: eq 10
+  res.body.data.loading.totalAmount: eq 10000
+}
+
+tests {
+  test("manager response stays in the manager view", function () {
+    expect(res.body.data.loading).to.not.have.property("perUnitCost");
+    expect(res.body.data.hiddenFields).to.include("pnl");
+  });
+}
+
+docs {
+  With no rate the stored rate is kept, so the total stays 10000. Re-sending the same quantity changes nothing,
+    which keeps the shared test trip as it was.
+}

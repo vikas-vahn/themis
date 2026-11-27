@@ -1,0 +1,38 @@
+meta {
+  name: Driver payment summary of a truck's current trip
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/driver-payment-summary?truckId={{plutusTripFinanceTruckId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.tripId: eq {{plutusTripFinanceTripId}}
+}
+
+tests {
+  test("payable, paid, remaining add up", function () {
+    const d = res.body.data;
+    expect(d.payable.total).to.equal(
+      d.payable.salary + d.payable.fooding + d.payable.miscellaneous + d.payable.loading + d.payable.repairs + d.payable.challan + d.payable.otherCharges);
+    expect(d.remaining).to.equal(d.payable.total - d.paid.total);
+    expect(d.pendingPayouts).to.have.property("count");
+  });
+}
+
+docs {
+  `GET /api/v2/trips/driver-payment-summary?truckId=` (or `driverId=`): the truck's IN_PROGRESS trip, the one a
+    payout attaches to. 409 NO_CURRENT_TRIP when there is none. Asserts it resolves to the shared test trip, which
+    is the only IN_PROGRESS trip on that truck.
+}

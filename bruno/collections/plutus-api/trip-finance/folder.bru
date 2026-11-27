@@ -1,0 +1,14 @@
+meta {
+  name: trip-finance
+}
+
+docs {
+  Trip finance endpoints (ENG-1431): loading, unloading, shortage, salary and P&L per trip, truck expense
+  settings, hire payments on market trips, driver payment summary and the v2 reports. Contract:
+  `operations/tripfinance` in plutus-java. Staging, torg 315.
+
+  Run `01-login-owner` and `02-login-manager` first; they keep the tokens in runtime vars. The requests are in
+  journey order, and several depend on the ones before them (financials after unloading, the reverts after the
+  payments). The same sequence, with its narrative, is the flow `bruno/flows/plutus-api/siva-trip-finance/`.
+  Hire payments move no money; apply-to-same-gvw is dryRun only.
+}

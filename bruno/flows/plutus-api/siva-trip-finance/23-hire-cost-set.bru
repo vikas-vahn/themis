@@ -1,0 +1,38 @@
+meta {
+  name: Set the market trip's hire cost to 5000
+  type: http
+  seq: 23
+}
+
+put {
+  url: {{baseUrl}}/api/trips/{{plutusTripFinanceMarketTripId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "freightDetails": "{\"remarks\": null, \"revenue\": null, \"hireCost\": 5000, \"pickupPOC\": {\"pocName\": \"Pooja\", \"pocPhone\": \"9694223344\"}, \"startDate\": 1790662498684, \"isRoundTrip\": false, \"destinationPOC\": {\"pocName\": \"Dinesh\", \"pocPhone\": \"9799006611\"}, \"freightChargeDetails\": null}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Not a trip-finance endpoint. The hire cost of a market trip comes from the request's freightDetails.hireCost, which
+    the hirer sets through `PUT /api/trips/{id}` with `freightDetails` (a JSON text, stored as sent). The market trip
+    `plutusTripFinanceMarketTripId` (2575) is hired by torg 315 and has no hire cost, so this gives it one of 5000.
+    The last hire step puts it back (hireCost null).
+}

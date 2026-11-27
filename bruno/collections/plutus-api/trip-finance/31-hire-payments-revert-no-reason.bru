@@ -1,0 +1,36 @@
+meta {
+  name: Revert without a reason: 400
+  type: http
+  seq: 31
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceMarketTripId}}/hire-payments/{{plutusTripFinancePartialPaymentId}}/revert
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": ""
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 400
+  res.body.success: eq false
+}
+
+docs {
+  A blank reason is refused (validation, 400) before the payment is looked at, so this is safe to run after the
+    reverts. Not in the flow's happy path.
+}

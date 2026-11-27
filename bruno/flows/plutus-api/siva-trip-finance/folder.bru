@@ -1,0 +1,39 @@
+meta {
+  name: siva-trip-finance
+}
+
+docs {
+  # Siva trip finance journey (ENG-1431)
+
+  The per-trip finance endpoints under `/api/v2/trips` and `/api/v2/trucks`, as the torg owner (TORG_ADMIN)
+  and a truck manager (TRUCK_MANAGER) of torg 315 on staging. OTP is `776677`. Run requests 1-35 in order
+  (`--env staging`). Errors come as HTTP 200 with `success: false`, the real status in `statusCode` and the
+  code in `data.errorCode`, so the asserts are on the body.
+
+  - 1-2: log in as the owner and the manager. Tokens are runtime vars (`plutusTripFinanceOwnerToken`,
+    `plutusTripFinanceManagerToken`), so nothing is written into the env file.
+  - 3-7: loading 10 t at 1000 -> unloading 9.5 t -> financials (shortage 0.5 t, 5%, loss 500) -> Actual
+    Freight and the unloading P&L basis -> manual salary.
+  - 8-11: the manager view: hiddenFields present, rates and P&L absent; a rate change is refused with 409
+    `RATE_EDIT_NOT_ALLOWED`, a quantity-only change works; pnl-settings is 403 for a manager.
+  - 12-14: restore the trip: clear unloading, clear Actual Freight and the P&L basis, salary back to
+    TRIP_SHEET.
+  - 15-17: driver payment summary by trip, by truck and in the manager view. Read only: no payout.
+  - 18-22: the truck's expense settings: read, change, apply-to-same-GVW (`dryRun=true` only), restore, and a
+    manager's write refused.
+  - 23-33: hire payments on a market trip: give it a hire cost of 5000, record a partial payment of 2000,
+    settle the rest with no amount (balance 0, PAID), a repeat is refused with 409 `HIRE_ALREADY_PAID`, list by
+    status, revert the settle (balance reopens to 3000), revert the partial (PENDING), then remove the hire
+    cost again. Hire payments are records only: they move no money.
+  - 34-35: the v2 trips and market trips reports (XLSX).
+
+  Test data: owned trip `plutusTripFinanceTripId` (an IN_PROGRESS SINGLE trip on truck
+  `plutusTripFinanceTruckId`, which the manager manages) and market trip `plutusTripFinanceMarketTripId`
+  (hired by torg 315). If the owned trip is ever finished or cancelled, create another with
+  `POST /api/trips` on the same truck and start it with `PUT /api/trips/{id}/truck-status?status=RUNNING`, and
+  point the var at it. The flow restores what it changes, except the audit fields of the truck's expense
+  settings. A run that stops midway can leave the market trip with a hire cost or live hire payments: revert
+  the payments and run step 31.
+
+  For single requests see `bruno/collections/plutus-api/trip-finance/`.
+}

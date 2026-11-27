@@ -1,0 +1,54 @@
+meta {
+  name: Set loading (Freight Revenue)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/loading
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "type": "PERTONNE",
+    "quantity": 10,
+    "perUnitCost": 1000
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.loading.type: eq PERTONNE
+  res.body.data.loading.quantity: eq 10
+  res.body.data.loading.perUnitCost: eq 1000
+  res.body.data.loading.totalAmount: eq 10000
+  res.body.data.pnl.revenue: eq 10000
+}
+
+tests {
+  test("financials shape", function () {
+    const d = res.body.data;
+    expect(d.tripId).to.equal(bru.getEnvVar("plutusTripFinanceTripId") * 1);
+    expect(d.hiddenFields).to.be.an("array");
+    expect(d.warnings).to.be.an("array");
+    expect(d.shortage).to.have.property("status");
+  });
+}
+
+docs {
+  `PUT /api/v2/trips/{tripId}/loading` (TripFinanceResource.updateLoading). OWNED SINGLE or ROUND trip, any status
+    but CANCELLED. A per-unit type is priced quantity x perUnitCost (FLAT takes totalAmount). 10 t at 1000 per
+    tonne gives 10000. Idempotent. Returns the trip's financials.
+}

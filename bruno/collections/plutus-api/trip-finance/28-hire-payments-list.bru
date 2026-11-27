@@ -1,0 +1,43 @@
+meta {
+  name: List hired market trips by status (PAID)
+  type: http
+  seq: 28
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/hire-payments?status=PAID&startDate=2026-01-01&endDate=2026-12-31&skip=0&take=50
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.data: isArray
+}
+
+tests {
+  test("rows carry hire figures and are all PAID", function () {
+    res.body.data.data.forEach(function (r) {
+      expect(r.status).to.equal("PAID");
+      ["tripId", "tripNumber", "hirePaid", "otherDeductions"].forEach(function (k) { expect(r, k).to.have.property(k); });
+    });
+  });
+  test("the market trip is PAID in the list when the settle step ran before", function () {
+    if (!bru.getVar("plutusTripFinanceSettlePaymentId")) { return; }
+    const row = res.body.data.data.find(function (r) { return r.tripId === bru.getEnvVar("plutusTripFinanceMarketTripId") * 1; });
+    expect(row, "market trip in PAID list").to.not.equal(undefined);
+    expect(row.balance).to.equal(0);
+  });
+}
+
+docs {
+  `GET /api/v2/trips/hire-payments?status=&startDate=&endDate=&skip=&take=`: the company's hired market trips, newest
+    start first. status is PENDING, PARTIALLY_PAID, PAID or NO_HIRE_COST; dates are yyyy-MM-dd, inclusive. VAHN_ADMIN
+    must pass torgId. Wrapped as {data, skip, take, total, hasMore}.
+}

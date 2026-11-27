@@ -1,0 +1,26 @@
+meta {
+  name: Hire payments on an owned trip: 409 NOT_A_MARKET_TRIP
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/hire-payments
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 409
+  res.body.success: eq false
+  res.body.data.errorCode: eq NOT_A_MARKET_TRIP
+}
+
+docs {
+  Hire payments exist for market trips only; an owned trip is refused with 409 NOT_A_MARKET_TRIP.
+}

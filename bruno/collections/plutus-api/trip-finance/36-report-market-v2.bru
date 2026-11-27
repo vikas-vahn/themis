@@ -1,0 +1,45 @@
+meta {
+  name: Download the v2 market trips report (XLSX)
+  type: http
+  seq: 36
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trips/market-report/download
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "startDate": "2026-09-01",
+    "endDate": "2026-12-31",
+    "hirePaymentStatus": "NO_HIRE_COST"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("an XLSX attachment", function () {
+    expect(res.getHeader("content-type")).to.contain("spreadsheetml.sheet");
+    expect(res.getHeader("content-disposition")).to.contain("attachment");
+  });
+}
+
+docs {
+  `POST /api/v2/trips/market-report/download`: the v1 market trips report with Hire Paid, Hire Balance and Hire
+    Payment Status appended. hirePaymentStatus (PENDING, PARTIALLY_PAID, PAID, NO_HIRE_COST) is optional and keeps
+    only those trips; REPORT_NO_DATA (JSON error) when none. Run after the hire steps, the market trip is
+    NO_HIRE_COST and so is in this range.
+}

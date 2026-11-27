@@ -1,0 +1,37 @@
+meta {
+  name: Clear the market trip's hire cost again
+  type: http
+  seq: 32
+}
+
+put {
+  url: {{baseUrl}}/api/trips/{{plutusTripFinanceMarketTripId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "freightDetails": "{\"remarks\": null, \"revenue\": null, \"hireCost\": null, \"pickupPOC\": {\"pocName\": \"Pooja\", \"pocPhone\": \"9694223344\"}, \"startDate\": 1790662498684, \"isRoundTrip\": false, \"destinationPOC\": {\"pocName\": \"Dinesh\", \"pocPhone\": \"9799006611\"}, \"freightChargeDetails\": null}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  Puts the request's freightDetails back to its original text (hireCost null). The market trip is then
+    NO_HIRE_COST again, as it was before the flow. Refused (400) if live hire payments exceed the new cost, which
+    is why the payments are reverted first.
+}

@@ -1,0 +1,45 @@
+meta {
+  name: Record unloading (9.5 t, shortage 0.5 t)
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/unloading
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "type": "PERTONNE",
+    "quantity": 9.5
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.unloading.quantity: eq 9.5
+  res.body.data.unloading.perUnitCost: eq 1000
+  res.body.data.unloading.totalAmount: eq 9500
+  res.body.data.shortage.status: eq OK
+  res.body.data.shortage.quantity: eq 0.5
+  res.body.data.shortage.percent: eq 5
+  res.body.data.shortage.lossInFreight: eq 500
+}
+
+docs {
+  `PUT /api/v2/trips/{tripId}/unloading`. The trip must have started (409 TRIP_NOT_STARTED otherwise). With no
+    perUnitCost the loading rate of the same unit is used (1000). unloadedAt defaults to now. 10 t loaded and
+    9.5 t unloaded: shortage 0.5 t = 5%, loss in freight = rate x shortage = 500.
+}

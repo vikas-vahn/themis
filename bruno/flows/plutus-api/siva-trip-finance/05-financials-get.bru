@@ -1,0 +1,44 @@
+meta {
+  name: Get financials
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/financials
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.shortage.status: eq OK
+  res.body.data.shortage.quantity: eq 0.5
+  res.body.data.shortage.percent: eq 5
+  res.body.data.shortage.lossInFreight: eq 500
+  res.body.data.pnl.basis: eq FREIGHT
+  res.body.data.hiddenFields.length: eq 0
+}
+
+tests {
+  test("financials shape", function () {
+    const d = res.body.data;
+    expect(d.tripId).to.equal(bru.getEnvVar("plutusTripFinanceTripId") * 1);
+    expect(d.hiddenFields).to.be.an("array");
+    expect(d.warnings).to.be.an("array");
+    expect(d.shortage).to.have.property("status");
+  });
+}
+
+docs {
+  `GET /api/v2/trips/{tripId}/financials`. Owner party only (the market hirer gets 403). The full view for admins:
+    hiddenFields is empty. Checks the shortage the unloading step produced (status OK, 0.5 t, 5%, loss 500) and that
+    the P&L is on the FREIGHT basis (useUnloadingForPnl still false). In the standalone collection run
+    "Record unloading" first, else shortage is NOT_APPLICABLE.
+}

@@ -1,0 +1,39 @@
+meta {
+  name: Log in as the truck manager (TRUCK_MANAGER)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/verify-otp
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "phone": "{{plutusTripFinanceManagerPhone}}",
+    "otp": "{{plutusTripFinanceOtp}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("plutusTripFinanceManagerToken", res.body.data.accessToken);
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.accessToken: isString
+}
+
+docs {
+  Logs in the torg 315 TRUCK_MANAGER (`plutusTripFinanceManagerPhone`), who manages truck
+    `plutusTripFinanceTruckId`, and keeps the token in the runtime var `plutusTripFinanceManagerToken`.
+    Used for the manager view: hiddenFields present, rates absent, rate edits refused.
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Hire payments: NO_HIRE_COST after the restore
+  type: http
+  seq: 33
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceMarketTripId}}/hire-payments
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.status: eq NO_HIRE_COST
+  res.body.data.hirePaid: eq 0
+  res.body.data.entries.length: eq 0
+}
+
+docs {
+  Confirms the market trip is back to its starting state.
+}

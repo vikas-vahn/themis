@@ -1,0 +1,40 @@
+meta {
+  name: Driver payment summary of a trip
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/driver-payment-summary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.tripId: eq {{plutusTripFinanceTripId}}
+  res.body.data.hiddenFields.length: eq 0
+}
+
+tests {
+  test("payable, paid, remaining add up", function () {
+    const d = res.body.data;
+    expect(d.payable.total).to.equal(
+      d.payable.salary + d.payable.fooding + d.payable.miscellaneous + d.payable.loading + d.payable.repairs + d.payable.challan + d.payable.otherCharges);
+    expect(d.remaining).to.equal(d.payable.total - d.paid.total);
+    expect(d.pendingPayouts).to.have.property("count");
+  });
+}
+
+docs {
+  `GET /api/v2/trips/{tripId}/driver-payment-summary`. payable = salary + fooding + miscellaneous + loading +
+    repairs + challan + other charges (each when enabled); paid = the driver's COMPLETED payouts + CASH on the trip;
+    remaining = payable - paid. Read only: no payout is triggered. vahnBalance is display-only and hidden from
+    TRUCK_MANAGER.
+}

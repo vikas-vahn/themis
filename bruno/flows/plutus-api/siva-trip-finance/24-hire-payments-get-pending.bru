@@ -1,0 +1,33 @@
+meta {
+  name: Hire payments: nothing paid yet
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceMarketTripId}}/hire-payments
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.hireCost: eq 5000
+  res.body.data.hireCostSource: eq REQUEST
+  res.body.data.hirePaid: eq 0
+  res.body.data.balance: eq 5000
+  res.body.data.status: eq PENDING
+  res.body.data.entries.length: eq 0
+}
+
+docs {
+  `GET /api/v2/trips/{tripId}/hire-payments`, the hirer or the truck owner. balance = hireCost - advance - driver
+    payment - fuel - hirePaid; status PAID, PARTIALLY_PAID, PENDING or NO_HIRE_COST. 409 NOT_A_MARKET_TRIP on an owned
+    trip. Fails when the market trip already has live hire payments from an earlier, aborted run (revert them).
+}

@@ -1,0 +1,47 @@
+meta {
+  name: Download the v2 trips report (XLSX)
+  type: http
+  seq: 34
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trips/report/download
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "torgId": "{{plutusTripFinanceTorgId}}",
+    "startDate": "2026-11-01",
+    "endDate": "2026-11-30",
+    "documentFormat": "EXCEL",
+    "deliveryType": "DOWNLOAD"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("an XLSX attachment", function () {
+    expect(res.getHeader("content-type")).to.contain("spreadsheetml.sheet");
+    expect(res.getHeader("content-disposition")).to.contain("attachment");
+  });
+}
+
+docs {
+  `POST /api/v2/trips/report/download`: the v1 trips report with Loading Qty/Unit/Rate, Unloading Qty/Unit/Rate,
+    Unloaded At, Shortage Qty/%, Loss in Freight, Actual Freight Revenue, P&L Basis and P&L appended. The body is
+    the v1 body: documentFormat and deliveryType are required (DOWNLOAD returns the file). REPORT_NO_DATA comes back
+    as a JSON error when the range has no trips. TRUCK_MANAGER and OPERATOR get the new money cells blank.
+}

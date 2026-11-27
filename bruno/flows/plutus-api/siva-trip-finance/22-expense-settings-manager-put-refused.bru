@@ -1,0 +1,35 @@
+meta {
+  name: Manager writing expense settings: 403
+  type: http
+  seq: 22
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trucks/{{plutusTripFinanceTruckId}}/expense-settings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceManagerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "salaryMethod": "TRIP_SHEET"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 403
+  res.body.success: eq false
+}
+
+docs {
+  Only admins write expense settings; a TRUCK_MANAGER may read them for trucks they manage.
+}

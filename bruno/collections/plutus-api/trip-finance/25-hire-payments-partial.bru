@@ -1,0 +1,50 @@
+meta {
+  name: Record a partial hire payment (2000)
+  type: http
+  seq: 25
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceMarketTripId}}/hire-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "amount": 2000,
+    "paidVia": "UPI",
+    "paidOn": "2026-11-27T10:00:00",
+    "note": "themis partial"
+  }
+}
+
+script:post-response {
+  const e = res.body.data && res.body.data.entries;
+  if (e && e.length) { bru.setVar("plutusTripFinancePartialPaymentId", e[e.length - 1].id); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.hirePaid: eq 2000
+  res.body.data.balance: eq 3000
+  res.body.data.status: eq PARTIALLY_PAID
+  res.body.data.entries.length: eq 1
+}
+
+docs {
+  `POST /api/v2/trips/{tripId}/hire-payments` (hirer only: TORG_ADMIN, FUND_MANAGER). Records what the hiring
+    company paid the truck owner. It is a record only: no payout, wallet or transaction. paidVia and paidOn are
+    required; paidOn may not be in the future; 400 when the amount is more than the balance. Captures the entry id
+    in `plutusTripFinancePartialPaymentId`.
+}

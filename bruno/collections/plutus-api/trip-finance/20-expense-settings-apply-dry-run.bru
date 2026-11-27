@@ -1,0 +1,36 @@
+meta {
+  name: Apply to same GVW (dryRun=true only)
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trucks/{{plutusTripFinanceTruckId}}/expense-settings/apply-to-same-gvw?dryRun=true
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.dryRun: eq true
+  res.body.data.truckIds: isArray
+}
+
+tests {
+  test("counts match the id list", function () {
+    expect(res.body.data.affectedCount).to.equal(res.body.data.truckIds.length);
+    expect(res.body.data.truckIds).to.not.include(bru.getEnvVar("plutusTripFinanceTruckId") * 1);
+  });
+}
+
+docs {
+  `POST /api/v2/trucks/{truckId}/expense-settings/apply-to-same-gvw`. ALWAYS dryRun=true here: dryRun=false copies
+    the settings onto every truck of the company with the same GVW. dryRun defaults to true, writes nothing and
+    returns the trucks it would touch. 409 TRUCK_GVW_MISSING when the source has no GVW.
+}

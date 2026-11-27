@@ -1,0 +1,48 @@
+meta {
+  name: Set Actual Freight and the unloading P&L basis
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/pnl-settings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "actualFreight": {
+      "type": "PERTONNE",
+      "quantity": 9.5,
+      "perUnitCost": 1100
+    },
+    "useUnloadingForPnl": true
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.actualFreight.totalAmount: eq 10450
+  res.body.data.pnl.useUnloadingForPnl: eq true
+  res.body.data.pnl.basis: eq UNLOADING
+  res.body.data.pnl.revenue: eq 9500
+  res.body.data.loading.totalAmount: eq 10000
+}
+
+docs {
+  `PUT /api/v2/trips/{tripId}/pnl-settings`, VAHN_ADMIN and TORG_ADMIN only. Each null field is unchanged.
+    actualFreight has the loading body's shape (9.5 t x 1100 = 10450); useUnloadingForPnl true switches the P&L
+    revenue to the unloaded value (9500). Never changes Freight Revenue (loading) or salary. Needs unloading to be
+    recorded, otherwise the basis falls back and the warning UNLOADING_BASIS_MISSING is sent.
+}

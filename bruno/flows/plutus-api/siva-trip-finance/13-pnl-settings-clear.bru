@@ -1,0 +1,46 @@
+meta {
+  name: Clear Actual Freight and the unloading P&L basis
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/pnl-settings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "clearActualFreight": true,
+    "useUnloadingForPnl": false
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.pnl.basis: eq FREIGHT
+  res.body.data.pnl.useUnloadingForPnl: eq false
+  res.body.data.pnl.revenue: eq 10000
+}
+
+tests {
+  test("actualFreight removed", function () {
+    expect(res.body.data).to.not.have.property("actualFreight");
+  });
+}
+
+docs {
+  clearActualFreight true removes Actual Freight (it can't be sent together with actualFreight); this puts the trip
+    back to the FREIGHT basis. Restores the trip after the P&L step.
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Set the truck's salary method back to TRIP_SHEET
+  type: http
+  seq: 21
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trucks/{{plutusTripFinanceTruckId}}/expense-settings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "salaryMethod": "TRIP_SHEET"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.salaryMethod: eq TRIP_SHEET
+}
+
+tests {
+  test("percent cleared", function () { expect(res.body.data.salaryPercent == null).to.equal(true); });
+}
+
+docs {
+  Restores the truck's settings after "Set a truck's salary method ...". TRIP_SHEET takes no salaryPercent.
+}

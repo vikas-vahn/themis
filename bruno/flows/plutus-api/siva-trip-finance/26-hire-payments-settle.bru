@@ -1,0 +1,56 @@
+meta {
+  name: Settle the remaining balance (no amount)
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceMarketTripId}}/hire-payments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "paidVia": "CASH",
+    "paidOn": "2026-11-27T10:05:00",
+    "note": "themis settle"
+  }
+}
+
+script:post-response {
+  const e = res.body.data && res.body.data.entries;
+  if (e && e.length) { bru.setVar("plutusTripFinanceSettlePaymentId", e[e.length - 1].id); }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.hirePaid: eq 5000
+  res.body.data.balance: eq 0
+  res.body.data.status: eq PAID
+  res.body.data.entries.length: eq 2
+}
+
+tests {
+  test("the new entry paid the remaining 3000 and settles the balance", function () {
+    const e = res.body.data.entries;
+    const last = e[e.length - 1];
+    expect(last.amount).to.equal(3000);
+    expect(last.settlesBalance).to.equal(true);
+  });
+}
+
+docs {
+  No amount pays the remaining balance (5000 - 2000 = 3000) and marks the entry settlesBalance. Captures the entry id
+    in `plutusTripFinanceSettlePaymentId`.
+}

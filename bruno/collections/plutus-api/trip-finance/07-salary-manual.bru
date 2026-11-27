@@ -1,0 +1,40 @@
+meta {
+  name: Set salary MANUAL 1500
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/salary
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "method": "MANUAL",
+    "amount": 1500
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.salary.method: eq MANUAL
+  res.body.data.salary.amount: eq 1500
+}
+
+docs {
+  `PUT /api/v2/trips/{tripId}/salary`. MANUAL {amount}, PERCENT_OF_FREIGHT {percent} or TRIP_SHEET (the driver's
+    settings). 409 TRIP_SHEET_APPROVED once the sheet is approved; 409 NO_DRIVER_SALARY when TRIP_SHEET has nothing to
+    price from.
+}

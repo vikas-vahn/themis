@@ -1,0 +1,39 @@
+meta {
+  name: Revert the partial payment: back to PENDING
+  type: http
+  seq: 30
+}
+
+post {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceMarketTripId}}/hire-payments/{{plutusTripFinancePartialPaymentId}}/revert
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceOwnerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "reason": "themis flow: revert the partial payment"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 200
+  res.body.success: eq true
+  res.body.data.hirePaid: eq 0
+  res.body.data.balance: eq 5000
+  res.body.data.status: eq PENDING
+  res.body.data.entries.length: eq 0
+}
+
+docs {
+  Reverts the first payment, which leaves the market trip with no live hire payments (PENDING, balance 5000).
+}

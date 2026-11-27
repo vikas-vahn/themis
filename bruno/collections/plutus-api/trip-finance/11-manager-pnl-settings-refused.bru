@@ -1,0 +1,35 @@
+meta {
+  name: Manager on pnl-settings: 403
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{baseUrl}}/api/v2/trips/{{plutusTripFinanceTripId}}/pnl-settings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{plutusTripFinanceManagerToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "useUnloadingForPnl": false
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.statusCode: eq 403
+  res.body.success: eq false
+}
+
+docs {
+  pnl-settings is VAHN_ADMIN and TORG_ADMIN only (the role gate answers 403 'User not authorized.').
+}
