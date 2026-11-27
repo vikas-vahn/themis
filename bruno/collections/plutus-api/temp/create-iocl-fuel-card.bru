@@ -6,7 +6,7 @@ meta {
 
 post {
   url: {{baseUrl}}/api/trucks/:truckId/fuel-card?provider=IOCL&alternateMobileNumber=
-  body: none
+  body: json
   auth: bearer
 }
 
@@ -17,6 +17,10 @@ params:query {
 
 params:path {
   truckId: 9901
+}
+
+body:json {
+  {}
 }
 
 auth:bearer {
